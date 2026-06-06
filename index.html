@@ -306,6 +306,15 @@
 
 
 
+
+  /* ── v12 이론 자동재생·챕터 이동 UI ── */
+  .theory-nav-5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 16px;}
+  .theory-nav-5 .tnav{font-size:11px;min-height:42px;padding:8px 4px;}
+  .theory-nav-5 .tnav.replay{border-color:#1D9E75;color:#9FE1CB;background:#0A2E22;}
+  .theory-autoplay-status{font-size:11px;color:#9FE1CB;background:#0A2E22;border:0.5px solid #1D9E75;border-radius:12px;padding:8px 10px;margin:8px 0 10px;text-align:center;}
+  .theory-autoplay-status.off{display:none;}
+  @media(max-width:520px){.theory-nav-5{grid-template-columns:1fr 1fr;}.theory-nav-5 .tnav.replay{grid-column:1 / -1;}}
+
   /* ── v11 이론 TTS 읽는 위치 자동 따라가기 ── */
   .tts-track-target{scroll-margin-top:92px;transition:border-color .18s ease, background .18s ease, box-shadow .18s ease, transform .18s ease;}
   .tts-track-target.tts-reading{border-color:#1D9E75!important;background:#09291F!important;box-shadow:0 0 0 1px rgba(29,158,117,.35),0 8px 24px rgba(0,0,0,.35);transform:translateY(-1px);}
@@ -614,17 +623,25 @@
     <button class="theory-back-mini" onclick="goScreen('screenChapter')">← <span id="contentBackLabel">챕터 목록</span>으로 돌아가기</button>
     <div class="bb-title" id="contentTitle" style="font-size:14px;font-weight:600;color:#9FE1CB;margin-bottom:10px;"></div>
     <div class="theory-tts-bar">
-      <button class="tb" id="tBtnRead" onclick="theoryReadAll()">
+      <button class="tb" id="tBtnRead" onclick="theoryReadAll(true)">
         <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>전체읽기
       </button>
       <button class="tb" onclick="ttsStop()" style="border-color:#3A1515;color:#E24B4A;">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>정지
       </button>
     </div>
+    <div class="tts-track-bar" id="ttsTrackBar" style="display:none;">
+      <div class="track-left"><span class="track-dot"></span><span id="ttsTrackText">읽는 위치 자동 따라가기</span></div>
+      <button onclick="toggleTheoryAutoScroll(event)" id="ttsTrackToggle">자동추적 켜짐</button>
+    </div>
+    <div class="theory-autoplay-status off" id="theoryAutoStatus"></div>
     <div id="theoryContentArea"></div>
-    <div class="theory-nav">
-      <button class="tnav" id="tNavPrev" onclick="theoryNavChapter(-1)">← 이전 챕터</button>
-      <button class="tnav p" id="tNavNext" onclick="theoryNavChapter(1)">다음 챕터 →</button>
+    <div class="theory-nav-5">
+      <button class="tnav" id="tNavFirst" onclick="theoryFirstChapter()">처음</button>
+      <button class="tnav" id="tNavPrev" onclick="theoryNavChapter(-1)">← 이전</button>
+      <button class="tnav replay" onclick="theoryReplayChapter()">↻ 다시듣기</button>
+      <button class="tnav p" id="tNavNext" onclick="theoryNavChapter(1)">다음 →</button>
+      <button class="tnav" id="tNavLast" onclick="theoryLastChapter()">마지막</button>
     </div>
   </div>
 </div>
@@ -882,7 +899,8 @@ function openChapter(idx){
   area.innerHTML='';
   ch.sections.forEach(sec=>{
     const card=document.createElement('div');
-    card.className='section-card';
+    card.className='section-card tts-track-target';
+    if(sec.tts) card.setAttribute('data-tts',sec.tts);
     const pts=(sec.points||[]).map(p=>`<div class="sec-point">${p}</div>`).join('');
     const level=sec.level?`<div class="sec-level">${sec.level}</div>`:'';
     const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content">${sec.key}</div></div>`:'';
@@ -892,16 +910,40 @@ function openChapter(idx){
     card.innerHTML=`${level}<div class="sec-title">${sec.title}</div>${key}${detail}${exam}${memory}`;
     area.appendChild(card);
   });
-  document.getElementById('tNavPrev').style.opacity=idx===0?'0.3':'1';
-  document.getElementById('tNavNext').style.opacity=idx>=s.chapters.length-1?'0.3':'1';
+  updateTheoryNavButtons();
+  updateTheoryAutoStatus();
+  annotateTheoryCards();
   goScreen('screenTheoryContent');
 }
 
-function theoryNavChapter(dir){
+function updateTheoryNavButtons(){
+  const s=THEORY[curSubject]; if(!s) return;
+  const isFirst=curChapterIdx===0;
+  const isLast=curChapterIdx>=s.chapters.length-1;
+  ['tNavPrev','tNavFirst'].forEach(id=>{const b=document.getElementById(id); if(b){b.style.opacity=isFirst?'0.35':'1'; b.disabled=isFirst;}});
+  ['tNavNext','tNavLast'].forEach(id=>{const b=document.getElementById(id); if(b){b.style.opacity=isLast?'0.35':'1'; b.disabled=isLast;}});
+}
+function theoryNavChapter(dir,autoRead=false){
   const s=THEORY[curSubject];
   const next=curChapterIdx+dir;
-  if(next<0||next>=s.chapters.length) return;
+  if(next<0||next>=s.chapters.length) return false;
+  tStop();
   openChapter(next);
+  if(autoRead) setTimeout(()=>theoryReadAll(false),220);
+  return true;
+}
+function theoryFirstChapter(){
+  if(!THEORY[curSubject] || curChapterIdx===0) return;
+  tStop(); openChapter(0);
+}
+function theoryLastChapter(){
+  const s=THEORY[curSubject]; if(!s) return;
+  if(curChapterIdx>=s.chapters.length-1) return;
+  tStop(); openChapter(s.chapters.length-1);
+}
+function theoryReplayChapter(){
+  tStop();
+  setTimeout(()=>theoryReadAll(true),180);
 }
 
 function theoryTextForRead(sec){
@@ -919,7 +961,7 @@ function theoryTextForRead(sec){
 
 
 function annotateTheoryCards(){
-  const cards=Array.from(document.querySelectorAll('#theoryContentBody .section-card'));
+  const cards=Array.from(document.querySelectorAll('#theoryContentArea .section-card'));
   cards.forEach((card,idx)=>{
     card.classList.add('tts-track-target');
     if(!card.hasAttribute('data-tts')){
@@ -930,12 +972,106 @@ function annotateTheoryCards(){
   });
 }
 
+
+let theoryAutoMode='once';
+let theoryNextRemain=0;
+function setTheoryAutoMode(mode,btn){
+  theoryAutoMode=mode;
+  try{localStorage.setItem('pipe_theory_auto_mode',mode);}catch(e){}
+  document.querySelectorAll('#theoryAutoRow .sb').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  updateTheoryAutoStatus();
+}
+function loadTheoryAutoMode(){
+  let m='once';
+  try{m=localStorage.getItem('pipe_theory_auto_mode')||'once';}catch(e){}
+  theoryAutoMode=m;
+  const map={once:0,next:1,subject:2,all:3};
+  const btns=document.querySelectorAll('#theoryAutoRow .sb');
+  btns.forEach((b,i)=>b.classList.toggle('on',i===(map[m]??0)));
+}
+function theoryAutoModeLabel(){
+  return {once:'현재 챕터만',next:'다음 챕터 1회',subject:'현재 과목 전체',all:'전체 이론'}[theoryAutoMode]||'현재 챕터만';
+}
+function updateTheoryAutoStatus(msg){
+  const el=document.getElementById('theoryAutoStatus');
+  if(!el) return;
+  const s=THEORY[curSubject], ch=s&&s.chapters[curChapterIdx];
+  if(!s||!ch){el.classList.add('off');return;}
+  el.classList.remove('off');
+  el.textContent=msg || ('이론 자동재생. '+theoryAutoModeLabel()+'. 현재. '+s.title+' > '+ch.title);
+}
+function getNextTheoryLocation(){
+  const keys=Object.keys(THEORY);
+  const si=keys.indexOf(curSubject);
+  const s=THEORY[curSubject];
+  if(!s) return null;
+  if(curChapterIdx<s.chapters.length-1) return {subject:curSubject,chapter:curChapterIdx+1};
+  if(theoryAutoMode==='all' && si>=0 && si<keys.length-1) return {subject:keys[si+1],chapter:0};
+  return null;
+}
+function openTheoryLocation(loc,autoRead){
+  if(!loc) return false;
+  curSubject=loc.subject;
+  curChapterIdx=loc.chapter;
+  const s=THEORY[curSubject];
+  document.getElementById('chapterSubjectTitle').textContent=s.title;
+  openChapter(curChapterIdx);
+  if(autoRead) setTimeout(()=>theoryReadAll(false),260);
+  return true;
+}
+function handleTheoryReadFinished(){
+  if(theoryAutoMode==='once'){
+    updateTheoryAutoStatus('현재 챕터 읽기가 끝났습니다.');
+    setTimeout(()=>clearTheoryTrack(),1200);
+    return;
+  }
+  if(theoryAutoMode==='next'){
+    if(theoryNextRemain<=0){
+      updateTheoryAutoStatus('다음 챕터 1회 자동재생이 끝났습니다.');
+      setTimeout(()=>clearTheoryTrack(),1200);
+      return;
+    }
+    const loc=getNextTheoryLocation();
+    if(!loc){
+      updateTheoryAutoStatus('다음 챕터가 없습니다.');
+      setTimeout(()=>clearTheoryTrack(),1200);
+      return;
+    }
+    theoryNextRemain--;
+    updateTheoryAutoStatus('다음 챕터로 자동 이동합니다.');
+    setTimeout(()=>openTheoryLocation(loc,true),800);
+    return;
+  }
+  if(theoryAutoMode==='subject'){
+    const s=THEORY[curSubject];
+    if(curChapterIdx<s.chapters.length-1){
+      updateTheoryAutoStatus('다음 챕터로 자동 이동합니다.');
+      setTimeout(()=>openTheoryLocation({subject:curSubject,chapter:curChapterIdx+1},true),800);
+    }else{
+      updateTheoryAutoStatus('현재 과목 전체 읽기가 끝났습니다.');
+      setTimeout(()=>clearTheoryTrack(),1200);
+    }
+    return;
+  }
+  if(theoryAutoMode==='all'){
+    const loc=getNextTheoryLocation();
+    if(loc){
+      updateTheoryAutoStatus('다음 이론으로 자동 이동합니다.');
+      setTimeout(()=>openTheoryLocation(loc,true),800);
+    }else{
+      updateTheoryAutoStatus('전체 이론 읽기가 끝났습니다.');
+      setTimeout(()=>clearTheoryTrack(),1200);
+    }
+  }
+}
+
 let theoryAutoScroll=true;
 let theoryReadQueue=[];
 let theoryReadIndex=0;
 
 function getTheoryTrackTargets(){
-  return Array.from(document.querySelectorAll('#theoryContentBody .tts-track-target'));
+  return Array.from(document.querySelectorAll('#theoryContentArea .tts-track-target'));
 }
 function clearTheoryTrack(){
   document.querySelectorAll('.tts-reading').forEach(el=>el.classList.remove('tts-reading'));
@@ -984,8 +1120,8 @@ function buildTheoryReadQueue(){
 }
 function theoryReadNext(){
   if(!theoryReadQueue.length || theoryReadIndex>=theoryReadQueue.length){
-    setTheoryTrackText('이론 전체읽기가 끝났습니다.');
-    setTimeout(()=>clearTheoryTrack(),1200);
+    setTheoryTrackText('현재 챕터 읽기가 끝났습니다.');
+    handleTheoryReadFinished();
     return;
   }
   const item=theoryReadQueue[theoryReadIndex++];
@@ -995,15 +1131,17 @@ function theoryReadNext(){
     setTimeout(theoryReadNext,350);
   });
 }
-function theoryReadAll(){
+function theoryReadAll(manualStart=true){
   closeSettings();
   synth.cancel();
+  if(manualStart) theoryNextRemain=(theoryAutoMode==='next')?1:0;
   theoryReadQueue=buildTheoryReadQueue();
   theoryReadIndex=0;
   if(!theoryReadQueue.length){
     alert('읽을 이론 내용이 없습니다.');
     return;
   }
+  updateTheoryAutoStatus('이론 전체읽기를 시작합니다. '+theoryAutoModeLabel());
   setTheoryTrackText('이론 전체읽기를 시작합니다.');
   theoryReadNext();
 }
@@ -1156,6 +1294,7 @@ function setTH(v,b){th=v;document.querySelectorAll('#thRow .sb').forEach(x=>x.cl
 
 /* ── 음성 로드 ── */
 function loadV(){
+  loadTheoryAutoMode();
   let a=synth.getVoices();
   voices=a.filter(v=>v.lang.startsWith('ko'));
   if(!voices.length) voices=a.slice(0,6);
@@ -1253,7 +1392,20 @@ function togglePause(){
 
 /* ── TTS ── */
 /* ── 영문 → 한글 발음 변환 ── */
+
+/* ── v13 STS 계열 TTS 발음 보정 ── */
+function fixStsPronunciation(s){
+  return String(s)
+    .replace(/\bSTS[\s\-]*304\b/gi,'에스티에스 삼공사')
+    .replace(/\bSTS[\s\-]*316\b/gi,'에스티에스 삼일육')
+    .replace(/\bSUS[\s\-]*304\b/gi,'에스유에스 삼공사')
+    .replace(/\bSUS[\s\-]*316\b/gi,'에스유에스 삼일육')
+    .replace(/\bSTS\b/gi,'에스티에스')
+    .replace(/\bSUS\b/gi,'에스유에스');
+}
+
 function toKorean(txt){
+  txt=fixStsPronunciation(txt);
   /* TTS 전용 정규화.
      목표: 케이에스(KS)처럼 한글 발음과 영문 약어가 같이 있을 때 두 번 읽지 않게 한다. */
   const map = {
@@ -1361,7 +1513,7 @@ function spkOpts(opts,labels,cb){
   }
   go();
 }
-function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. 정답 안내는 정답은 4번입니다. 이렇게 읽습니다.');}
+function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. STS 304는 에스티에스 삼공사. STS 316은 에스티에스 삼일육으로 읽습니다.');}
 function tStop(){
   synth.cancel(); stopTH();
   if(nxTimer){clearTimeout(nxTimer);nxTimer=null;}

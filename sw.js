@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v11-theory-tts-auto-scroll';
+const CACHE_NAME = 'pipe-master-v13-tts-sts-304-316-pronunciation';
 const ASSETS = [
   './',
   './index.html',
