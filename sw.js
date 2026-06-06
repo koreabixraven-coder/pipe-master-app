@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v4-style-fixed-theory-tts';
+const CACHE_NAME = 'pipe-master-v5-home-settings-drive';
 const ASSETS = [
   '/',
   '/index.html',

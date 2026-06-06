@@ -40,6 +40,15 @@
   .hc-tag{font-size:10px;padding:3px 8px;border-radius:99px;border:0.5px solid #2A2A2A;color:#666;}
   .hc-tag.th{border-color:#1D9E75;color:#5DCAA5;}
   .hc-tag.qz{border-color:#378ADD;color:#85B7EB;}
+
+  /* ── 홈 빠른 실행 버튼 ── */
+  .home-quick-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:14px 0 4px;}
+  .home-quick-btn{min-height:40px;padding:9px 13px;border-radius:999px;border:0.5px solid #2A2A2A;background:#1A1A1A;color:#CCC;font-size:12px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .home-quick-btn:active{transform:scale(0.98);}
+  .home-quick-btn.settings{border-color:#1D9E75;color:#9FE1CB;background:#0A2E22;}
+  .home-quick-btn.drive{border-color:#378ADD;color:#85B7EB;background:#0C2D4A;}
+  .home-help{font-size:10px;color:#555;text-align:center;line-height:1.5;margin-top:8px;}
+
   .home-footer{text-align:center;padding-top:16px;border-top:0.5px solid #1E1E1E;}
   .home-footer p{font-size:10px;color:#333;line-height:1.8;}
 
@@ -326,6 +335,11 @@
       <div class="hl-name">RavenBix · 배관기능장</div>
       <div class="hl-sub">예상기출문제 TTS 수험앱</div>
       <div class="hl-badge">배관기능장 자격시험 대비</div>
+      <div class="home-quick-actions">
+        <button class="home-quick-btn settings" onclick="openQuizSettingsFromHome(event)">⚙ 설정</button>
+        <button class="home-quick-btn drive" onclick="openDriveFromHome(event)">🎧 이동 중 청취 모드</button>
+      </div>
+      <div class="home-help">설정과 이동 중 청취 모드는 문제 풀기 화면에서도 다시 사용할 수 있습니다.</div>
     </div>
     <div class="home-menu">
       <div class="home-card theory" onclick="goScreen('screenTheory')">
@@ -631,6 +645,28 @@ function goScreen(id){
   window.scrollTo(0,0);
   if(id==='screenTheory') buildTheorySubjects();
   if(id==='screenQuiz') init();
+}
+
+
+/* ── 홈 화면 빠른 실행 ── */
+function openQuizSettingsFromHome(e){
+  if(e){e.stopPropagation(); e.preventDefault();}
+  goScreen('screenQuiz');
+  setTimeout(()=>{
+    const p=document.getElementById('settingsPanel');
+    if(p && !p.classList.contains('show')) toggleSettings();
+    window.scrollTo(0,0);
+    setSt('설정 패널을 열었습니다.');
+  },80);
+}
+function openDriveFromHome(e){
+  if(e){e.stopPropagation(); e.preventDefault();}
+  goScreen('screenQuiz');
+  setTimeout(()=>{
+    if(!driveOn) toggleDrive();
+    window.scrollTo(0,0);
+    setSt('이동 중 청취 모드를 시작했습니다.');
+  },120);
 }
 
 /* ── 이론 과목 목록 ── */
