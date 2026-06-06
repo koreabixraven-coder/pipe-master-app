@@ -9,7 +9,6 @@
 <title>RavenBix · 배관기능장 예상기출문제</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<script src="/questions.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{background:#121212;color:#E0E0E0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
@@ -109,6 +108,56 @@
   .dot.ng{background:#E24B4A;}
   .dot.sk{background:#BA7517;}
   .status{text-align:center;font-size:11px;color:#1D9E75;min-height:16px;margin-bottom:10px;}
+
+  /* ── 실시간 점수바 ── */
+  .score-bar{display:flex;gap:8px;margin-bottom:12px;}
+  .sc{flex:1;background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:10px;padding:8px 10px;text-align:center;}
+  .sc .sn{font-size:20px;font-weight:600;}
+  .sc .sl{font-size:10px;color:#555;margin-top:2px;}
+  .sc.ok .sn{color:#1D9E75;}
+  .sc.ng .sn{color:#E24B4A;}
+  .sc.rt .sn{color:#9FE1CB;}
+
+  /* ── 결과 화면 ── */
+  .result-screen{display:none;background:#121212;padding:16px;}
+  .result-screen.show{display:block;}
+  .result-circle{width:110px;height:110px;border-radius:50%;border:3px solid #1D9E75;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 16px;}
+  .result-circle .pct{font-size:28px;font-weight:700;color:#1D9E75;}
+  .result-circle .pct.fail{color:#E24B4A;border-color:#E24B4A;}
+  .result-circle .judge{font-size:11px;color:#5DCAA5;margin-top:2px;}
+  .result-title{font-size:16px;font-weight:600;text-align:center;margin-bottom:4px;color:#E0E0E0;}
+  .result-sub{font-size:12px;color:#555;text-align:center;margin-bottom:16px;}
+  .result-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;}
+  .rs{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:10px;padding:10px;text-align:center;}
+  .rs .rn{font-size:18px;font-weight:600;}
+  .rs .rl{font-size:10px;color:#555;margin-top:2px;}
+  .rs.ok .rn{color:#1D9E75;}
+  .rs.ng .rn{color:#E24B4A;}
+  .rs.sk .rn{color:#BA7517;}
+
+  /* ── 오답 모아보기 ── */
+  .wrong-list{background:#1A1A1A;border-radius:12px;padding:12px;margin-bottom:12px;}
+  .wrong-title{font-size:12px;font-weight:500;color:#E24B4A;margin-bottom:10px;display:flex;align-items:center;gap:5px;}
+  .wrong-item{padding:10px;border:0.5px solid #2D1010;border-radius:8px;background:#1E0A0A;margin-bottom:7px;cursor:pointer;}
+  .wrong-item:last-child{margin-bottom:0;}
+  .wrong-item .wi-num{font-size:10px;color:#E24B4A;margin-bottom:3px;}
+  .wrong-item .wi-q{font-size:12px;color:#CCC;line-height:1.5;}
+  .wrong-item .wi-ans{font-size:11px;color:#5DCAA5;margin-top:4px;}
+
+  /* ── 단계별 성적 ── */
+  .hist-panel{background:#1A1A1A;border-radius:12px;padding:12px;margin-bottom:12px;}
+  .hist-title{font-size:12px;font-weight:500;color:#888;margin-bottom:10px;}
+  .hist-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .hist-lv{font-size:11px;color:#CCC;width:60px;flex-shrink:0;}
+  .hist-bar-bg{flex:1;height:6px;background:#222;border-radius:99px;overflow:hidden;}
+  .hist-bar-fill{height:100%;background:#1D9E75;border-radius:99px;transition:width 0.5s;}
+  .hist-bar-fill.fail{background:#E24B4A;}
+  .hist-pct{font-size:11px;color:#888;width:36px;text-align:right;}
+
+  .result-btns{display:flex;gap:7px;margin-bottom:12px;}
+  .rb{flex:1;padding:11px;font-size:13px;font-weight:500;border-radius:10px;cursor:pointer;border:0.5px solid #2A2A2A;background:#1A1A1A;color:#CCC;}
+  .rb.p{background:#1D9E75;border-color:#1D9E75;color:#fff;}
+  .rb.r{background:#2D1010;border-color:#E24B4A;color:#E24B4A;}
 
   /* ── 이동모드 시작 버튼 ── */
   .drive-start-btn{width:100%;padding:13px;font-size:13px;font-weight:500;border-radius:12px;border:0.5px solid #1D9E75;background:#0A2E22;color:#9FE1CB;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}
@@ -315,7 +364,39 @@
   <!-- 단계 선택 -->
   <div class="level-bar" id="levelBar"></div>
 
-  <!-- 진행 점 & 상태 -->
+  <!-- 실시간 점수바 -->
+  <div class="score-bar" id="scoreBar">
+    <div class="sc ok"><div class="sn" id="scOk">0</div><div class="sl">정답</div></div>
+    <div class="sc ng"><div class="sn" id="scNg">0</div><div class="sl">오답</div></div>
+    <div class="sc rt"><div class="sn" id="scRt">0%</div><div class="sl">정답률</div></div>
+  </div>
+
+  <!-- 결과 화면 -->
+  <div class="result-screen" id="resultScreen">
+    <div class="result-circle" id="resultCircle">
+      <div class="pct" id="resultPct">0%</div>
+      <div class="judge" id="resultJudge">-</div>
+    </div>
+    <div class="result-title" id="resultTitle">결과</div>
+    <div class="result-sub" id="resultSub"></div>
+    <div class="result-stats">
+      <div class="rs ok"><div class="rn" id="rOk">0</div><div class="rl">정답</div></div>
+      <div class="rs ng"><div class="rn" id="rNg">0</div><div class="rl">오답</div></div>
+      <div class="rs sk"><div class="rn" id="rSk">0</div><div class="rl">미응답</div></div>
+    </div>
+    <div class="hist-panel" id="histPanel">
+      <div class="hist-title">단계별 성적</div>
+      <div id="histList"></div>
+    </div>
+    <div class="wrong-list" id="wrongList" style="display:none;">
+      <div class="wrong-title">❌ 오답 목록 (탭하면 해설 보기)</div>
+      <div id="wrongItems"></div>
+    </div>
+    <div class="result-btns">
+      <button class="rb r" onclick="retryWrong()">오답 다시풀기</button>
+      <button class="rb p" onclick="restartQuiz()">처음부터</button>
+    </div>
+  </div>
   <div class="dots" id="dots"></div>
   <div class="status" id="status"></div>
 
@@ -363,6 +444,24 @@
    단계: '초급1','초급2','초급3','초급심화','중급','고급','심화'
    ════════════════════════════════ */
 /* DB는 questions.js 에서 로드 */
+const DB = {
+  '초급1': [
+    {cat:"배관재료",q:"배관용 탄소강 강관의 KS 기호로 올바른 것은?",opts:["SPPH","SPP","STS","STPG"],ans:1,ex:"SPP는 배관용 탄소강 강관의 KS 기호입니다. 사용압력이 낮은 증기·물·기름·가스·공기 배관에 사용됩니다. SPPH는 고압배관용, STS는 스테인리스강관, STPG는 압력배관용 탄소강 강관입니다."},
+    {cat:"배관시공",q:"동관의 납땜 접합 시 플럭스를 사용하는 주된 이유는?",opts:["관의 강도를 높이기 위해","부식을 방지하기 위해","산화막 제거 및 납의 흐름성을 좋게 하기 위해","이음부의 기밀을 높이기 위해"],ans:2,ex:"플럭스는 금속 표면의 산화막을 제거하고 용가재인 납의 흐름성을 향상시켜 견고한 접합이 이루어지도록 돕는 화학 보조제입니다."},
+    {cat:"배관재료",q:"스테인리스강관의 KS 기호로 옳은 것은?",opts:["SPP","SPPH","STS","STPG"],ans:2,ex:"STS는 스테인리스강관의 KS 기호입니다. 내식성이 우수하여 화학공업·식품공업·의약품 배관 등에 사용됩니다."},
+    {cat:"유체역학",q:"관내 유체의 레이놀즈수(Re)가 4000 이상일 때 유동 상태는?",opts:["층류","천이 영역","난류","정류"],ans:2,ex:"레이놀즈수 Re < 2100: 층류, 2100 < Re < 4000: 천이 영역, Re > 4000: 완전 난류입니다."},
+    {cat:"밸브·기기",q:"게이트 밸브의 특징으로 틀린 것은?",opts:["유체의 흐름을 완전히 차단하거나 완전히 열 때 주로 사용","유량 조절에 적합하다","전개 시 압력 손실이 매우 적다","슬루스 밸브라고도 한다"],ans:1,ex:"게이트 밸브는 완전 개폐용으로 사용되며 유량 조절에는 부적합합니다. 유량 조절은 글로브 밸브가 적합합니다."}
+  ],
+  '초급2': [
+    {cat:"배관설계",q:"배관 시스템에서 워터해머 현상을 방지하는 방법으로 가장 적절한 것은?",opts:["관 내 유속을 높인다","밸브를 급속히 개폐한다","에어챔버 또는 서지탱크를 설치한다","관경을 줄인다"],ans:2,ex:"워터해머(수격 현상)는 밸브의 급격한 개폐 시 유체의 운동에너지가 압력에너지로 변환되어 충격이 발생하는 현상입니다. 에어챔버, 서지탱크, 완충밸브 설치로 방지합니다."},
+    {cat:"배관시공",q:"나사 배관 접합에서 테프론 테이프를 사용하는 주된 목적은?",opts:["나사부 강도 보강","나사부 기밀 유지 및 풀림 방지","부식 방지","미관을 위해"],ans:1,ex:"테프론(PTFE) 테이프는 나사산에 감아 기밀성을 높이고, 조립 시 금속 마찰을 줄이며, 재분해 시 분리를 용이하게 합니다."}
+  ],
+  '초급3': [],
+  '초급심화': [],
+  '중급': [],
+  '고급': [],
+  '심화': []
+};
 
 const LEVELS = Object.keys(DB);
 let curLevel = '초급1';
@@ -372,6 +471,112 @@ let synth=window.speechSynthesis, voices=[], selV=null;
 let rate=0.9, pitch=1.0, ns=0, pb=0, th=5;
 let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null;
 const NL=[['1번','2번','3번','4번'],['1.','2.','3.','4.'],['첫번째','두번째','세번째','네번째']];
+
+/* ── 채점 데이터 ── */
+let scoreData = {}; // { '초급1': { ok:0, ng:0, sk:0, wrong:[] } }
+let sessionOk=0, sessionNg=0, wrongQs=[];
+let retryMode=false;
+
+function initScore(){
+  sessionOk=0; sessionNg=0; wrongQs=[];
+  if(!scoreData[curLevel]) scoreData[curLevel]={ok:0,ng:0,sk:0,wrong:[]};
+  updateScoreBar();
+}
+function updateScoreBar(){
+  const total=sessionOk+sessionNg;
+  const pct=total>0?Math.round(sessionOk/total*100):0;
+  document.getElementById('scOk').textContent=sessionOk;
+  document.getElementById('scNg').textContent=sessionNg;
+  document.getElementById('scRt').textContent=pct+'%';
+}
+function recordAnswer(isOk, q){
+  if(isOk){sessionOk++;}
+  else{sessionNg++;wrongQs.push(q);}
+  if(!scoreData[curLevel]) scoreData[curLevel]={ok:0,ng:0,sk:0,wrong:[]};
+  if(isOk) scoreData[curLevel].ok++;
+  else{scoreData[curLevel].ng++;scoreData[curLevel].wrong.push(q);}
+  updateScoreBar();
+}
+function showResult(){
+  const total=Qs.length;
+  const sk=total-sessionOk-sessionNg;
+  if(scoreData[curLevel]) scoreData[curLevel].sk=sk;
+  const pct=total>0?Math.round(sessionOk/total*100):0;
+  const pass=pct>=60;
+
+  document.getElementById('quizArea').style.display='none';
+  document.getElementById('scoreBar').style.display='none';
+  document.getElementById('resultScreen').classList.add('show');
+
+  const circle=document.getElementById('resultCircle');
+  circle.style.borderColor=pass?'#1D9E75':'#E24B4A';
+  document.getElementById('resultPct').textContent=pct+'%';
+  document.getElementById('resultPct').style.color=pass?'#1D9E75':'#E24B4A';
+  document.getElementById('resultJudge').textContent=pass?'합격권':'불합격';
+  document.getElementById('resultTitle').textContent=pass?'축하합니다! 합격권입니다 🎉':'조금 더 노력하세요!';
+  document.getElementById('resultSub').textContent=curLevel+' · '+total+'문제 중 '+sessionOk+'문제 정답';
+  document.getElementById('rOk').textContent=sessionOk;
+  document.getElementById('rNg').textContent=sessionNg;
+  document.getElementById('rSk').textContent=sk;
+
+  /* 단계별 성적 */
+  const hl=document.getElementById('histList'); hl.innerHTML='';
+  LEVELS.forEach(lv=>{
+    const d=scoreData[lv];
+    if(!d) return;
+    const t=d.ok+d.ng+d.sk;
+    if(t===0) return;
+    const p=Math.round(d.ok/t*100);
+    hl.innerHTML+=`<div class="hist-row">
+      <span class="hist-lv">${lv}</span>
+      <div class="hist-bar-bg"><div class="hist-bar-fill${p<60?' fail':''}" style="width:${p}%"></div></div>
+      <span class="hist-pct">${p}%</span>
+    </div>`;
+  });
+  document.getElementById('histPanel').style.display=hl.innerHTML?'block':'none';
+
+  /* 오답 목록 */
+  const wl=document.getElementById('wrongItems'); wl.innerHTML='';
+  if(wrongQs.length>0){
+    document.getElementById('wrongList').style.display='block';
+    wrongQs.forEach((q,i)=>{
+      const div=document.createElement('div');
+      div.className='wrong-item';
+      div.innerHTML=`<div class="wi-num">오답 ${i+1} · ${q.cat}</div>
+        <div class="wi-q">${q.q}</div>
+        <div class="wi-ans">✅ 정답: ${NL[ns][q.ans]} ${q.opts[q.ans]}</div>`;
+      div.onclick=()=>{
+        div.innerHTML+=`<div style="font-size:11px;color:#5DCAA5;margin-top:6px;line-height:1.6;">💡 ${q.ex}</div>`;
+        div.onclick=null;
+      };
+      wl.appendChild(div);
+    });
+  }
+
+  /* TTS 결과 낭독 */
+  spk(pct+'점입니다. '+(pass?'합격권입니다. 수고하셨습니다.':'60점 미만입니다. 조금 더 노력하세요.'),()=>{});
+}
+
+function restartQuiz(){
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('quizArea').style.display='block';
+  document.getElementById('scoreBar').style.display='flex';
+  document.getElementById('wrongList').style.display='none';
+  retryMode=false;
+  initScore(); switchLevel(curLevel);
+}
+function retryWrong(){
+  if(wrongQs.length===0){setSt('오답이 없습니다!');return;}
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('quizArea').style.display='block';
+  document.getElementById('scoreBar').style.display='flex';
+  retryMode=true;
+  Qs=[...wrongQs];
+  sessionOk=0; sessionNg=0; wrongQs=[];
+  cur=0; answered=false;
+  updateScoreBar(); buildDots(); renderQ();
+  setSt('오답 '+Qs.length+'문제 다시풀기');
+}
 
 /* ── 단계 선택 ── */
 function buildLevelBar(){
@@ -387,7 +592,12 @@ function buildLevelBar(){
 }
 function switchLevel(lv){
   curLevel=lv; Qs=DB[lv]; cur=0; answered=false;
+  retryMode=false;
+  initScore();
   buildLevelBar(); buildDots(); renderQ();
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('quizArea').style.display='block';
+  document.getElementById('scoreBar').style.display='flex';
 }
 
 /* ── 설정 ── */
@@ -486,13 +696,57 @@ function togglePause(){
 }
 
 /* ── TTS ── */
+/* ── 영문 → 한글 발음 변환 ── */
+function toKorean(txt){
+  /* 배관 관련 주요 약어 변환 */
+  const map = {
+    'SPPH':'에스피피에이치','SPP':'에스피피','STS':'에스티에스',
+    'STPG':'에스티피지','STPA':'에스티피에이','SPPG':'에스피피지',
+    'KS':'케이에스','JIS':'제이아이에스','ASTM':'에이에스티엠',
+    'ISO':'아이에스오','PVC':'피브이씨','PE':'피이','PP':'피피',
+    'PTFE':'피티에프이','TIG':'티아이지','MIG':'엠아이지',
+    'TTS':'티티에스','API':'에이피아이','ANSI':'에이엔에스아이',
+    'ASME':'에이에스엠이','DIN':'디아이엔','DN':'디엔',
+    'NPT':'엔피티','PT':'피티','PF':'피에프',
+    'GPM':'지피엠','LPM':'엘피엠','RPM':'알피엠',
+    'MPa':'메가파스칼','kPa':'킬로파스칼','Pa':'파스칼',
+    'kW':'킬로와트','kWh':'킬로와트시',
+    'pH':'피에이치','CO2':'이산화탄소','H2O':'물',
+    'A':'에이','B':'비','C':'씨','D':'디',
+    'No':'번호','no':'번호'
+  };
+  let result = txt;
+  /* 긴 것부터 먼저 치환 (SPP보다 SPPH를 먼저) */
+  Object.keys(map).sort((a,b)=>b.length-a.length).forEach(k=>{
+    const re = new RegExp('\\b'+k+'\\b','g');
+    result = result.replace(re, map[k]);
+  });
+  /* 나머지 연속 대문자(2자 이상) → 알파벳 하나씩 읽기 */
+  result = result.replace(/\b([A-Z]{2,})\b/g, m=>{
+    const alphaMap={'A':'에이','B':'비','C':'씨','D':'디','E':'이','F':'에프',
+      'G':'지','H':'에이치','I':'아이','J':'제이','K':'케이','L':'엘',
+      'M':'엠','N':'엔','O':'오','P':'피','Q':'큐','R':'알','S':'에스',
+      'T':'티','U':'유','V':'브이','W':'더블유','X':'엑스','Y':'와이','Z':'지'};
+    return m.split('').map(c=>alphaMap[c]||c).join('');
+  });
+  return result;
+}
+
 function spk(txt,cb){
   synth.cancel();
-  const u=new SpeechSynthesisUtterance(txt);
+  const u=new SpeechSynthesisUtterance(toKorean(txt));
   u.lang='ko-KR'; if(selV) u.voice=selV; u.rate=rate; u.pitch=pitch;
   u.onend=()=>{clrB(); if(!paused&&cb) cb();};
   synth.speak(u);
   if(locked) document.getElementById('lockNow').textContent=txt.length>40?txt.substring(0,40)+'...':txt;
+}
+/* 정답 낭독: "정답은 N번" → 0.5초 쉬고 → 해설 읽기 */
+function spkAns(L,q,cb){
+  spk('정답은 '+L[q.ans]+'번.',()=>{
+    setTimeout(()=>{
+      spk('해설. '+q.ex, cb);
+    },500);
+  });
 }
 function spkOpts(opts,labels,cb){
   let i=0;
@@ -525,12 +779,12 @@ function mRead(t){
   else if(t==='ans'){
     if(!answered){setSt('⚠️ 먼저 답을 선택해주세요');return;}
     document.getElementById('bA').classList.add('on'); setSt('🔊 해설 읽는 중...');
-    spk('정답은 '+L[q.ans]+' '+q.opts[q.ans]+'입니다. 해설. '+q.ex,()=>setSt(''));
+    spkAns(L,q,()=>setSt(''));
   } else if(t==='all'){
     setSt('🔊 전체 읽는 중...');
     spk('문제. '+q.q,()=>{
       spkOpts(q.opts,L,()=>{
-        if(answered) spk('정답은 '+L[q.ans]+' '+q.opts[q.ans]+'입니다. 해설. '+q.ex,()=>setSt(''));
+        if(answered) spkAns(L,q,()=>setSt(''));
         else setSt('');
       });
     });
@@ -582,7 +836,7 @@ function autoReveal(){
   const ds=document.querySelectorAll('.dot');
   if(ds[cur]){ds[cur].classList.remove('active');ds[cur].classList.add('sk');}
   setSt('🔊 정답 및 해설 낭독 중...');
-  spk('정답은 '+L[q.ans]+' '+q.opts[q.ans]+'입니다. 해설. '+q.ex,()=>{
+  spkAns(L,q,()=>{
     if(!driveOn) return;
     if(cur<Qs.length-1){
       setSt('다음 문제로 이동합니다...');
@@ -604,23 +858,26 @@ function answer(idx){
     if(i===q.ans) b.classList.add('ok');
     else if(i===idx) b.classList.add('ng');
   });
-  const ok=idx===q.ans;
+  const isOk=idx===q.ans;
+  recordAnswer(isOk, q);
   const ex=document.getElementById('exBox');
-  ex.textContent=(ok?'✅ 정답!\n\n':'❌ 오답\n\n')+'💡 해설: '+q.ex;
+  ex.textContent=(isOk?'✅ 정답!\n\n':'❌ 오답\n\n')+'💡 해설: '+q.ex;
   ex.className='ex-box show';
-  document.getElementById('nxBtn').style.display=cur<Qs.length-1?'block':'none';
+  const isLast=cur>=Qs.length-1;
+  document.getElementById('nxBtn').style.display=isLast?'none':'block';
   const ds=document.querySelectorAll('.dot');
-  if(ds[cur]){ds[cur].classList.remove('active');ds[cur].classList.add(ok?'ok':'ng');}
+  if(ds[cur]){ds[cur].classList.remove('active');ds[cur].classList.add(isOk?'ok':'ng');}
   if(document.getElementById('autoEx').checked){
-    spk('정답은 '+L[q.ans]+' '+q.opts[q.ans]+'입니다. 해설. '+q.ex,()=>{
-      if(document.getElementById('autoNx').checked&&cur<Qs.length-1)
+    spkAns(L,q,()=>{
+      if(isLast){setTimeout(()=>showResult(),1000);}
+      else if(document.getElementById('autoNx').checked)
         nxTimer=setTimeout(()=>nextQ(),1500);
     });
   }
 }
 function nextQ(){
   cur++;
-  if(cur>=Qs.length){setSt('🎉 이 단계 완료!');return;}
+  if(cur>=Qs.length){showResult();return;}
   answered=false; renderQ(); buildDots();
 }
 
@@ -664,6 +921,7 @@ function init(){
   curLevel='초급1';
   Qs=DB[curLevel];
   cur=0; answered=false;
+  initScore();
   buildLevelBar();
   buildDots();
   renderQ();
