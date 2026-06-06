@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v13-tts-sts-304-316-pronunciation';
+const CACHE_NAME = 'pipe-master-v14-default-settings-theory-autoplay-fix';
 const ASSETS = [
   './',
   './index.html',

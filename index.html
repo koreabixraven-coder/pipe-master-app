@@ -784,7 +784,7 @@ let curLevel = '초급1';
 let Qs = DB[curLevel];
 let cur=0, answered=false, driveOn=false, paused=false, locked=false;
 let synth=window.speechSynthesis, voices=[], selV=null;
-let rate=0.9, pitch=1.0, ns=0, pb=0, th=5;
+let rate=1.1, pitch=1.0, ns=0, pb=0, th=5;
 let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null, resumeTask=null;
 const NL=[['1번','2번','3번','4번'],['1.','2.','3.','4.'],['첫번째','두번째','세번째','네번째']];
 
@@ -927,9 +927,14 @@ function theoryNavChapter(dir,autoRead=false){
   const s=THEORY[curSubject];
   const next=curChapterIdx+dir;
   if(next<0||next>=s.chapters.length) return false;
-  tStop();
+  if(autoRead){
+    synth.cancel();
+    clearTheoryTrack();
+  }else{
+    tStop();
+  }
   openChapter(next);
-  if(autoRead) setTimeout(()=>theoryReadAll(false),220);
+  if(autoRead) setTimeout(()=>theoryReadAll(false),320);
   return true;
 }
 function theoryFirstChapter(){
@@ -1012,57 +1017,64 @@ function getNextTheoryLocation(){
 }
 function openTheoryLocation(loc,autoRead){
   if(!loc) return false;
+  if(autoRead){
+    synth.cancel();
+    clearTheoryTrack();
+  }
   curSubject=loc.subject;
   curChapterIdx=loc.chapter;
   const s=THEORY[curSubject];
-  document.getElementById('chapterSubjectTitle').textContent=s.title;
+  const titleEl=document.getElementById('chapterSubjectTitle');
+  if(titleEl) titleEl.textContent=s.title;
   openChapter(curChapterIdx);
-  if(autoRead) setTimeout(()=>theoryReadAll(false),260);
+  if(autoRead) setTimeout(()=>theoryReadAll(false),360);
   return true;
 }
 function handleTheoryReadFinished(){
-  if(theoryAutoMode==='once'){
+  const mode=theoryAutoMode || 'once';
+  if(mode==='once'){
     updateTheoryAutoStatus('현재 챕터 읽기가 끝났습니다.');
     setTimeout(()=>clearTheoryTrack(),1200);
     return;
   }
-  if(theoryAutoMode==='next'){
-    if(theoryNextRemain<=0){
-      updateTheoryAutoStatus('다음 챕터 1회 자동재생이 끝났습니다.');
-      setTimeout(()=>clearTheoryTrack(),1200);
-      return;
+
+  if(mode==='next'){
+    if(theoryNextRemain>0){
+      const loc=getNextTheoryLocation();
+      if(loc){
+        theoryNextRemain--;
+        updateTheoryAutoStatus('다음 챕터로 자동 이동합니다.');
+        setTimeout(()=>openTheoryLocation(loc,true),900);
+        return;
+      }
     }
-    const loc=getNextTheoryLocation();
-    if(!loc){
-      updateTheoryAutoStatus('다음 챕터가 없습니다.');
-      setTimeout(()=>clearTheoryTrack(),1200);
-      return;
-    }
-    theoryNextRemain--;
-    updateTheoryAutoStatus('다음 챕터로 자동 이동합니다.');
-    setTimeout(()=>openTheoryLocation(loc,true),800);
+    updateTheoryAutoStatus('다음 챕터 1회 자동재생이 끝났습니다.');
+    setTimeout(()=>clearTheoryTrack(),1200);
     return;
   }
-  if(theoryAutoMode==='subject'){
+
+  if(mode==='subject'){
     const s=THEORY[curSubject];
-    if(curChapterIdx<s.chapters.length-1){
+    if(s && curChapterIdx<s.chapters.length-1){
       updateTheoryAutoStatus('다음 챕터로 자동 이동합니다.');
-      setTimeout(()=>openTheoryLocation({subject:curSubject,chapter:curChapterIdx+1},true),800);
+      setTimeout(()=>openTheoryLocation({subject:curSubject,chapter:curChapterIdx+1},true),900);
     }else{
       updateTheoryAutoStatus('현재 과목 전체 읽기가 끝났습니다.');
       setTimeout(()=>clearTheoryTrack(),1200);
     }
     return;
   }
-  if(theoryAutoMode==='all'){
+
+  if(mode==='all'){
     const loc=getNextTheoryLocation();
     if(loc){
       updateTheoryAutoStatus('다음 이론으로 자동 이동합니다.');
-      setTimeout(()=>openTheoryLocation(loc,true),800);
+      setTimeout(()=>openTheoryLocation(loc,true),900);
     }else{
       updateTheoryAutoStatus('전체 이론 읽기가 끝났습니다.');
       setTimeout(()=>clearTheoryTrack(),1200);
     }
+    return;
   }
 }
 
@@ -1105,7 +1117,8 @@ function focusTheoryTarget(el,label){
   }
 }
 function buildTheoryReadQueue(){
-  const targets=getTheoryTrackTargets();
+  let targets=getTheoryTrackTargets();
+  if(!targets.length){annotateTheoryCards(); targets=getTheoryTrackTargets();}
   const q=[];
   targets.forEach((el,idx)=>{
     const title=(el.querySelector('.sec-title')?.textContent || el.querySelector('h3')?.textContent || ('이론 '+(idx+1))).trim();
@@ -1293,8 +1306,25 @@ function setPB(v,b){pb=v;document.querySelectorAll('#pbRow .sb').forEach(x=>x.cl
 function setTH(v,b){th=v;document.querySelectorAll('#thRow .sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
 
 /* ── 음성 로드 ── */
+
+function preferKoreanOnlineVoice(){
+  if(!voices || !voices.length) return;
+  const saved=localStorage.getItem('voiceName');
+  if(saved) return;
+  const pick = voices.find(v => (v.lang||'').toLowerCase().startsWith('ko') && /한국의|online|온라인|natural|google|microsoft/i.test((v.name||'')+' '+(v.voiceURI||'')))
+            || voices.find(v => (v.lang||'').toLowerCase().startsWith('ko'))
+            || voices[0];
+  if(pick){
+    selV=pick;
+    localStorage.setItem('voiceName', pick.name);
+  }
+}
+
 function loadV(){
+  applyDefaultVoiceSettingsIfFirstRun();
+  preferKoreanOnlineVoice();
   loadTheoryAutoMode();
+  ensureDefaultTogglesVisual();
   let a=synth.getVoices();
   voices=a.filter(v=>v.lang.startsWith('ko'));
   if(!voices.length) voices=a.slice(0,6);
@@ -1392,6 +1422,30 @@ function togglePause(){
 
 /* ── TTS ── */
 /* ── 영문 → 한글 발음 변환 ── */
+
+
+
+function ensureDefaultTogglesVisual(){
+  const ae=document.getElementById('autoEx');
+  const an=document.getElementById('autoNx');
+  if(ae && localStorage.getItem('autoEx')===null) ae.checked=true;
+  if(an && localStorage.getItem('autoNx')===null) an.checked=true;
+}
+
+/* ── v14 사용자 기본 설정값 ── */
+function applyDefaultVoiceSettingsIfFirstRun(){
+  const flag='pipe_v14_default_settings_applied';
+  if(localStorage.getItem(flag)==='yes') return;
+  localStorage.setItem('rate','1.1');
+  localStorage.setItem('pitch','1.0');
+  localStorage.setItem('ns','koNum');
+  localStorage.setItem('pb','0.5');
+  localStorage.setItem('th','3');
+  localStorage.setItem('autoEx','true');
+  localStorage.setItem('autoNx','true');
+  localStorage.setItem('pipe_theory_auto_mode','next');
+  localStorage.setItem(flag,'yes');
+}
 
 /* ── v13 STS 계열 TTS 발음 보정 ── */
 function fixStsPronunciation(s){
@@ -1513,7 +1567,7 @@ function spkOpts(opts,labels,cb){
   }
   go();
 }
-function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. STS 304는 에스티에스 삼공사. STS 316은 에스티에스 삼일육으로 읽습니다.');}
+function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. 현재 기본 설정은 속도 1점1. 음높이 1점0. 보기 읽기 방식 1번 2번. 보기 사이 쉬는 시간 0점5초. 생각할 시간 3초입니다. STS 304는 에스티에스 삼공사. STS 316은 에스티에스 삼일육으로 읽습니다.');}
 function tStop(){
   synth.cancel(); stopTH();
   if(nxTimer){clearTimeout(nxTimer);nxTimer=null;}
