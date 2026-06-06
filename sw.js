@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v7-tts-answer-playback-ui-check';
+const CACHE_NAME = 'pipe-master-v8-nav-settings-theory-autoread';
 const ASSETS = [
   './',
   './index.html',
