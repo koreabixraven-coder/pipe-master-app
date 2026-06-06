@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v9-responsive-desktop-mobile';
+const CACHE_NAME = 'pipe-master-v11-theory-tts-auto-scroll';
 const ASSETS = [
   './',
   './index.html',
