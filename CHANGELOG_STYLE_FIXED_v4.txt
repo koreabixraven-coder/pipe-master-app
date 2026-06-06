@@ -1,0 +1,7 @@
+배관기능장 앱 v4 STYLE_FIXED 점검 보고
+1. 원인: 이전 index(36).html은 </style> 태그가 중간에 먼저 닫혀 이후 CSS가 화면에 텍스트로 노출될 수 있음.
+2. 조치: v3/v4 index.html은 <style> 1개와 </style> 1개만 존재하도록 정리됨.
+3. 검사: style open=1, style close=1, body before raw css length=9
+4. 기존 샘플 DB 제거 확인: True
+5. questions.js는 외부 파일로 로드되며 초급1~심화심화 16개 목차 전체 문제를 사용함.
+6. sw.js 캐시명을 pipe-master-v4-style-fixed로 변경해 모바일 이전 캐시 잔류 가능성을 줄임.
