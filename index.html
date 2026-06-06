@@ -670,9 +670,17 @@ function buildDots(){
 /* ── 초기화 ── */
 if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
 setTimeout(loadV,300);
-buildLevelBar();
-buildDots();
-renderQ();
+
+/* 앱 시작 시 첫 단계 데이터 확실히 로드 */
+function init(){
+  curLevel='초급1';
+  Qs=DB[curLevel];
+  cur=0; answered=false;
+  buildLevelBar();
+  buildDots();
+  renderQ();
+}
+init();
 </script>
 </body>
 </html>
