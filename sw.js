@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v20-home-count-confirm';
+const CACHE_NAME = 'pipe-master-v22-quiz-toc-ui-only';
 const ASSETS = [
   './',
   './index.html',

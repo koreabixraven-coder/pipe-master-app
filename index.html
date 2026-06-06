@@ -253,6 +253,27 @@
   .drive-start-btn{width:100%;padding:13px;font-size:13px;font-weight:500;border-radius:12px;border:0.5px solid #1D9E75;background:#0A2E22;color:#9FE1CB;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}
   .drive-start-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 
+
+  /* ── v22 문제풀이 목차 UI 정리. 로직 변경 없음 ── */
+  .quiz-toc-wrap{margin:12px 0 14px;}
+  .quiz-toc-head{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:0 0 8px;}
+  .quiz-toc-title{font-size:13px;font-weight:700;color:#9FE1CB;}
+  .quiz-toc-sub{font-size:10px;color:#777;text-align:right;}
+  .quiz-toc-grid{display:grid;grid-template-columns:1fr;gap:8px;}
+  .quiz-toc-group{border:0.5px solid #2A2A2A;background:#141414;border-radius:14px;padding:10px;}
+  .quiz-toc-group.on{border-color:#1D9E75;background:#0A2119;}
+  .quiz-toc-ghead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .quiz-toc-gname{font-size:12px;font-weight:700;color:#E0E0E0;}
+  .quiz-toc-gdesc{font-size:10px;color:#777;}
+  .quiz-toc-count{font-size:10px;color:#9FE1CB;border:0.5px solid #1D9E75;border-radius:99px;padding:3px 7px;background:#0A2E22;}
+  .quiz-toc-btns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;}
+  .lv-btn{border-radius:10px;white-space:normal;line-height:1.25;min-height:42px;padding:7px 6px;}
+  .lv-btn .lv-main{display:block;font-size:11px;font-weight:700;}
+  .lv-btn .lv-sub{display:block;font-size:9px;color:#777;margin-top:2px;}
+  .lv-btn.on .lv-sub{color:#DFF8EF;}
+  @media(max-width:520px){.quiz-toc-btns{grid-template-columns:repeat(2,1fr);} .quiz-toc-head{align-items:flex-start;flex-direction:column;} .quiz-toc-sub{text-align:left;}}
+  @media(min-width:900px){.quiz-toc-grid{grid-template-columns:repeat(2,1fr);}}
+
   /* ── 단계 선택 ── */
   .level-bar{display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;}
   .level-bar::-webkit-scrollbar{display:none;}
@@ -443,12 +464,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v20</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v22</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v20. 홈 화면에서 문제 1600개와 기본 이론 240항목을 자동 확인합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v22. 문제풀이 목차를 학습 흐름별 카드형으로 정리했습니다. 문제 로직은 그대로입니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -497,11 +518,11 @@
     </div>
     <div class="seg-row-h" id="theoryAutoRow">
       <button class="sb" data-theory-auto="once" onclick="setTheoryAutoMode('once',this)">현재 챕터만</button>
-      <button class="sb on" data-theory-auto="next" onclick="setTheoryAutoMode('next',this)">다음 챕터 1회</button>
-      <button class="sb" data-theory-auto="subject" onclick="setTheoryAutoMode('subject',this)">과목 전체</button>
+      <button class="sb" data-theory-auto="next" onclick="setTheoryAutoMode('next',this)">다음 챕터 1회</button>
+      <button class="sb on" data-theory-auto="subject" onclick="setTheoryAutoMode('subject',this)">과목 전체</button>
       <button class="sb" data-theory-auto="all" onclick="setTheoryAutoMode('all',this)">전체 이론</button>
     </div>
-    <p class="s-hint">이론 전체읽기에서 현재 챕터가 끝난 뒤 어디까지 이어 들을지 정합니다.</p>
+    <p class="s-hint">이론 전체읽기에서 현재 챕터가 끝난 뒤 어디까지 이어 들을지 정합니다. 과목 전체는 초급. 중급. 고급 순서로 재생합니다.</p>
 
 <div class="s-title">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -593,7 +614,7 @@
             <div class="hc-title">문제 풀기</div>
           </div>
         </div>
-        <div class="hc-sub">초급1부터 심화심화까지 16개 목차. 각 100문제씩 TTS와 함께 풀어봅니다.<div class="count-badge-row"><span class="count-badge blue" id="homeQuestionCount">문제 확인 중</span><span class="count-badge blue" id="homeTocCount">목차 확인 중</span></div><div class="count-note">questions.js의 실제 문제 수를 앱에서 자동 계산해 표시합니다.</div></div>
+        <div class="hc-sub">초급. 중급. 고급. 심화 4개 묶음으로 정리한 16개 목차. 각 100문제씩 TTS와 함께 풀어봅니다.<div class="count-badge-row"><span class="count-badge blue" id="homeQuestionCount">문제 확인 중</span><span class="count-badge blue" id="homeTocCount">목차 확인 중</span></div><div class="count-note">questions.js의 실제 문제 수를 앱에서 자동 계산해 표시합니다.</div></div>
         <div class="hc-tags">
           <span class="hc-tag qz">초급 1~3단계</span>
           <span class="hc-tag qz">초급 심화</span>
@@ -1078,7 +1099,7 @@ function loadTheoryAutoMode(){
   });
 }
 function theoryAutoModeLabel(){
-  return {once:'현재 챕터만',next:'다음 챕터 1회',subject:'현재 과목 전체',all:'전체 이론'}[theoryAutoMode]||'현재 챕터만';
+  return {once:'현재 챕터만',next:'다음 챕터 1회',subject:'과목 전체. 초급 중급 고급',all:'전체 이론'}[theoryAutoMode]||'과목 전체. 초급 중급 고급';
 }
 function updateTheoryAutoStatus(msg){
   const el=document.getElementById('theoryAutoStatus');
@@ -1198,18 +1219,67 @@ function focusTheoryTarget(el,label){
     },80);
   }
 }
+
+/* ── v21 이론 TTS 반복 제거·상세설명 중심 낭독 ── */
+function getCurrentTheoryChapter(){
+  try{
+    const s=THEORY[curSubject];
+    return s && s.chapters ? s.chapters[curChapterIdx] : null;
+  }catch(e){ return null; }
+}
+function cleanTheorySpeechText(s){
+  return String(s||'')
+    .replace(/\s+/g,' ')
+    .replace(/핵심개념\s*/g,'')
+    .replace(/상세설명\s*/g,'')
+    .replace(/시험포인트\s*/g,'')
+    .trim();
+}
+function makeTheoryChapterIntro(){
+  const s=THEORY[curSubject];
+  const ch=getCurrentTheoryChapter();
+  if(!s || !ch) return '';
+  let level=(ch.title||'').replace(/\s*10항목\s*/g,'').trim();
+  return s.title+'. '+level+'을 시작합니다. 지금부터 핵심개념 반복 대신 상세설명 중심으로 읽겠습니다. 시험포인트는 공통 주의사항만 한 번 안내합니다.';
+}
+function makeTheoryCommonExamPoint(){
+  const ch=getCurrentTheoryChapter();
+  const title=(ch&&ch.title)||'';
+  if(title.includes('초급')) return '공통 시험포인트. 초급은 용어의 뜻과 기본 기능을 먼저 맞히는 단계입니다.';
+  if(title.includes('중급')) return '공통 시험포인트. 중급은 원인과 결과. 적용 위치를 함께 구분하는 단계입니다.';
+  if(title.includes('고급')) return '공통 시험포인트. 고급은 현장 상황에서 가장 안전하고 적절한 대책을 고르는 단계입니다.';
+  return '공통 시험포인트. 비슷한 용어와 기능을 서로 바꾸어 내는 오답에 주의합니다.';
+}
+function makeTheorySectionSpeech(el, idx){
+  const title=(el.querySelector('.sec-title')?.textContent || ('항목 '+(idx+1))).trim();
+  const detail=(el.querySelector('.sec-block .sec-label')?.textContent==='상세설명')
+    ? (el.querySelector('.sec-block .sec-content')?.textContent || '')
+    : (Array.from(el.querySelectorAll('.sec-block')).find(b=>(b.querySelector('.sec-label')?.textContent||'').includes('상세설명'))?.querySelector('.sec-content')?.textContent || '');
+  const memory=(el.querySelector('.sec-memory')?.textContent || '').replace(/^암기문장\.\s*/,'').trim();
+
+  let text = title+'. ';
+  if(detail) text += detail+'. ';
+  else text += el.innerText.replace(/\s+/g,' ')+'. ';
+  if(memory) text += '암기문장. '+memory;
+  return cleanTheorySpeechText(text);
+}
+
 function buildTheoryReadQueue(){
   let targets=getTheoryTrackTargets();
   if(!targets.length){annotateTheoryCards(); targets=getTheoryTrackTargets();}
   const q=[];
+  const intro=makeTheoryChapterIntro();
+  if(intro){
+    q.push({el:targets[0]||document.getElementById('theoryContentArea'), title:'챕터 시작 안내', text:intro});
+  }
+  const commonPoint=makeTheoryCommonExamPoint();
+  if(commonPoint){
+    q.push({el:targets[0]||document.getElementById('theoryContentArea'), title:'공통 시험포인트', text:commonPoint});
+  }
   targets.forEach((el,idx)=>{
-    const title=(el.querySelector('.sec-title')?.textContent || el.querySelector('h3')?.textContent || ('이론 '+(idx+1))).trim();
-    const level=(el.querySelector('.level-badge')?.textContent || el.querySelector('.level')?.textContent || '').trim();
-    const tts=el.getAttribute('data-tts') || '';
-    const text=tts || el.innerText.replace(/\s+/g,' ').trim();
-    if(text){
-      q.push({el,title,text:(level?level+'. ':'')+text});
-    }
+    const title=(el.querySelector('.sec-title')?.textContent || ('이론 '+(idx+1))).trim();
+    const text=makeTheorySectionSpeech(el,idx);
+    if(text) q.push({el,title,text});
   });
   return q;
 }
@@ -1350,13 +1420,90 @@ function retryWrong(){
 function buildLevelBar(){
   const bar=document.getElementById('levelBar');
   bar.innerHTML='';
-  LEVELS.forEach(lv=>{
-    const b=document.createElement('button');
-    b.className='lv-btn'+(lv===curLevel?' on':'');
-    b.textContent=lv;
-    b.onclick=()=>switchLevel(lv);
-    bar.appendChild(b);
+
+  const groups=[
+    {
+      title:'초급',
+      desc:'용어 이해 → 기능 구분 → 기본 판단',
+      keys:['초급1','초급2','초급3','초급심화'],
+      labels:[
+        ['1단계','용어'],
+        ['2단계','기능'],
+        ['3단계','판단'],
+        ['심화','마스터']
+      ]
+    },
+    {
+      title:'중급',
+      desc:'원인과 결과를 연결하는 단계',
+      keys:['중급1','중급2','중급3','중급심화'],
+      labels:[
+        ['1단계','원리'],
+        ['2단계','비교'],
+        ['3단계','응용'],
+        ['심화','마스터']
+      ]
+    },
+    {
+      title:'고급',
+      desc:'현장 상황과 대책을 고르는 단계',
+      keys:['고급1','고급2','고급3','고급심화'],
+      labels:[
+        ['1단계','현장'],
+        ['2단계','대책'],
+        ['3단계','종합'],
+        ['심화','마스터']
+      ]
+    },
+    {
+      title:'심화',
+      desc:'시험식 문장과 고난도 판단 훈련',
+      keys:['심화1','심화2','심화3','심화심화'],
+      labels:[
+        ['기본','100문제'],
+        ['응용','100문제'],
+        ['고난도','100문제'],
+        ['마스터','100문제']
+      ]
+    }
+  ];
+
+  const wrap=document.createElement('div');
+  wrap.className='quiz-toc-wrap';
+  const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기존 16개 목차를 학습 흐름대로 정리했습니다.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · 로직 변경 없음</div></div>';
+
+  const grid=document.createElement('div');
+  grid.className='quiz-toc-grid';
+
+  groups.forEach(g=>{
+    const group=document.createElement('div');
+    group.className='quiz-toc-group'+(g.keys.includes(curLevel)?' on':'');
+    const count=g.keys.reduce((a,k)=>a+((DB[k]&&DB[k].length)||0),0);
+    const head=document.createElement('div');
+    head.className='quiz-toc-ghead';
+    head.innerHTML='<div><div class="quiz-toc-gname">'+g.title+'</div><div class="quiz-toc-gdesc">'+g.desc+'</div></div><div class="quiz-toc-count">'+count+'문제</div>';
+    group.appendChild(head);
+
+    const btns=document.createElement('div');
+    btns.className='quiz-toc-btns';
+    g.keys.forEach((lv,i)=>{
+      if(!DB[lv]) return;
+      const b=document.createElement('button');
+      b.className='lv-btn'+(lv===curLevel?' on':'');
+      b.title=lv+' · '+DB[lv].length+'문제';
+      const main=g.labels[i] ? g.labels[i][0] : lv;
+      const sub=g.labels[i] ? g.labels[i][1] : (DB[lv].length+'문제');
+      b.innerHTML='<span class="lv-main">'+main+'</span><span class="lv-sub">'+sub+'</span>';
+      b.onclick=()=>switchLevel(lv);
+      btns.appendChild(b);
+    });
+    group.appendChild(btns);
+    grid.appendChild(group);
   });
+
+  wrap.appendChild(grid);
+  bar.appendChild(wrap);
 }
 function switchLevel(lv){
   curLevel=lv; Qs=DB[lv]; cur=0; answered=false;
@@ -1593,7 +1740,7 @@ const DEFAULT_SETTINGS={
   thinkTime:3,
   autoExplain:true,
   autoNext:true,
-  theoryAutoMode:'next'
+  theoryAutoMode:'subject'
 };
 let appSettings=null;
 let settingsDirty=false;
