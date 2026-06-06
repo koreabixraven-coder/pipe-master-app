@@ -9,9 +9,78 @@
 <title>RavenBix · 배관기능장 예상기출문제</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<script src="/theory.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{background:#121212;color:#E0E0E0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+
+  /* ── 화면 전환 ── */
+  .screen{display:none;}
+  .screen.show{display:block;}
+
+  /* ── 메인 홈 화면 ── */
+  .home-wrap{max-width:480px;margin:0 auto;padding:24px 16px;}
+  .home-logo{text-align:center;padding:30px 0 24px;}
+  .home-logo .hl-name{font-size:22px;font-weight:700;color:#1D9E75;letter-spacing:-0.5px;}
+  .home-logo .hl-sub{font-size:12px;color:#555;margin-top:4px;}
+  .home-logo .hl-badge{display:inline-block;font-size:10px;padding:3px 10px;border:0.5px solid #1D9E75;border-radius:99px;color:#5DCAA5;margin-top:8px;}
+  .home-menu{display:flex;flex-direction:column;gap:12px;margin-bottom:24px;}
+  .home-card{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:16px;padding:20px;cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+  .home-card:active{transform:scale(0.98);}
+  .home-card.theory{border-color:#1D9E75;}
+  .home-card.quiz{border-color:#378ADD;}
+  .hc-top{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+  .hc-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;}
+  .hc-icon.th{background:#0A2E22;}
+  .hc-icon.qz{background:#0C2D4A;}
+  .hc-title{font-size:16px;font-weight:600;color:#E0E0E0;}
+  .hc-sub{font-size:12px;color:#555;line-height:1.5;}
+  .hc-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px;}
+  .hc-tag{font-size:10px;padding:3px 8px;border-radius:99px;border:0.5px solid #2A2A2A;color:#666;}
+  .hc-tag.th{border-color:#1D9E75;color:#5DCAA5;}
+  .hc-tag.qz{border-color:#378ADD;color:#85B7EB;}
+  .home-footer{text-align:center;padding-top:16px;border-top:0.5px solid #1E1E1E;}
+  .home-footer p{font-size:10px;color:#333;line-height:1.8;}
+
+  /* ── 이론 목차 화면 ── */
+  .theory-wrap{max-width:480px;margin:0 auto;padding:0 14px 24px;}
+  .back-bar{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:0.5px solid #222;margin-bottom:14px;cursor:pointer;}
+  .back-bar svg{width:20px;height:20px;stroke:#1D9E75;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+  .back-bar span{font-size:13px;color:#1D9E75;}
+  .back-bar .bb-title{font-size:14px;font-weight:500;color:#E0E0E0;margin-left:auto;margin-right:0;}
+  .theory-subject-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+  .ts-card{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+  .ts-card:active{transform:scale(0.98);}
+  .ts-card.active{border-color:#1D9E75;background:#0A2E22;}
+  .ts-icon{font-size:20px;width:36px;text-align:center;}
+  .ts-info .ts-title{font-size:14px;font-weight:500;color:#E0E0E0;}
+  .ts-info .ts-count{font-size:11px;color:#555;margin-top:2px;}
+  .ts-card.active .ts-info .ts-title{color:#9FE1CB;}
+  .ts-chevron{margin-left:auto;width:16px;height:16px;stroke:#444;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ── 이론 챕터 화면 ── */
+  .chapter-list{display:flex;flex-direction:column;gap:6px;margin-bottom:12px;}
+  .ch-item{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:10px;padding:12px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all 0.15s;}
+  .ch-item:active{transform:scale(0.98);}
+  .ch-item.active{border-color:#1D9E75;background:#0A2E22;}
+  .ch-num{width:24px;height:24px;border-radius:50%;background:#222;display:flex;align-items:center;justify-content:center;font-size:11px;color:#666;flex-shrink:0;}
+  .ch-item.active .ch-num{background:#1D9E75;color:#fff;}
+  .ch-text{font-size:13px;color:#CCC;}
+  .ch-item.active .ch-text{color:#9FE1CB;}
+
+  /* ── 이론 내용 화면 ── */
+  .theory-content-wrap{max-width:480px;margin:0 auto;padding:0 14px 24px;}
+  .section-card{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:12px;padding:14px;margin-bottom:10px;}
+  .sec-title{font-size:14px;font-weight:600;color:#9FE1CB;margin-bottom:8px;padding-bottom:8px;border-bottom:0.5px solid #222;}
+  .sec-content{font-size:13px;color:#CCC;line-height:1.8;margin-bottom:10px;}
+  .sec-points{display:flex;flex-direction:column;gap:5px;}
+  .sec-point{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:#888;line-height:1.6;}
+  .sec-point::before{content:'▸';color:#1D9E75;flex-shrink:0;margin-top:1px;}
+  .theory-tts-bar{display:flex;gap:6px;margin-bottom:10px;position:sticky;top:0;background:#121212;padding:8px 0;z-index:10;}
+  .theory-nav{display:flex;gap:7px;margin-bottom:16px;}
+  .tnav{flex:1;padding:10px;font-size:12px;font-weight:500;border:0.5px solid #2A2A2A;border-radius:10px;background:#1A1A1A;color:#CCC;cursor:pointer;}
+  .tnav.p{background:#1D9E75;border-color:#1D9E75;color:#fff;}
+</style>
 
   /* ── 레이아웃 ── */
   .app{max-width:480px;margin:0 auto;padding:0 14px 24px;}
@@ -241,7 +310,104 @@
   </div>
 </div>
 
-<!-- ════ 앱 본체 ════ -->
+<!-- ════ 메인 홈 화면 ════ -->
+<div class="screen show" id="screenHome">
+  <div class="home-wrap">
+    <div class="home-logo">
+      <div class="hl-name">RavenBix · 배관기능장</div>
+      <div class="hl-sub">예상기출문제 TTS 수험앱</div>
+      <div class="hl-badge">배관기능장 자격시험 대비</div>
+    </div>
+    <div class="home-menu">
+      <div class="home-card theory" onclick="goScreen('screenTheory')">
+        <div class="hc-top">
+          <div class="hc-icon th">📖</div>
+          <div>
+            <div class="hc-title">이론 학습</div>
+          </div>
+        </div>
+        <div class="hc-sub">배관재료·시공·유체역학·밸브·설계 핵심 이론을 TTS로 들으며 학습합니다.</div>
+        <div class="hc-tags">
+          <span class="hc-tag th">배관재료</span>
+          <span class="hc-tag th">배관시공</span>
+          <span class="hc-tag th">유체역학</span>
+          <span class="hc-tag th">밸브·기기</span>
+          <span class="hc-tag th">배관설계</span>
+        </div>
+      </div>
+      <div class="home-card quiz" onclick="goScreen('screenQuiz')">
+        <div class="hc-top">
+          <div class="hc-icon qz">✏️</div>
+          <div>
+            <div class="hc-title">문제 풀기</div>
+          </div>
+        </div>
+        <div class="hc-sub">초급·중급·고급·심화 단계별 예상기출문제를 TTS와 함께 풀어봅니다.</div>
+        <div class="hc-tags">
+          <span class="hc-tag qz">초급 1~3단계</span>
+          <span class="hc-tag qz">초급 심화</span>
+          <span class="hc-tag qz">중급</span>
+          <span class="hc-tag qz">고급</span>
+          <span class="hc-tag qz">심화</span>
+        </div>
+      </div>
+    </div>
+    <div class="home-footer">
+      <p>© 2025 RavenBix. All rights reserved.<br>배관기능장 예상기출문제 TTS 수험앱 · 무단 복제 및 배포 금지</p>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 이론 과목 선택 화면 ════ -->
+<div class="screen" id="screenTheory">
+  <div class="theory-wrap">
+    <div class="back-bar" onclick="goScreen('screenHome')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>홈</span>
+      <span class="bb-title">이론 학습</span>
+    </div>
+    <div class="theory-subject-list" id="theorySubjectList"></div>
+  </div>
+</div>
+
+<!-- ════ 이론 챕터 선택 화면 ════ -->
+<div class="screen" id="screenChapter">
+  <div class="theory-wrap">
+    <div class="back-bar" onclick="goScreen('screenTheory')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      <span>이론 학습</span>
+      <span class="bb-title" id="chapterSubjectTitle"></span>
+    </div>
+    <div class="chapter-list" id="chapterList"></div>
+  </div>
+</div>
+
+<!-- ════ 이론 내용 화면 ════ -->
+<div class="screen" id="screenTheoryContent">
+  <div class="theory-content-wrap">
+    <div class="back-bar" onclick="goScreen('screenChapter')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      <span id="contentBackLabel">챕터 목록</span>
+      <span class="bb-title" id="contentTitle"></span>
+    </div>
+    <div class="theory-tts-bar">
+      <button class="tb" id="tBtnRead" onclick="theoryReadAll()">
+        <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>전체읽기
+      </button>
+      <button class="tb" onclick="ttsStop()" style="border-color:#3A1515;color:#E24B4A;">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>정지
+      </button>
+    </div>
+    <div id="theoryContentArea"></div>
+    <div class="theory-nav">
+      <button class="tnav" id="tNavPrev" onclick="theoryNavChapter(-1)">← 이전 챕터</button>
+      <button class="tnav p" id="tNavNext" onclick="theoryNavChapter(1)">다음 챕터 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 문제풀기 화면 ════ -->
+<div class="screen" id="screenQuiz">
 <div class="app">
 
   <!-- 헤더 -->
@@ -432,10 +598,11 @@
   </div>
 
   <!-- 저작권 -->
-  <div class="footer">
+  <div class="footer" style="margin-top:8px;">
     <p>© 2025 RavenBix. All rights reserved.<br>배관기능장 예상기출문제 TTS 수험앱 · 무단 복제 및 배포 금지</p>
   </div>
-</div>
+</div><!-- app -->
+</div><!-- screenQuiz -->
 
 <script>
 /* ════════════════════════════════
@@ -472,7 +639,91 @@ let rate=0.9, pitch=1.0, ns=0, pb=0, th=5;
 let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null;
 const NL=[['1번','2번','3번','4번'],['1.','2.','3.','4.'],['첫번째','두번째','세번째','네번째']];
 
-/* ── 채점 데이터 ── */
+/* ── 화면 전환 ── */
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+  window.scrollTo(0,0);
+  if(id==='screenTheory') buildTheorySubjects();
+  if(id==='screenQuiz') init();
+}
+
+/* ── 이론 과목 목록 ── */
+let curSubject=null, curChapterIdx=0;
+function buildTheorySubjects(){
+  const list=document.getElementById('theorySubjectList');
+  list.innerHTML='';
+  Object.keys(THEORY).forEach(key=>{
+    const s=THEORY[key];
+    const div=document.createElement('div');
+    div.className='ts-card';
+    div.innerHTML=`<span class="ts-icon">${s.icon}</span>
+      <div class="ts-info">
+        <div class="ts-title">${s.title}</div>
+        <div class="ts-count">챕터 ${s.chapters.length}개</div>
+      </div>
+      <svg class="ts-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
+    div.onclick=()=>openSubject(key);
+    list.appendChild(div);
+  });
+}
+
+function openSubject(key){
+  curSubject=key;
+  curChapterIdx=0;
+  const s=THEORY[key];
+  document.getElementById('chapterSubjectTitle').textContent=s.title;
+  const list=document.getElementById('chapterList');
+  list.innerHTML='';
+  s.chapters.forEach((ch,i)=>{
+    const div=document.createElement('div');
+    div.className='ch-item';
+    div.innerHTML=`<span class="ch-num">${i+1}</span><span class="ch-text">${ch.title}</span>`;
+    div.onclick=()=>openChapter(i);
+    list.appendChild(div);
+  });
+  goScreen('screenChapter');
+}
+
+function openChapter(idx){
+  curChapterIdx=idx;
+  const s=THEORY[curSubject];
+  const ch=s.chapters[idx];
+  document.getElementById('contentBackLabel').textContent=s.title;
+  document.getElementById('contentTitle').textContent=ch.title;
+  const area=document.getElementById('theoryContentArea');
+  area.innerHTML='';
+  ch.sections.forEach(sec=>{
+    const card=document.createElement('div');
+    card.className='section-card';
+    card.innerHTML=`<div class="sec-title">${sec.title}</div>
+      <div class="sec-content">${sec.content}</div>
+      <div class="sec-points">${sec.points.map(p=>`<div class="sec-point">${p}</div>`).join('')}</div>`;
+    area.appendChild(card);
+  });
+  document.getElementById('tNavPrev').style.opacity=idx===0?'0.3':'1';
+  document.getElementById('tNavNext').style.opacity=idx>=s.chapters.length-1?'0.3':'1';
+  goScreen('screenTheoryContent');
+}
+
+function theoryNavChapter(dir){
+  const s=THEORY[curSubject];
+  const next=curChapterIdx+dir;
+  if(next<0||next>=s.chapters.length) return;
+  openChapter(next);
+}
+
+function theoryReadAll(){
+  if(!curSubject) return;
+  const ch=THEORY[curSubject].chapters[curChapterIdx];
+  let txt='';
+  ch.sections.forEach(sec=>{
+    txt+=sec.title+'. '+sec.content+'. ';
+    sec.points.forEach(p=>{ txt+=p+'. '; });
+  });
+  spk(txt,()=>setSt(''));
+  setSt('🔊 이론 낭독 중...');
+}
 let scoreData = {}; // { '초급1': { ok:0, ng:0, sk:0, wrong:[] } }
 let sessionOk=0, sessionNg=0, wrongQs=[];
 let retryMode=false;
@@ -944,7 +1195,13 @@ if('serviceWorker' in navigator){
   });
 }
 
-init();
+/* 음성 로드 */
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
+tryLoadV();
+
+/* 홈화면 시작 */
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
+document.getElementById('screenHome').classList.add('show');
 </script>
 </body>
 </html>
