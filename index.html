@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#121212">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>RavenBix · 배관기능장 예상기출문제</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:#121212;color:#E0E0E0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
+
+  /* ── 레이아웃 ── */
+  .app{max-width:480px;margin:0 auto;padding:0 14px 24px;}
+
+  /* ── 상단 헤더 ── */
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 0 10px;}
+  .app-title .name{font-size:14px;font-weight:600;color:#1D9E75;letter-spacing:-0.3px;}
+  .app-title .sub{font-size:10px;color:#555;margin-top:1px;}
+  .top-actions{display:flex;gap:7px;}
+  .icon-btn{width:38px;height:38px;border-radius:10px;border:0.5px solid #2A2A2A;background:#1A1A1A;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#666;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+  .icon-btn:hover,.icon-btn:active{background:#222;}
+  .icon-btn.active{background:#0A2E22;border-color:#1D9E75;color:#1D9E75;}
+  .icon-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .divider{height:0.5px;background:#222;margin-bottom:14px;}
+
+  /* ── 설정 패널 ── */
+  .settings-panel{background:#1A1A1A;border-radius:14px;padding:16px;margin-bottom:12px;display:none;border:0.5px solid #2A2A2A;}
+  .settings-panel.show{display:block;}
+  .s-title{font-size:11px;font-weight:500;color:#555;margin-bottom:10px;display:flex;align-items:center;gap:5px;text-transform:uppercase;letter-spacing:0.5px;}
+  .s-title svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .voice-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px;}
+  .voice-card{padding:8px 10px;border:0.5px solid #2A2A2A;border-radius:10px;background:#121212;cursor:pointer;transition:all 0.15s;}
+  .voice-card.active{border-color:#1D9E75;background:#0A2E22;}
+  .voice-card .vn{font-size:12px;font-weight:500;color:#E0E0E0;}
+  .voice-card.active .vn{color:#9FE1CB;}
+  .voice-card .vl{font-size:10px;color:#555;margin-top:2px;}
+  .voice-card.active .vl{color:#5DCAA5;}
+  .sl-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .sl-row label{font-size:11px;color:#555;width:44px;flex-shrink:0;}
+  .sl-row input[type=range]{flex:1;accent-color:#1D9E75;height:4px;}
+  .sl-row span{font-size:11px;color:#E0E0E0;min-width:28px;text-align:right;}
+  .s-sep{height:0.5px;background:#222;margin:12px 0;}
+  .s-row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px;}
+  .s-sub{font-size:10px;color:#555;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.4px;}
+  .seg{display:flex;flex-direction:column;gap:4px;}
+  .seg-row-h{display:flex;gap:4px;margin-bottom:4px;}
+  .sb{flex:1;padding:6px 4px;font-size:11px;border:0.5px solid #2A2A2A;border-radius:8px;background:#121212;color:#666;cursor:pointer;text-align:center;transition:all 0.15s;}
+  .sb.on{background:#1D9E75;border-color:#1D9E75;color:#fff;font-weight:500;}
+  .tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .tog-row label{font-size:12px;color:#CCC;}
+  .tog{position:relative;width:38px;height:22px;flex-shrink:0;}
+  .tog input{opacity:0;width:0;height:0;}
+  .tog-sl{position:absolute;inset:0;background:#333;border-radius:99px;cursor:pointer;transition:0.2s;}
+  .tog input:checked+.tog-sl{background:#1D9E75;}
+  .tog-sl:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.2s;}
+  .tog input:checked+.tog-sl:before{transform:translateX(16px);}
+  .test-btn{width:100%;padding:9px;font-size:12px;border:0.5px solid #1D9E75;border-radius:10px;background:#0A2E22;color:#5DCAA5;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .test-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ── 이동모드 바 ── */
+  .drive-bar{display:none;background:#0A2E22;border:0.5px solid #1D9E75;border-radius:14px;padding:14px;margin-bottom:12px;}
+  .drive-bar.show{display:block;}
+  .drive-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .drive-info .dt{font-size:13px;font-weight:500;color:#9FE1CB;}
+  .drive-info .ds{font-size:10px;color:#5DCAA5;margin-top:3px;}
+  .wake-pill{font-size:10px;padding:3px 8px;border-radius:99px;background:#1D9E75;color:#E1F5EE;}
+  .big-btn{width:100%;padding:20px;font-size:17px;font-weight:600;border-radius:12px;border:none;background:#1D9E75;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+  .big-btn:active{transform:scale(0.97);}
+  .big-btn.paused{background:#BA7517;}
+  .big-btn svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+  .exit-btn{width:100%;padding:8px;font-size:11px;border:0.5px solid #2A5A45;border-radius:8px;background:transparent;color:#5DCAA5;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+
+  /* ── 화면 잠금 오버레이 ── */
+  .lock-overlay{display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px;-webkit-user-select:none;user-select:none;touch-action:none;}
+  .lock-overlay.show{display:flex;}
+  .lock-icon{width:80px;height:80px;border-radius:50%;background:#0A2E22;border:1.5px solid #1D9E75;display:flex;align-items:center;justify-content:center;}
+  .lock-icon svg{width:36px;height:36px;stroke:#1D9E75;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .lock-title{font-size:18px;font-weight:600;color:#9FE1CB;text-align:center;}
+  .lock-now{font-size:12px;color:#5DCAA5;text-align:center;max-width:280px;line-height:1.5;min-height:36px;}
+  .lock-status-txt{font-size:12px;color:#1D9E75;min-height:18px;text-align:center;}
+  .unlock-area{width:240px;}
+  .unlock-bar-bg{height:6px;background:#1A1A1A;border-radius:99px;overflow:hidden;margin-bottom:10px;}
+  .unlock-bar-fill{height:100%;background:#1D9E75;border-radius:99px;width:0%;transition:width 0.05s linear;}
+  .unlock-hint{font-size:11px;color:#333;text-align:center;margin-bottom:14px;}
+  .hold-btn{width:100%;padding:16px;border-radius:14px;border:1px solid #1D9E75;background:#0A2E22;color:#9FE1CB;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent;touch-action:none;}
+  .hold-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ── 생각 타이머 ── */
+  .think-wrap{margin-bottom:10px;display:none;}
+  .think-wrap.show{display:block;}
+  .think-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+  .think-lbl{font-size:11px;color:#555;}
+  .think-n{font-size:20px;font-weight:600;color:#1D9E75;}
+  .think-n.urg{color:#E24B4A;}
+  .t-bar-bg{height:5px;background:#1A1A1A;border-radius:99px;overflow:hidden;}
+  .t-bar-fill{height:100%;background:#1D9E75;border-radius:99px;transition:width 1s linear;}
+  .t-bar-fill.urg{background:#E24B4A;}
+
+  /* ── 진행 점 & 상태 ── */
+  .dots{display:flex;justify-content:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
+  .dot{width:7px;height:7px;border-radius:50%;background:#222;transition:all 0.2s;}
+  .dot.active{background:#1D9E75;width:20px;border-radius:99px;}
+  .dot.ok{background:#1D9E75;}
+  .dot.ng{background:#E24B4A;}
+  .dot.sk{background:#BA7517;}
+  .status{text-align:center;font-size:11px;color:#1D9E75;min-height:16px;margin-bottom:10px;}
+
+  /* ── 이동모드 시작 버튼 ── */
+  .drive-start-btn{width:100%;padding:13px;font-size:13px;font-weight:500;border-radius:12px;border:0.5px solid #1D9E75;background:#0A2E22;color:#9FE1CB;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;-webkit-tap-highlight-color:transparent;}
+  .drive-start-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ── 단계 선택 ── */
+  .level-bar{display:flex;gap:5px;margin-bottom:12px;overflow-x:auto;padding-bottom:2px;}
+  .level-bar::-webkit-scrollbar{display:none;}
+  .lv-btn{padding:5px 10px;font-size:11px;border:0.5px solid #2A2A2A;border-radius:99px;background:#1A1A1A;color:#666;cursor:pointer;white-space:nowrap;transition:all 0.15s;}
+  .lv-btn.on{background:#1D9E75;border-color:#1D9E75;color:#fff;font-weight:500;}
+
+  /* ── 문제 카드 ── */
+  .q-card{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:14px;padding:16px;margin-bottom:10px;}
+  .q-meta{display:flex;align-items:center;gap:7px;margin-bottom:9px;}
+  .q-num{font-size:11px;color:#555;}
+  .q-cat{font-size:10px;padding:2px 8px;background:#0A2E22;color:#5DCAA5;border-radius:99px;}
+  .q-text{font-size:15px;color:#E0E0E0;line-height:1.7;}
+
+  /* ── 보기 ── */
+  .opts{display:flex;flex-direction:column;gap:7px;margin-bottom:10px;}
+  .opt{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:0.5px solid #2A2A2A;border-radius:10px;background:#1A1A1A;cursor:pointer;text-align:left;font-size:13px;color:#CCC;line-height:1.55;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+  .opt:hover:not(:disabled){border-color:#1D9E75;background:#0A2E22;}
+  .opt:active:not(:disabled){transform:scale(0.99);}
+  .opt.ok{border-color:#1D9E75;background:#0A2E22;color:#9FE1CB;}
+  .opt.ng{border-color:#E24B4A;background:#2D1010;color:#F09595;}
+  .opt.ar{border-color:#BA7517;background:#2D1F00;color:#FAC775;}
+  .opt:disabled{cursor:default;}
+  .oc{width:22px;height:22px;border-radius:50%;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;margin-top:1px;color:#555;}
+  .opt.ok .oc{border-color:#1D9E75;background:#1D9E75;color:#fff;}
+  .opt.ng .oc{border-color:#E24B4A;background:#E24B4A;color:#fff;}
+  .opt.ar .oc{border-color:#BA7517;background:#BA7517;color:#fff;}
+
+  /* ── 해설 ── */
+  .ex-box{border-left:3px solid #1D9E75;border-radius:0 10px 10px 0;padding:10px 13px;font-size:13px;color:#9FE1CB;line-height:1.7;margin-bottom:12px;display:none;background:#0A2E22;}
+  .ex-box.ar{border-color:#BA7517;color:#FAC775;background:#1A1000;}
+  .ex-box.show{display:block;}
+
+  /* ── TTS 바 ── */
+  .tts-bar{display:flex;gap:6px;margin-bottom:9px;}
+  .tb{flex:1;padding:9px 4px;font-size:11px;border:0.5px solid #2A2A2A;border-radius:10px;background:#1A1A1A;color:#666;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
+  .tb:active{transform:scale(0.97);}
+  .tb.on{background:#0A2E22;border-color:#1D9E75;color:#5DCAA5;}
+  .tb svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .tb.stop{border-color:#3A1515;color:#E24B4A;}
+
+  /* ── 액션 버튼 ── */
+  .act-row{display:flex;gap:7px;margin-bottom:20px;}
+  .ab{flex:1;padding:11px;font-size:13px;font-weight:500;border:0.5px solid #2A2A2A;border-radius:10px;background:#1A1A1A;color:#CCC;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .ab:active{transform:scale(0.98);}
+  .ab.p{background:#1D9E75;border-color:#1D9E75;color:#fff;}
+
+  /* ── 하단 저작권 ── */
+  .footer{text-align:center;padding:12px 0 4px;border-top:0.5px solid #1E1E1E;}
+  .footer p{font-size:10px;color:#333;line-height:1.8;}
+
+  /* ── 스크롤바 ── */
+  ::-webkit-scrollbar{width:4px;}
+  ::-webkit-scrollbar-track{background:#121212;}
+  ::-webkit-scrollbar-thumb{background:#2A2A2A;border-radius:99px;}
+</style>
+</head>
+<body>
+
+<!-- ════ 화면 잠금 오버레이 ════ -->
+<div class="lock-overlay" id="lockOverlay">
+  <div class="lock-icon">
+    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  </div>
+  <div>
+    <div class="lock-title">화면 잠금 중</div>
+  </div>
+  <div class="lock-now" id="lockNow">TTS 자동 재생 중...</div>
+  <div class="lock-status-txt" id="lockStatusTxt"></div>
+  <div class="unlock-area">
+    <div class="unlock-bar-bg"><div class="unlock-bar-fill" id="unlockFill"></div></div>
+    <div class="unlock-hint">아래 버튼을 3초간 길게 눌러 잠금 해제</div>
+    <button class="hold-btn" id="holdBtn" aria-label="길게 눌러 잠금 해제">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+      길게 눌러 잠금 해제
+    </button>
+  </div>
+</div>
+
+<!-- ════ 앱 본체 ════ -->
+<div class="app">
+
+  <!-- 헤더 -->
+  <div class="topbar">
+    <div class="app-title">
+      <div class="name">RavenBix · 배관기능장</div>
+      <div class="sub">예상기출문제 TTS 수험앱</div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="driveToggleBtn" onclick="toggleDrive()" aria-label="이동 청취 모드">
+        <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z"/></svg>
+      </button>
+      <button class="icon-btn" id="settingBtn" onclick="toggleSettings()" aria-label="설정">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="divider"></div>
+
+  <!-- 설정 패널 -->
+  <div class="settings-panel" id="settingsPanel">
+    <div class="s-title">
+      <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      음성 선택
+    </div>
+    <div class="voice-grid" id="voiceGrid">
+      <div style="font-size:11px;color:#555;grid-column:span 2;padding:4px;">로딩 중...</div>
+    </div>
+    <div class="sl-row">
+      <label>속도</label>
+      <input type="range" min="0.5" max="1.8" step="0.1" value="0.9" oninput="document.getElementById('rv').textContent=parseFloat(this.value).toFixed(1);rate=parseFloat(this.value);">
+      <span id="rv">0.9</span>
+    </div>
+    <div class="sl-row">
+      <label>음높이</label>
+      <input type="range" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('pv').textContent=parseFloat(this.value).toFixed(1);pitch=parseFloat(this.value);">
+      <span id="pv">1.0</span>
+    </div>
+    <div class="s-sep"></div>
+    <div class="s-row2">
+      <div>
+        <div class="s-sub">보기 읽기 방식</div>
+        <div class="seg" id="nsRow">
+          <button class="sb on" onclick="setNS(0,this)">1번, 2번</button>
+          <button class="sb" onclick="setNS(1,this)">1. 2. 3.</button>
+          <button class="sb" onclick="setNS(2,this)">첫번째</button>
+        </div>
+      </div>
+      <div>
+        <div class="s-sub">보기 사이 쉬는 시간</div>
+        <div class="seg" id="pbRow">
+          <button class="sb on" onclick="setPB(0,this)">없음</button>
+          <button class="sb" onclick="setPB(0.5,this)">0.5초</button>
+          <button class="sb" onclick="setPB(1,this)">1초</button>
+          <button class="sb" onclick="setPB(2,this)">2초</button>
+        </div>
+      </div>
+    </div>
+    <div class="s-sep"></div>
+    <div class="s-title">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      생각할 시간 (이동모드 보기 후 대기)
+    </div>
+    <div class="seg-row-h" id="thRow">
+      <button class="sb" onclick="setTH(3,this)">3초</button>
+      <button class="sb on" onclick="setTH(5,this)">5초</button>
+      <button class="sb" onclick="setTH(10,this)">10초</button>
+      <button class="sb" onclick="setTH(15,this)">15초</button>
+    </div>
+    <div class="s-sep"></div>
+    <div class="s-title">
+      <svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+      자동 진행
+    </div>
+    <div class="tog-row">
+      <label>정답 후 해설 자동 낭독</label>
+      <label class="tog"><input type="checkbox" id="autoEx" checked><span class="tog-sl"></span></label>
+    </div>
+    <div class="tog-row" style="margin-bottom:10px;">
+      <label>해설 후 자동 다음 문제</label>
+      <label class="tog"><input type="checkbox" id="autoNx" checked><span class="tog-sl"></span></label>
+    </div>
+    <button class="test-btn" onclick="ttsTest()">
+      <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      음성 테스트 재생
+    </button>
+  </div>
+
+  <!-- 이동모드 바 -->
+  <div class="drive-bar" id="driveBar">
+    <div class="drive-top">
+      <div class="drive-info">
+        <div class="dt">이동 중 청취 모드</div>
+        <div class="ds">완전 자동 재생 · 손대지 않아도 됩니다</div>
+      </div>
+      <span class="wake-pill" id="wakePill">화면유지 중</span>
+    </div>
+    <button class="big-btn" id="bigBtn" onclick="togglePause()">
+      <svg id="pauseIco" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      <span id="pauseLbl">일시정지</span>
+    </button>
+    <button class="exit-btn" onclick="toggleDrive()">✕ 이동 모드 종료</button>
+  </div>
+
+  <!-- 생각 타이머 -->
+  <div class="think-wrap" id="thinkWrap">
+    <div class="think-top">
+      <span class="think-lbl">정답 생각 중...</span>
+      <span class="think-n" id="thinkN">5</span>
+    </div>
+    <div class="t-bar-bg"><div class="t-bar-fill" id="thinkFill" style="width:100%;"></div></div>
+  </div>
+
+  <!-- 이동모드 시작 버튼 -->
+  <button class="drive-start-btn" id="driveStartBtn" onclick="toggleDrive()">
+    <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z"/></svg>
+    이동 중 청취 모드 시작
+  </button>
+
+  <!-- 단계 선택 -->
+  <div class="level-bar" id="levelBar"></div>
+
+  <!-- 진행 점 & 상태 -->
+  <div class="dots" id="dots"></div>
+  <div class="status" id="status"></div>
+
+  <!-- 문제 카드 -->
+  <div class="q-card">
+    <div class="q-meta">
+      <span class="q-num" id="qNum">문제 1 / -</span>
+      <span class="q-cat" id="qCat">-</span>
+    </div>
+    <div class="q-text" id="qText">문제를 로딩 중입니다...</div>
+  </div>
+  <div class="opts" id="opts"></div>
+  <div class="ex-box" id="exBox"></div>
+
+  <!-- TTS 바 -->
+  <div class="tts-bar">
+    <button class="tb" id="bQ" onclick="mRead('q')">
+      <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>문제
+    </button>
+    <button class="tb" id="bO" onclick="mRead('opts')">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>보기
+    </button>
+    <button class="tb" id="bA" onclick="mRead('ans')">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>해설
+    </button>
+    <button class="tb stop" onclick="tStop()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>정지
+    </button>
+  </div>
+  <div class="act-row">
+    <button class="ab" onclick="mRead('all')">▶ 전체읽기</button>
+    <button class="ab p" id="nxBtn" onclick="nextQ()" style="display:none;">다음 문제 →</button>
+  </div>
+
+  <!-- 저작권 -->
+  <div class="footer">
+    <p>© 2025 RavenBix. All rights reserved.<br>배관기능장 예상기출문제 TTS 수험앱 · 무단 복제 및 배포 금지</p>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════
+   문제 데이터
+   형식: { cat, q, opts:[4개], ans(0~3), ex }
+   단계: '초급1','초급2','초급3','초급심화','중급','고급','심화'
+   ════════════════════════════════ */
+const DB = {
+  '초급1': [
+    {cat:"배관재료",q:"배관용 탄소강 강관의 KS 기호로 올바른 것은?",opts:["SPPH","SPP","STS","STPG"],ans:1,ex:"SPP는 배관용 탄소강 강관의 KS 기호입니다. 사용압력이 낮은 증기·물·기름·가스·공기 배관에 사용됩니다. SPPH는 고압배관용, STS는 스테인리스강관, STPG는 압력배관용 탄소강 강관입니다."},
+    {cat:"배관시공",q:"동관의 납땜 접합 시 플럭스를 사용하는 주된 이유는?",opts:["관의 강도를 높이기 위해","부식을 방지하기 위해","산화막 제거 및 납의 흐름성을 좋게 하기 위해","이음부의 기밀을 높이기 위해"],ans:2,ex:"플럭스는 금속 표면의 산화막을 제거하고 용가재인 납의 흐름성을 향상시켜 견고한 접합이 이루어지도록 돕는 화학 보조제입니다."}
+  ],
+  '초급2': [],
+  '초급3': [],
+  '초급심화': [],
+  '중급': [],
+  '고급': [],
+  '심화': []
+};
+
+const LEVELS = Object.keys(DB);
+let curLevel = '초급1';
+let Qs = DB[curLevel];
+let cur=0, answered=false, driveOn=false, paused=false, locked=false;
+let synth=window.speechSynthesis, voices=[], selV=null;
+let rate=0.9, pitch=1.0, ns=0, pb=0, th=5;
+let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null;
+const NL=[['1번','2번','3번','4번'],['1.','2.','3.','4.'],['첫번째','두번째','세번째','네번째']];
+
+/* ── 단계 선택 ── */
+function buildLevelBar(){
+  const bar=document.getElementById('levelBar');
+  bar.innerHTML='';
+  LEVELS.forEach(lv=>{
+    const b=document.createElement('button');
+    b.className='lv-btn'+(lv===curLevel?' on':'');
+    b.textContent=lv;
+    b.onclick=()=>switchLevel(lv);
+    bar.appendChild(b);
+  });
+}
+function switchLevel(lv){
+  curLevel=lv; Qs=DB[lv]; cur=0; answered=false;
+  buildLevelBar(); buildDots(); renderQ();
+}
+
+/* ── 설정 ── */
+function toggleSettings(){
+  const p=document.getElementById('settingsPanel'),b=document.getElementById('settingBtn');
+  p.classList.toggle('show'); b.classList.toggle('active');
+}
+function setNS(i,b){ns=i;document.querySelectorAll('#nsRow .sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+function setPB(v,b){pb=v;document.querySelectorAll('#pbRow .sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+function setTH(v,b){th=v;document.querySelectorAll('#thRow .sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+
+/* ── 음성 로드 ── */
+function loadV(){
+  let a=synth.getVoices();
+  voices=a.filter(v=>v.lang.startsWith('ko'));
+  if(!voices.length) voices=a.slice(0,6);
+  const g=document.getElementById('voiceGrid');
+  if(!voices.length){g.innerHTML='<div style="font-size:11px;color:#555;grid-column:span 2;padding:4px;">한국어 음성 없음 — 기기 설정에서 추가해주세요</div>';return;}
+  g.innerHTML='';
+  voices.forEach((v,i)=>{
+    const c=document.createElement('div'); c.className='voice-card'+(i===0?' active':'');
+    const n=v.name.replace(/Microsoft |Google |Apple /g,'').split(' ').slice(0,2).join(' ');
+    c.innerHTML='<div class="vn">'+n+'</div><div class="vl">'+v.lang+(v.localService?' · 로컬':' · 온라인')+'</div>';
+    c.onclick=()=>{document.querySelectorAll('.voice-card').forEach(x=>x.classList.remove('active'));c.classList.add('active');selV=v;};
+    if(i===0) selV=v;
+    g.appendChild(c);
+  });
+}
+
+/* ── Wake Lock ── */
+async function reqWake(){
+  try{
+    if('wakeLock' in navigator){
+      wakeLock=await navigator.wakeLock.request('screen');
+      document.getElementById('wakePill').textContent='화면유지 켜짐';
+    } else {
+      document.getElementById('wakePill').textContent='미지원';
+      document.getElementById('wakePill').style.background='#444';
+    }
+  } catch(e){
+    document.getElementById('wakePill').textContent='실패';
+    document.getElementById('wakePill').style.background='#5A1515';
+  }
+}
+function relWake(){if(wakeLock){wakeLock.release();wakeLock=null;}}
+
+/* ── 화면 잠금 ── */
+function lockScreen(){
+  locked=true;
+  document.getElementById('lockOverlay').classList.add('show');
+  document.getElementById('lockStatusTxt').textContent='';
+  const btn=document.getElementById('holdBtn');
+  const fill=document.getElementById('unlockFill');
+  const stxt=document.getElementById('lockStatusTxt');
+  btn.onmousedown=btn.ontouchstart=function(e){
+    e.preventDefault();
+    fill.style.transition='width 3s linear'; fill.style.width='100%';
+    stxt.textContent='잠금 해제 중...';
+    holdTimer=setTimeout(()=>unlockScreen(),3000);
+  };
+  btn.onmouseup=btn.ontouchend=btn.onmouseleave=function(){
+    clearTimeout(holdTimer); holdTimer=null;
+    fill.style.transition='none'; fill.style.width='0%';
+    stxt.textContent='';
+  };
+}
+function unlockScreen(){
+  locked=false;
+  document.getElementById('lockOverlay').classList.remove('show');
+  document.getElementById('unlockFill').style.width='0%';
+}
+
+/* ── 이동모드 ── */
+function toggleDrive(){
+  driveOn=!driveOn; paused=false;
+  document.getElementById('driveBar').classList.toggle('show',driveOn);
+  document.getElementById('driveStartBtn').style.display=driveOn?'none':'flex';
+  document.getElementById('driveToggleBtn').classList.toggle('active',driveOn);
+  if(driveOn){reqWake(); resetAuto(); setTimeout(()=>lockScreen(),1500);}
+  else{relWake(); tStop(); if(locked) unlockScreen();}
+}
+function togglePause(){
+  paused=!paused;
+  const btn=document.getElementById('bigBtn');
+  const ico=document.getElementById('pauseIco');
+  const lbl=document.getElementById('pauseLbl');
+  if(paused){
+    synth.pause(); stopTH(); btn.classList.add('paused');
+    ico.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';
+    lbl.textContent='재개하기';
+  } else {
+    synth.resume(); btn.classList.remove('paused');
+    ico.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+    lbl.textContent='일시정지';
+  }
+}
+
+/* ── TTS ── */
+function spk(txt,cb){
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(txt);
+  u.lang='ko-KR'; if(selV) u.voice=selV; u.rate=rate; u.pitch=pitch;
+  u.onend=()=>{clrB(); if(!paused&&cb) cb();};
+  synth.speak(u);
+  if(locked) document.getElementById('lockNow').textContent=txt.length>40?txt.substring(0,40)+'...':txt;
+}
+function spkOpts(opts,labels,cb){
+  let i=0;
+  function go(){
+    if(i>=opts.length){if(cb)cb();return;}
+    const txt=labels[i]+'. '+opts[i]; i++;
+    spk(txt,()=>{
+      if(pb>0&&i<opts.length){pbTimer=setTimeout(()=>{if(!paused)go();},pb*1000);}
+      else go();
+    });
+  }
+  go();
+}
+function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. 음성 테스트 중입니다.');}
+function tStop(){
+  synth.cancel(); stopTH();
+  if(nxTimer){clearTimeout(nxTimer);nxTimer=null;}
+  if(pbTimer){clearTimeout(pbTimer);pbTimer=null;}
+  clrB(); setSt('');
+}
+function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
+function setSt(m){document.getElementById('status').innerHTML=m;}
+
+function mRead(t){
+  if(driveOn) return;
+  if(!Qs.length){setSt('이 단계에 문제가 없습니다');return;}
+  const q=Qs[cur], L=NL[ns]; clrB();
+  if(t==='q'){document.getElementById('bQ').classList.add('on');setSt('🔊 문제 읽는 중...');spk('문제. '+q.q,()=>setSt(''));}
+  else if(t==='opts'){document.getElementById('bO').classList.add('on');setSt('🔊 보기 읽는 중...');spkOpts(q.opts,L,()=>setSt(''));}
+  else if(t==='ans'){
+    if(!answered){setSt('⚠️ 먼저 답을 선택해주세요');return;}
+    document.getElementById('bA').classList.add('on'); setSt('🔊 해설 읽는 중...');
+    spk('정답은 '+L[q.ans]+' '+q.opts[q.ans]+'입니다. 해설. '+q.ex,()=>setSt(''));
+  } else if(t==='all'){
+    setSt('🔊 전체 읽는 중...');
+    spk('문제. '+q.q,()=>{
+      spkOpts(q.opts,L,()=>{
+        if(answered) spk('정답은 '+L[q.ans]+' '+q.opts[q.ans]+'입니다. 해설. '+q.ex,()=>setSt(''));
+        else setSt('');
+      });
+    });
+  }
+}
+
+/* ── 생각 타이머 ── */
+function startTH(cb){
+  const w=document.getElementById('thinkWrap'),n=document.getElementById('thinkN'),f=document.getElementById('thinkFill');
+  w.classList.add('show'); let r=th; n.textContent=r; n.classList.remove('urg'); f.classList.remove('urg');
+  f.style.transition='none'; f.style.width='100%';
+  setTimeout(()=>{f.style.transition='width '+th+'s linear'; f.style.width='0%';},50);
+  thTimer=setInterval(()=>{
+    if(paused) return;
+    r--; n.textContent=r;
+    if(r<=2){n.classList.add('urg');f.classList.add('urg');}
+    if(r<=0){clearInterval(thTimer);thTimer=null;w.classList.remove('show');if(cb)cb();}
+  },1000);
+}
+function stopTH(){
+  if(thTimer){clearInterval(thTimer);thTimer=null;}
+  document.getElementById('thinkWrap').classList.remove('show');
+}
+
+/* ── 자동 재생 (이동모드) ── */
+function resetAuto(){cur=0;answered=false;buildDots();renderQ();autoPlay();}
+function autoPlay(){
+  if(!driveOn||paused||!Qs.length) return;
+  const q=Qs[cur], L=NL[ns];
+  setSt('🔊 문제 읽는 중...');
+  spk('문제 '+(cur+1)+'번. '+q.q,()=>{
+    if(!driveOn) return;
+    setSt('🔊 보기 읽는 중...');
+    spkOpts(q.opts,L,()=>{
+      if(!driveOn) return;
+      setSt('💭 생각 중...');
+      startTH(()=>{if(!driveOn) return; autoReveal();});
+    });
+  });
+}
+function autoReveal(){
+  if(!driveOn) return;
+  answered=true;
+  const q=Qs[cur], L=NL[ns];
+  document.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('ar');});
+  const ex=document.getElementById('exBox');
+  ex.textContent='⏰ 정답: '+q.opts[q.ans]+'\n\n💡 해설: '+q.ex;
+  ex.className='ex-box ar show';
+  const ds=document.querySelectorAll('.dot');
+  if(ds[cur]){ds[cur].classList.remove('active');ds[cur].classList.add('sk');}
+  setSt('🔊 정답 및 해설 낭독 중...');
+  spk('정답은 '+L[q.ans]+' '+q.opts[q.ans]+'입니다. 해설. '+q.ex,()=>{
+    if(!driveOn) return;
+    if(cur<Qs.length-1){
+      setSt('다음 문제로 이동합니다...');
+      nxTimer=setTimeout(()=>{cur++;answered=false;renderQ();buildDots();autoPlay();},1800);
+    } else {
+      setSt('🎉 이 단계 완료! 수고하셨습니다.');
+      spk('이 단계의 모든 문제가 완료되었습니다. 수고하셨습니다.',()=>{});
+    }
+  });
+}
+
+/* ── 수동 답변 ── */
+function answer(idx){
+  if(answered||driveOn) return;
+  answered=true;
+  const q=Qs[cur], L=NL[ns];
+  document.querySelectorAll('.opt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===q.ans) b.classList.add('ok');
+    else if(i===idx) b.classList.add('ng');
+  });
+  const ok=idx===q.ans;
+  const ex=document.getElementById('exBox');
+  ex.textContent=(ok?'✅ 정답!\n\n':'❌ 오답\n\n')+'💡 해설: '+q.ex;
+  ex.className='ex-box show';
+  document.getElementById('nxBtn').style.display=cur<Qs.length-1?'block':'none';
+  const ds=document.querySelectorAll('.dot');
+  if(ds[cur]){ds[cur].classList.remove('active');ds[cur].classList.add(ok?'ok':'ng');}
+  if(document.getElementById('autoEx').checked){
+    spk('정답은 '+L[q.ans]+' '+q.opts[q.ans]+'입니다. 해설. '+q.ex,()=>{
+      if(document.getElementById('autoNx').checked&&cur<Qs.length-1)
+        nxTimer=setTimeout(()=>nextQ(),1500);
+    });
+  }
+}
+function nextQ(){
+  cur++;
+  if(cur>=Qs.length){setSt('🎉 이 단계 완료!');return;}
+  answered=false; renderQ(); buildDots();
+}
+
+/* ── 문제 렌더링 ── */
+function renderQ(){
+  tStop(); answered=false;
+  document.getElementById('nxBtn').style.display='none';
+  document.getElementById('exBox').className='ex-box';
+  setSt('');
+  if(!Qs.length){
+    document.getElementById('qNum').textContent='문제 없음';
+    document.getElementById('qCat').textContent='-';
+    document.getElementById('qText').textContent='이 단계에 문제가 없습니다. 나중에 추가될 예정입니다.';
+    document.getElementById('opts').innerHTML='';
+    return;
+  }
+  const q=Qs[cur];
+  document.getElementById('qNum').textContent='문제 '+(cur+1)+' / '+Qs.length;
+  document.getElementById('qCat').textContent=q.cat;
+  document.getElementById('qText').textContent=q.q;
+  const ol=document.getElementById('opts'); ol.innerHTML='';
+  ['①','②','③','④'].forEach((c,i)=>{
+    const b=document.createElement('button'); b.className='opt';
+    b.innerHTML='<span class="oc">'+c+'</span><span>'+q.opts[i]+'</span>';
+    b.onclick=()=>answer(i); ol.appendChild(b);
+  });
+}
+function buildDots(){
+  const d=document.getElementById('dots'); d.innerHTML='';
+  if(!Qs.length) return;
+  const max=Math.min(Qs.length,50);
+  for(let i=0;i<max;i++){
+    const dot=document.createElement('div');
+    dot.className='dot'+(i===cur?' active':'');
+    d.appendChild(dot);
+  }
+}
+
+/* ── 초기화 ── */
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
+setTimeout(loadV,300);
+buildLevelBar();
+buildDots();
+renderQ();
+</script>
+</body>
+</html>
