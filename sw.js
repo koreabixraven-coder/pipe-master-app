@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v18-all-uploaded-questions-recorded';
+const CACHE_NAME = 'pipe-master-v19-all-theory-recorded-tts-caution';
 const ASSETS = [
   './',
   './index.html',
