@@ -7,10 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>RavenBix · 배관기능장 1600문제</title>
-<link rel="manifest" href="/manifest.json">
-<link rel="apple-touch-icon" href="/icon-192.png">
-<script src="/theory.js"></script>
-<script src="/questions.js"></script>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="theory.js"></script>
+<script src="questions.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{background:#121212;color:#E0E0E0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
@@ -158,6 +158,9 @@
   .big-btn{width:100%;padding:20px;font-size:17px;font-weight:600;border-radius:12px;border:none;background:#1D9E75;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:8px;transition:all 0.15s;-webkit-tap-highlight-color:transparent;}
   .big-btn:active{transform:scale(0.97);}
   .big-btn.paused{background:#BA7517;}
+  .think-wrap.paused{border-color:#BA7517;}
+  .think-wrap.paused .think-lbl::after{content:' · 일시정지';color:#BA7517;}
+
   .big-btn svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
   .exit-btn{width:100%;padding:8px;font-size:11px;border:0.5px solid #2A5A45;border-radius:8px;background:transparent;color:#5DCAA5;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
 
@@ -338,6 +341,7 @@
       <div class="home-quick-actions">
         <button class="home-quick-btn settings" onclick="openQuizSettingsFromHome(event)">⚙ 설정</button>
         <button class="home-quick-btn drive" onclick="openDriveFromHome(event)">🎧 이동 중 청취 모드</button>
+        <button class="home-quick-btn settings" onclick="openTheoryFromHome(event)">📚 이론 목차</button>
       </div>
       <div class="home-help">설정과 이동 중 청취 모드는 문제 풀기 화면에서도 다시 사용할 수 있습니다.</div>
     </div>
@@ -389,6 +393,7 @@
       <span>홈</span>
       <span class="bb-title">이론 학습</span>
     </div>
+    <div class="home-help" style="margin-bottom:10px;text-align:left;">과목을 선택하면 챕터 목차가 열립니다. 각 챕터에는 TTS 읽기문이 포함되어 있습니다.</div>
     <div class="theory-subject-list" id="theorySubjectList"></div>
   </div>
 </div>
@@ -635,7 +640,7 @@ let Qs = DB[curLevel];
 let cur=0, answered=false, driveOn=false, paused=false, locked=false;
 let synth=window.speechSynthesis, voices=[], selV=null;
 let rate=0.9, pitch=1.0, ns=0, pb=0, th=5;
-let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null;
+let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null, resumeTask=null;
 const NL=[['1번','2번','3번','4번'],['1.','2.','3.','4.'],['첫번째','두번째','세번째','네번째']];
 
 /* ── 화면 전환 ── */
@@ -668,12 +673,20 @@ function openDriveFromHome(e){
     setSt('이동 중 청취 모드를 시작했습니다.');
   },120);
 }
+function openTheoryFromHome(e){
+  if(e){e.stopPropagation(); e.preventDefault();}
+  goScreen('screenTheory');
+}
 
 /* ── 이론 과목 목록 ── */
 let curSubject=null, curChapterIdx=0;
 function buildTheorySubjects(){
   const list=document.getElementById('theorySubjectList');
   list.innerHTML='';
+  if(typeof THEORY==='undefined' || !THEORY || Object.keys(THEORY).length===0){
+    list.innerHTML='<div class="section-card"><div class="sec-title">이론 목차를 불러오지 못했습니다</div><div class="sec-content">theory.js 파일 경로 또는 업로드 상태를 확인하세요. GitHub Pages에서는 /theory.js가 아니라 theory.js 상대경로가 필요합니다.</div></div>';
+    return;
+  }
   Object.keys(THEORY).forEach(key=>{
     const s=THEORY[key];
     const div=document.createElement('div');
@@ -970,13 +983,24 @@ function togglePause(){
   const ico=document.getElementById('pauseIco');
   const lbl=document.getElementById('pauseLbl');
   if(paused){
-    synth.pause(); stopTH(); btn.classList.add('paused');
+    synth.pause();
+    btn.classList.add('paused');
+    document.getElementById('thinkWrap').classList.add('paused');
     ico.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';
     lbl.textContent='재개하기';
+    setSt('⏸ 일시정지 중입니다.');
   } else {
-    synth.resume(); btn.classList.remove('paused');
+    synth.resume();
+    btn.classList.remove('paused');
+    document.getElementById('thinkWrap').classList.remove('paused');
     ico.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
     lbl.textContent='일시정지';
+    setSt('▶ 재개합니다.');
+    if(resumeTask){
+      const fn=resumeTask;
+      resumeTask=null;
+      setTimeout(()=>{ if(!paused && driveOn) fn(); },80);
+    }
   }
 }
 
@@ -1050,14 +1074,24 @@ function spk(txt,cb){
   synth.cancel();
   const u=new SpeechSynthesisUtterance(toKorean(txt));
   u.lang='ko-KR'; if(selV) u.voice=selV; u.rate=rate; u.pitch=pitch;
-  u.onend=()=>{clrB(); if(!paused&&cb) cb();};
+  u.onend=()=>{
+    clrB();
+    if(cb){
+      if(paused) resumeTask=cb;
+      else cb();
+    }
+  };
   synth.speak(u);
   if(locked) document.getElementById('lockNow').textContent=txt.length>40?txt.substring(0,40)+'...':txt;
 }
-/* 정답 낭독: "정답은 N번" → 0.5초 쉬고 → 해설 읽기 */
+/* 정답 낭독은 보기 읽기 방식과 분리한다.
+   기존 문제: L[q.ans]가 '4번'인데 뒤에 '번'을 또 붙여 '4번번'으로 낭독됨.
+   수정: 정답 안내는 항상 '정답은 4번입니다.' 형식으로 고정한다. */
+function ansNo(q){ return (Number(q.ans)+1)+'번'; }
 function spkAns(L,q,cb){
-  spk('정답은 '+L[q.ans]+'번.',()=>{
+  spk('정답은 '+ansNo(q)+'입니다.',()=>{
     setTimeout(()=>{
+      if(paused){ resumeTask=()=>spk('해설. '+q.ex, cb); return; }
       spk('해설. '+q.ex, cb);
     },500);
   });
@@ -1068,19 +1102,26 @@ function spkOpts(opts,labels,cb){
     if(i>=opts.length){if(cb)cb();return;}
     const txt=labels[i]+'. '+opts[i]; i++;
     spk(txt,()=>{
-      if(pb>0&&i<opts.length){pbTimer=setTimeout(()=>{if(!paused)go();},pb*1000);}
+      if(pb>0&&i<opts.length){pbTimer=setTimeout(()=>{if(paused) resumeTask=go; else go();},pb*1000);}
       else go();
     });
   }
   go();
 }
-function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. 음성 테스트 중입니다.');}
+function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. 정답 안내는 정답은 4번입니다. 이렇게 읽습니다.');}
 function tStop(){
   synth.cancel(); stopTH();
   if(nxTimer){clearTimeout(nxTimer);nxTimer=null;}
   if(pbTimer){clearTimeout(pbTimer);pbTimer=null;}
+  resumeTask=null;
+  paused=false;
+  const btn=document.getElementById('bigBtn');
+  if(btn) btn.classList.remove('paused');
+  const tw=document.getElementById('thinkWrap');
+  if(tw) tw.classList.remove('paused');
   clrB(); setSt('');
 }
+function ttsStop(){ tStop(); }
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
 function setSt(m){document.getElementById('status').innerHTML=m;}
 
@@ -1145,7 +1186,7 @@ function autoReveal(){
   const q=Qs[cur], L=NL[ns];
   document.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('ar');});
   const ex=document.getElementById('exBox');
-  ex.textContent='⏰ 정답: '+q.opts[q.ans]+'\n\n💡 해설: '+q.ex;
+  ex.textContent='⏰ 정답: '+ansNo(q)+'. '+q.opts[q.ans]+'\n\n💡 해설: '+q.ex;
   ex.className='ex-box ar show';
   const ds=document.querySelectorAll('.dot');
   if(ds[cur]){ds[cur].classList.remove('active');ds[cur].classList.add('sk');}
@@ -1175,7 +1216,7 @@ function answer(idx){
   const isOk=idx===q.ans;
   recordAnswer(isOk, q);
   const ex=document.getElementById('exBox');
-  ex.textContent=(isOk?'✅ 정답!\n\n':'❌ 오답\n\n')+'💡 해설: '+q.ex;
+  ex.textContent=(isOk?'✅ 정답!\n\n':'❌ 오답\n\n')+'정답: '+ansNo(q)+'. '+q.opts[q.ans]+'\n\n💡 해설: '+q.ex;
   ex.className='ex-box show';
   const isLast=cur>=Qs.length-1;
   document.getElementById('nxBtn').style.display=isLast?'none':'block';
@@ -1252,7 +1293,7 @@ tryLoadV();
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('/sw.js')
+    navigator.serviceWorker.register('sw.js')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });

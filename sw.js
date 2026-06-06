@@ -1,13 +1,16 @@
-const CACHE_NAME = 'pipe-master-v5-home-settings-drive';
+const CACHE_NAME = 'pipe-master-v7-tts-answer-playback-ui-check';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/questions.js',
-  '/theory.js',
-  '/sw.js',
-  '/icon-192.png',
-  '/icon-512.png'
+  './',
+  './index.html',
+  './manifest.json',
+  './questions.js',
+  './theory.js',
+  './sw.js',
+  './icon-72.png',
+  './icon-96.png',
+  './icon-128.png',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', e => {
@@ -34,6 +37,6 @@ self.addEventListener('fetch', e => {
         caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
         return res;
       });
-    }).catch(() => caches.match('/index.html'))
+    }).catch(() => caches.match('./index.html'))
   );
 });

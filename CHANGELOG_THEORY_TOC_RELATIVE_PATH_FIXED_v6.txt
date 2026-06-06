@@ -1,0 +1,17 @@
+배관기능장 앱 v6 수정 기록
+
+문제 증상.
+- 기존 설정 UI는 보이지만 이론 학습 목차가 표시되지 않음.
+
+원인.
+- index.html에서 theory.js와 questions.js를 /theory.js, /questions.js 절대경로로 불러오는 구조였음.
+- Cloudflare 루트 배포에서는 보일 수 있지만 GitHub Pages 하위 저장소 주소에서는 /theory.js가 저장소 내부가 아닌 사이트 루트를 가리켜 이론 데이터가 로드되지 않을 수 있음.
+- 이 경우 THEORY 데이터가 없어서 이론 목차가 빈 화면처럼 보일 수 있음.
+
+수정.
+1. manifest.json. icon. theory.js. questions.js 경로를 상대경로로 변경.
+2. sw.js 캐시 경로도 상대경로로 변경.
+3. sw.js 캐시명을 v6으로 변경.
+4. 이론 데이터 로드 실패 시 빈 화면 대신 안내 문구를 표시하도록 buildTheorySubjects 방어 코드 추가.
+5. 홈 화면 상단 빠른 실행 버튼에 📚 이론 목차 버튼 추가.
+6. 기존 설정 UI. 이동 중 청취 모드. 전체 1600문제. 이론 데이터는 유지.
