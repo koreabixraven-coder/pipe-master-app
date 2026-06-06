@@ -19,6 +19,33 @@
   .screen{display:none;}
   .screen.show{display:block;}
 
+
+  /* ── v23 메인 UI 정리. 로직 변경 없음 ── */
+  .home-wrap.clean-home{padding:26px 16px 28px;}
+  .home-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;padding:4px 2px 10px;border-bottom:0.5px solid #1E1E1E;}
+  .home-brand{display:flex;align-items:center;gap:10px;min-width:0;}
+  .home-brand-mark{width:36px;height:36px;border-radius:12px;background:#0A2E22;color:#9FE1CB;display:flex;align-items:center;justify-content:center;font-size:18px;border:0.5px solid #1D9E75;}
+  .home-brand-text{min-width:0;}
+  .home-brand-name{font-size:16px;font-weight:800;color:#1D9E75;letter-spacing:-0.3px;white-space:nowrap;}
+  .home-brand-sub{font-size:10px;color:#666;margin-top:2px;white-space:nowrap;}
+  .home-cog{width:38px;height:38px;border-radius:12px;border:0.5px solid #1D9E75;background:#0A2E22;color:#9FE1CB;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;flex-shrink:0;}
+  .home-cog svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+  .home-menu.clean{gap:14px;margin-bottom:22px;}
+  .home-menu.clean .home-card{padding:22px 20px;min-height:180px;display:flex;flex-direction:column;justify-content:center;}
+  .home-menu.clean .hc-title{font-size:21px;font-weight:800;letter-spacing:-0.4px;}
+  .home-menu.clean .hc-sub{font-size:13px;color:#888;line-height:1.65;margin-top:8px;}
+  .home-menu.clean .hc-tags{gap:7px;margin-top:15px;}
+  .home-menu.clean .hc-tag{font-size:12px;padding:6px 10px;font-weight:600;}
+  .home-menu.clean .hc-icon{width:58px;height:58px;border-radius:16px;font-size:28px;}
+  .home-footer.clean{margin-top:4px;}
+  .ts-count .ts-small{display:block;color:#777;font-size:10px;margin-top:2px;}
+  @media(min-width:760px){
+    .home-wrap.clean-home{max-width:760px;}
+    .home-menu.clean .home-card{min-height:190px;padding:28px 32px;}
+    .home-menu.clean .hc-title{font-size:24px;}
+    .home-menu.clean .hc-sub{font-size:14px;}
+  }
+
   /* ── 메인 홈 화면 ── */
   .home-wrap{max-width:480px;margin:0 auto;padding:24px 16px;}
   .home-logo{text-align:center;padding:30px 0 24px;}
@@ -464,12 +491,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v22</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v23</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v22. 문제풀이 목차를 학습 흐름별 카드형으로 정리했습니다. 문제 로직은 그대로입니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v23. 메인은 로고·설정·이론카드·문제카드만 남기고 핵심 정보는 목차 안으로 정리했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -571,26 +598,23 @@
 
 <!-- ════ 메인 홈 화면 ════ -->
 <div class="screen show" id="screenHome">
-  <div class="home-wrap">
-    <div class="home-logo">
-      <div class="hl-name">RavenBix · 배관기능장</div>
-      <div class="hl-sub">예상기출문제 TTS 수험앱</div>
-      <div class="hl-badge">배관기능장 자격시험 대비</div>
-      <div class="home-quick-actions">
-        <button class="home-quick-btn settings" onclick="openSettingsFromAnywhere(event)">⚙ 설정</button>
-        <button class="home-quick-btn drive" onclick="openDriveFromHome(event)">🎧 이동 중 청취 모드</button>
-        <button class="home-quick-btn settings" onclick="openTheoryFromHome(event)">📚 이론 목차</button>
+  <div class="home-wrap clean-home">
+    <!-- 1행: 로고 + 작은 설정 아이콘 -->
+    <div class="home-topline">
+      <div class="home-brand" onclick="goScreen('screenHome')" title="메인">
+        <div class="home-brand-mark">R</div>
+        <div class="home-brand-text">
+          <div class="home-brand-name">RavenBix · 배관기능장</div>
+          <div class="home-brand-sub">TTS 시청각 수험앱</div>
+        </div>
       </div>
-      <div class="home-help">설정과 이동 중 청취 모드는 문제 풀기 화면에서도 다시 사용할 수 있습니다.</div>
-      <div class="count-badge-row" style="justify-content:center;margin:14px 0;">
-        <span class="count-badge" id="homeTheoryCount">이론 확인 중</span>
-        <span class="count-badge gold" id="homeTheoryCautionCount">주의사항 확인 중</span>
-        <span class="count-badge blue" id="homeQuestionCount">문제 확인 중</span>
-        <span class="count-badge blue" id="homeTocCount">목차 확인 중</span>
-      </div>
-
+      <button class="home-cog" onclick="openSettingsFromAnywhere(event)" aria-label="설정">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
     </div>
-    <div class="home-menu">
+
+    <!-- 2행: 이론 학습 카드 -->
+    <div class="home-menu clean">
       <div class="home-card theory" onclick="goScreen('screenTheory')">
         <div class="hc-top">
           <div class="hc-icon th">📖</div>
@@ -598,33 +622,36 @@
             <div class="hc-title">이론 학습</div>
           </div>
         </div>
-        <div class="hc-sub">배관재료·시공·유체역학·밸브·설계 핵심 이론을 TTS로 들으며 학습합니다.</div>
+        <div class="hc-sub">배관재료. 시공. 유체역학. 밸브·기기. 설계. 공업경영을 TTS로 들으며 학습합니다.</div>
         <div class="hc-tags">
           <span class="hc-tag th">배관재료</span>
-          <span class="hc-tag th">배관시공</span>
+          <span class="hc-tag th">시공</span>
           <span class="hc-tag th">유체역학</span>
           <span class="hc-tag th">밸브·기기</span>
-          <span class="hc-tag th">배관설계</span>
+          <span class="hc-tag th">설계</span>
+          <span class="hc-tag th">공업경영</span>
         </div>
       </div>
+
+      <!-- 3행: 문제 풀이 카드 -->
       <div class="home-card quiz" onclick="goScreen('screenQuiz')">
         <div class="hc-top">
           <div class="hc-icon qz">✏️</div>
           <div>
-            <div class="hc-title">문제 풀기</div>
+            <div class="hc-title">문제 풀이</div>
           </div>
         </div>
-        <div class="hc-sub">초급. 중급. 고급. 심화 4개 묶음으로 정리한 16개 목차. 각 100문제씩 TTS와 함께 풀어봅니다.<div class="count-badge-row"><span class="count-badge blue" id="homeQuestionCount">문제 확인 중</span><span class="count-badge blue" id="homeTocCount">목차 확인 중</span></div><div class="count-note">questions.js의 실제 문제 수를 앱에서 자동 계산해 표시합니다.</div></div>
+        <div class="hc-sub">초급. 중급. 고급. 심화 단계별 문제를 TTS와 함께 풀어봅니다.</div>
         <div class="hc-tags">
-          <span class="hc-tag qz">초급 1~3단계</span>
-          <span class="hc-tag qz">초급 심화</span>
+          <span class="hc-tag qz">초급</span>
           <span class="hc-tag qz">중급</span>
           <span class="hc-tag qz">고급</span>
           <span class="hc-tag qz">심화</span>
         </div>
       </div>
     </div>
-    <div class="home-footer">
+
+    <div class="home-footer clean">
       <p>© 2025 RavenBix. All rights reserved.<br>배관기능장 예상기출문제 TTS 수험앱 · 무단 복제 및 배포 금지</p>
     </div>
   </div>
@@ -961,12 +988,13 @@ function buildTheorySubjects(){
   }
   Object.keys(THEORY).forEach(key=>{
     const s=THEORY[key];
+    const sectionCount=(s.chapters||[]).reduce((a,ch)=>a+((ch.sections||[]).length),0);
     const div=document.createElement('div');
     div.className='ts-card';
     div.innerHTML=`<span class="ts-icon">${s.icon}</span>
       <div class="ts-info">
         <div class="ts-title">${s.title}</div>
-        <div class="ts-count">챕터 ${s.chapters.length}개</div>
+        <div class="ts-count">챕터 ${s.chapters.length}개<span class="ts-small">이론 ${sectionCount}항목</span></div>
       </div>
       <svg class="ts-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
     div.onclick=()=>openSubject(key);
@@ -984,7 +1012,8 @@ function openSubject(key){
   s.chapters.forEach((ch,i)=>{
     const div=document.createElement('div');
     div.className='ch-item';
-    div.innerHTML=`<span class="ch-num">${i+1}</span><span class="ch-text">${ch.title}</span>`;
+    const count=(ch.sections||[]).length;
+    div.innerHTML=`<span class="ch-num">${i+1}</span><span class="ch-text">${ch.title}<span class="ts-small">이론 ${count}항목</span></span>`;
     div.onclick=()=>openChapter(i);
     list.appendChild(div);
   });
