@@ -668,10 +668,6 @@ function buildDots(){
 }
 
 /* ── 초기화 ── */
-if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
-setTimeout(loadV,300);
-
-/* 앱 시작 시 첫 단계 데이터 확실히 로드 */
 function init(){
   curLevel='초급1';
   Qs=DB[curLevel];
@@ -680,6 +676,14 @@ function init(){
   buildDots();
   renderQ();
 }
+
+/* 음성 로드 - Android는 늦게 로드되므로 여러번 시도 */
+function tryLoadV(){
+  loadV();
+  [300,600,1000,2000,3000].forEach(t=>setTimeout(loadV,t));
+}
+if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
+tryLoadV();
 init();
 </script>
 </body>
