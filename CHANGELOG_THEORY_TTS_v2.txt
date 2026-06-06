@@ -1,0 +1,41 @@
+배관기능장 모바일앱 이론 탑재 및 TTS 중복낭독 수정 기록 v2
+
+1. 분석 결과
+- index.html은 THEORY 데이터의 과목. 챕터. 섹션 구조를 읽어 이론 화면을 만드는 구조입니다.
+- theoryReadAll 함수는 섹션 title. content. points를 이어붙여 TTS로 읽는 구조였습니다.
+- toKorean 함수는 KS. SPP. STPG 등 영문 약어를 한글 발음으로 변환하는 구조입니다.
+- 기존 theory.js에는 "KS 기호: SPP", "KS D 3507", "SPP" 등 영문 약어가 들어 있습니다.
+- "케이에스(KS)"처럼 한글 발음과 영문 약어가 함께 들어오면 TTS가 두 번 읽을 수 있는 구조였으므로 이를 방지하는 정규화 로직을 추가했습니다.
+
+2. 수정 내용
+- questions.js를 index.html에서 실제 로드하도록 연결했습니다.
+- index.html 내부의 샘플 DB 중복 선언을 제거했습니다.
+- CSS style 닫힘 태그가 중복되어 있던 부분을 정리했습니다.
+- theory.js를 TTS 시청각교육용 구조로 재작성했습니다.
+- 이론 섹션에 학습레벨. 핵심개념. 상세설명. 시험포인트. 암기문장. TTS읽기문을 탑재했습니다.
+- TTS는 sec.tts가 있으면 해당 문장을 우선 읽도록 수정했습니다.
+- toKorean 함수에 케이에스(KS). 에스피피(SPP). 에스티피지(STPG) 같은 중복 발음 제거 로직을 추가했습니다.
+- 1MPa. 350°C. 6A 같은 단위 표현을 TTS에서 자연스럽게 읽도록 보정했습니다.
+- sw.js 캐시 버전을 pipe-master-v2-theory-tts로 올리고 theory.js를 캐시 목록에 추가했습니다.
+
+3. TTS 확인 예시
+- 화면 표시: KS 기호: SPP
+- TTS 낭독: 케이에스 기호 에스피피
+- 화면 표시: 케이에스(KS)
+- TTS 낭독: 케이에스
+- 화면 표시: 1MPa 이하
+- TTS 낭독: 1메가파스칼 이하
+- 화면 표시: 350°C 이하
+- TTS 낭독: 350도 이하
+
+4. 업로드 파일
+- index.html
+- manifest.json
+- questions.js
+- theory.js
+- sw.js
+- icon-72.png
+- icon-96.png
+- icon-128.png
+- icon-192.png
+- icon-512.png

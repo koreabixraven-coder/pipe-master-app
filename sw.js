@@ -1,9 +1,10 @@
-const CACHE_NAME = 'pipe-master-v1';
+const CACHE_NAME = 'pipe-master-v2-theory-tts';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/questions.js',
+  '/theory.js',
   '/sw.js',
   '/icon-192.png',
   '/icon-512.png'

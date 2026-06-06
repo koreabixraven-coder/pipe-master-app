@@ -6,10 +6,11 @@
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>RavenBix · 배관기능장 예상기출문제</title>
+<title>RavenBix · 배관기능장 1600문제</title>
 <link rel="manifest" href="/manifest.json">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <script src="/theory.js"></script>
+<script src="/questions.js"></script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{background:#121212;color:#E0E0E0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;}
@@ -76,11 +77,19 @@
   .sec-points{display:flex;flex-direction:column;gap:5px;}
   .sec-point{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:#888;line-height:1.6;}
   .sec-point::before{content:'▸';color:#1D9E75;flex-shrink:0;margin-top:1px;}
+
+  /* ── 이론 상세 확장 ── */
+  .sec-level{display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;background:#0A2E22;color:#5DCAA5;border:0.5px solid #1D9E75;margin-bottom:8px;}
+  .sec-block{margin-top:8px;padding:9px 10px;border-radius:10px;background:#141414;border:0.5px solid #242424;}
+  .sec-label{font-size:10px;color:#5DCAA5;font-weight:700;margin-bottom:4px;letter-spacing:0.2px;}
+  .sec-memory{margin-top:8px;padding:9px 10px;border-radius:10px;background:#0A2E22;border:0.5px solid #1D9E75;color:#9FE1CB;font-size:12px;line-height:1.65;}
+  .sec-exam{margin-top:8px;padding:9px 10px;border-radius:10px;background:#1A1000;border:0.5px solid #BA7517;color:#FAC775;font-size:12px;line-height:1.65;}
+
   .theory-tts-bar{display:flex;gap:6px;margin-bottom:10px;position:sticky;top:0;background:#121212;padding:8px 0;z-index:10;}
   .theory-nav{display:flex;gap:7px;margin-bottom:16px;}
   .tnav{flex:1;padding:10px;font-size:12px;font-weight:500;border:0.5px solid #2A2A2A;border-radius:10px;background:#1A1A1A;color:#CCC;cursor:pointer;}
   .tnav.p{background:#1D9E75;border-color:#1D9E75;color:#fff;}
-</style>
+
 
   /* ── 레이아웃 ── */
   .app{max-width:480px;margin:0 auto;padding:0 14px 24px;}
@@ -342,7 +351,7 @@
             <div class="hc-title">문제 풀기</div>
           </div>
         </div>
-        <div class="hc-sub">초급·중급·고급·심화 단계별 예상기출문제를 TTS와 함께 풀어봅니다.</div>
+        <div class="hc-sub">초급1부터 심화심화까지 16개 목차. 각 100문제씩 TTS와 함께 풀어봅니다.</div>
         <div class="hc-tags">
           <span class="hc-tag qz">초급 1~3단계</span>
           <span class="hc-tag qz">초급 심화</span>
@@ -605,32 +614,8 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* ════════════════════════════════
-   문제 데이터
-   형식: { cat, q, opts:[4개], ans(0~3), ex }
-   단계: '초급1','초급2','초급3','초급심화','중급','고급','심화'
-   ════════════════════════════════ */
-/* DB는 questions.js 에서 로드 */
-const DB = {
-  '초급1': [
-    {cat:"배관재료",q:"배관용 탄소강 강관의 KS 기호로 올바른 것은?",opts:["SPPH","SPP","STS","STPG"],ans:1,ex:"SPP는 배관용 탄소강 강관의 KS 기호입니다. 사용압력이 낮은 증기·물·기름·가스·공기 배관에 사용됩니다. SPPH는 고압배관용, STS는 스테인리스강관, STPG는 압력배관용 탄소강 강관입니다."},
-    {cat:"배관시공",q:"동관의 납땜 접합 시 플럭스를 사용하는 주된 이유는?",opts:["관의 강도를 높이기 위해","부식을 방지하기 위해","산화막 제거 및 납의 흐름성을 좋게 하기 위해","이음부의 기밀을 높이기 위해"],ans:2,ex:"플럭스는 금속 표면의 산화막을 제거하고 용가재인 납의 흐름성을 향상시켜 견고한 접합이 이루어지도록 돕는 화학 보조제입니다."},
-    {cat:"배관재료",q:"스테인리스강관의 KS 기호로 옳은 것은?",opts:["SPP","SPPH","STS","STPG"],ans:2,ex:"STS는 스테인리스강관의 KS 기호입니다. 내식성이 우수하여 화학공업·식품공업·의약품 배관 등에 사용됩니다."},
-    {cat:"유체역학",q:"관내 유체의 레이놀즈수(Re)가 4000 이상일 때 유동 상태는?",opts:["층류","천이 영역","난류","정류"],ans:2,ex:"레이놀즈수 Re < 2100: 층류, 2100 < Re < 4000: 천이 영역, Re > 4000: 완전 난류입니다."},
-    {cat:"밸브·기기",q:"게이트 밸브의 특징으로 틀린 것은?",opts:["유체의 흐름을 완전히 차단하거나 완전히 열 때 주로 사용","유량 조절에 적합하다","전개 시 압력 손실이 매우 적다","슬루스 밸브라고도 한다"],ans:1,ex:"게이트 밸브는 완전 개폐용으로 사용되며 유량 조절에는 부적합합니다. 유량 조절은 글로브 밸브가 적합합니다."}
-  ],
-  '초급2': [
-    {cat:"배관설계",q:"배관 시스템에서 워터해머 현상을 방지하는 방법으로 가장 적절한 것은?",opts:["관 내 유속을 높인다","밸브를 급속히 개폐한다","에어챔버 또는 서지탱크를 설치한다","관경을 줄인다"],ans:2,ex:"워터해머(수격 현상)는 밸브의 급격한 개폐 시 유체의 운동에너지가 압력에너지로 변환되어 충격이 발생하는 현상입니다. 에어챔버, 서지탱크, 완충밸브 설치로 방지합니다."},
-    {cat:"배관시공",q:"나사 배관 접합에서 테프론 테이프를 사용하는 주된 목적은?",opts:["나사부 강도 보강","나사부 기밀 유지 및 풀림 방지","부식 방지","미관을 위해"],ans:1,ex:"테프론(PTFE) 테이프는 나사산에 감아 기밀성을 높이고, 조립 시 금속 마찰을 줄이며, 재분해 시 분리를 용이하게 합니다."}
-  ],
-  '초급3': [],
-  '초급심화': [],
-  '중급': [],
-  '고급': [],
-  '심화': []
-};
-
-const LEVELS = Object.keys(DB);
+/* 문제 데이터 DB는 questions.js에서 로드합니다. 기존 샘플 문제는 제거하고 16개 목차 × 100문제로 구성했습니다. */
+const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '초급1';
 let Qs = DB[curLevel];
 let cur=0, answered=false, driveOn=false, paused=false, locked=false;
@@ -696,9 +681,13 @@ function openChapter(idx){
   ch.sections.forEach(sec=>{
     const card=document.createElement('div');
     card.className='section-card';
-    card.innerHTML=`<div class="sec-title">${sec.title}</div>
-      <div class="sec-content">${sec.content}</div>
-      <div class="sec-points">${sec.points.map(p=>`<div class="sec-point">${p}</div>`).join('')}</div>`;
+    const pts=(sec.points||[]).map(p=>`<div class="sec-point">${p}</div>`).join('');
+    const level=sec.level?`<div class="sec-level">${sec.level}</div>`:'';
+    const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content">${sec.key}</div></div>`:'';
+    const detail=sec.detail?`<div class="sec-block"><div class="sec-label">상세설명</div><div class="sec-content">${sec.detail}</div></div>`:`<div class="sec-content">${sec.content||''}</div>`;
+    const exam=pts?`<div class="sec-block"><div class="sec-label">시험포인트</div><div class="sec-points">${pts}</div></div>`:'';
+    const memory=sec.memory?`<div class="sec-memory"><b>암기문장.</b> ${sec.memory}</div>`:'';
+    card.innerHTML=`${level}<div class="sec-title">${sec.title}</div>${key}${detail}${exam}${memory}`;
     area.appendChild(card);
   });
   document.getElementById('tNavPrev').style.opacity=idx===0?'0.3':'1';
@@ -713,14 +702,23 @@ function theoryNavChapter(dir){
   openChapter(next);
 }
 
+function theoryTextForRead(sec){
+  if(sec.tts) return sec.tts;
+  let txt='';
+  if(sec.level) txt+=sec.level+'. ';
+  txt+=sec.title+'. ';
+  if(sec.key) txt+='핵심개념. '+sec.key+'. ';
+  if(sec.detail) txt+='상세설명. '+sec.detail+'. ';
+  else if(sec.content) txt+=sec.content+'. ';
+  if(sec.points&&sec.points.length) txt+='시험포인트. '+sec.points.join('. ')+'. ';
+  if(sec.memory) txt+='암기문장. '+sec.memory+'. ';
+  return txt;
+}
 function theoryReadAll(){
   if(!curSubject) return;
   const ch=THEORY[curSubject].chapters[curChapterIdx];
   let txt='';
-  ch.sections.forEach(sec=>{
-    txt+=sec.title+'. '+sec.content+'. ';
-    sec.points.forEach(p=>{ txt+=p+'. '; });
-  });
+  ch.sections.forEach(sec=>{ txt+=theoryTextForRead(sec)+' '; });
   spk(txt,()=>setSt(''));
   setSt('🔊 이론 낭독 중...');
 }
@@ -949,13 +947,14 @@ function togglePause(){
 /* ── TTS ── */
 /* ── 영문 → 한글 발음 변환 ── */
 function toKorean(txt){
-  /* 배관 관련 주요 약어 변환 */
+  /* TTS 전용 정규화.
+     목표: 케이에스(KS)처럼 한글 발음과 영문 약어가 같이 있을 때 두 번 읽지 않게 한다. */
   const map = {
     'SPPH':'에스피피에이치','SPP':'에스피피','STS':'에스티에스',
     'STPG':'에스티피지','STPA':'에스티피에이','SPPG':'에스피피지',
     'KS':'케이에스','JIS':'제이아이에스','ASTM':'에이에스티엠',
-    'ISO':'아이에스오','PVC':'피브이씨','PE':'피이','PP':'피피',
-    'PTFE':'피티에프이','TIG':'티아이지','MIG':'엠아이지',
+    'ISO':'아이에스오','PVC':'피브이씨','CPVC':'씨피브이씨','PE':'피이','HDPE':'에이치디피이','LDPE':'엘디피이','PP':'피피',
+    'PTFE':'피티에프이','TIG':'티아이지','MIG':'엠아이지','MAG':'엠에이지',
     'TTS':'티티에스','API':'에이피아이','ANSI':'에이엔에스아이',
     'ASME':'에이에스엠이','DIN':'디아이엔','DN':'디엔',
     'NPT':'엔피티','PT':'피티','PF':'피에프',
@@ -963,16 +962,38 @@ function toKorean(txt){
     'MPa':'메가파스칼','kPa':'킬로파스칼','Pa':'파스칼',
     'kW':'킬로와트','kWh':'킬로와트시',
     'pH':'피에이치','CO2':'이산화탄소','H2O':'물',
+    'QCD':'큐씨디','QC':'큐씨','PDCA':'피디씨에이','PERT':'퍼트','CPM':'씨피엠',
     'A':'에이','B':'비','C':'씨','D':'디',
     'No':'번호','no':'번호'
   };
-  let result = txt;
-  /* 긴 것부터 먼저 치환 (SPP보다 SPPH를 먼저) */
+  let result = String(txt||'');
+
+  /* 케이에스(KS), KS(케이에스), 에스피피(SPP) 같은 중복 낭독 제거 */
   Object.keys(map).sort((a,b)=>b.length-a.length).forEach(k=>{
-    const re = new RegExp('\\b'+k+'\\b','g');
-    result = result.replace(re, map[k]);
+    const v=map[k];
+    const escK=k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const escV=v.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    result=result.replace(new RegExp(escV+'\\s*\\(\\s*'+escK+'\\s*\\)','g'), v);
+    result=result.replace(new RegExp(escK+'\\s*\\(\\s*'+escV+'\\s*\\)','g'), v);
   });
-  /* 나머지 연속 대문자(2자 이상) → 알파벳 하나씩 읽기 */
+
+  /* 온도와 단위는 숫자와 붙어 있어도 자연스럽게 읽도록 먼저 처리 */
+  result = result.replace(/(\d+(?:\.\d+)?)\s*°C/g, '$1도');
+  result = result.replace(/(\d+(?:\.\d+)?)\s*℃/g, '$1도');
+  result = result.replace(/(\d+(?:\.\d+)?)\s*MPa/g, '$1메가파스칼');
+  result = result.replace(/(\d+(?:\.\d+)?)\s*kPa/g, '$1킬로파스칼');
+  result = result.replace(/(\d+(?:\.\d+)?)\s*m\/s/g, '$1미터 매 초');
+  result = result.replace(/(\d+(?:\.\d+)?)\s*m²/g, '$1제곱미터');
+  result = result.replace(/(\d+(?:\.\d+)?)\s*m3/g, '$1세제곱미터');
+  result = result.replace(/(\d+(?:\.\d+)?)\s*A\b/g, '$1에이');
+
+  /* 긴 약어부터 치환 */
+  Object.keys(map).sort((a,b)=>b.length-a.length).forEach(k=>{
+    const re = new RegExp('(^|[^A-Za-z0-9가-힣])'+k+'(?=$|[^A-Za-z0-9가-힣])','g');
+    result = result.replace(re, (m,p1)=>p1+map[k]);
+  });
+
+  /* 남은 연속 대문자 2자 이상은 알파벳 하나씩 읽기 */
   result = result.replace(/\b([A-Z]{2,})\b/g, m=>{
     const alphaMap={'A':'에이','B':'비','C':'씨','D':'디','E':'이','F':'에프',
       'G':'지','H':'에이치','I':'아이','J':'제이','K':'케이','L':'엘',
@@ -980,6 +1001,12 @@ function toKorean(txt){
       'T':'티','U':'유','V':'브이','W':'더블유','X':'엑스','Y':'와이','Z':'지'};
     return m.split('').map(c=>alphaMap[c]||c).join('');
   });
+
+  /* TTS가 괄호와 기호를 과하게 읽지 않도록 완화 */
+  result = result.replace(/[()]/g,' ');
+  result = result.replace(/[·/]/g,' ');
+  result = result.replace(/[:=]/g,' ');
+  result = result.replace(/\s+/g,' ').trim();
   return result;
 }
 
