@@ -308,6 +308,14 @@
 
 
 
+
+  /* ── v20 홈 화면 문제·이론 수량 확인 표시 ── */
+  .count-badge-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .count-badge{border:0.5px solid #1D9E75;background:#0A2E22;color:#9FE1CB;border-radius:999px;padding:7px 11px;font-size:12px;font-weight:700;}
+  .count-badge.blue{border-color:#378ADD;background:#0C2D4A;color:#A8D2FF;}
+  .count-badge.gold{border-color:#BA7517;background:#1A140A;color:#FFD9A0;}
+  .count-note{font-size:11px;color:#777;margin-top:8px;line-height:1.45;}
+
   /* ── v17 설정 저장 시스템 ── */
   .settings-save-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 10px;}
   .settings-save-row .test-btn{margin:0;}
@@ -435,12 +443,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v19</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v20</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v19. 이론 전체 240항목과 시험주의사항을 재기록했습니다. 설정은 저장 버튼을 눌렀을 때만 저장됩니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v20. 홈 화면에서 문제 1600개와 기본 이론 240항목을 자동 확인합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -553,6 +561,13 @@
         <button class="home-quick-btn settings" onclick="openTheoryFromHome(event)">📚 이론 목차</button>
       </div>
       <div class="home-help">설정과 이동 중 청취 모드는 문제 풀기 화면에서도 다시 사용할 수 있습니다.</div>
+      <div class="count-badge-row" style="justify-content:center;margin:14px 0;">
+        <span class="count-badge" id="homeTheoryCount">이론 확인 중</span>
+        <span class="count-badge gold" id="homeTheoryCautionCount">주의사항 확인 중</span>
+        <span class="count-badge blue" id="homeQuestionCount">문제 확인 중</span>
+        <span class="count-badge blue" id="homeTocCount">목차 확인 중</span>
+      </div>
+
     </div>
     <div class="home-menu">
       <div class="home-card theory" onclick="goScreen('screenTheory')">
@@ -578,7 +593,7 @@
             <div class="hc-title">문제 풀기</div>
           </div>
         </div>
-        <div class="hc-sub">초급1부터 심화심화까지 16개 목차. 각 100문제씩 TTS와 함께 풀어봅니다.</div>
+        <div class="hc-sub">초급1부터 심화심화까지 16개 목차. 각 100문제씩 TTS와 함께 풀어봅니다.<div class="count-badge-row"><span class="count-badge blue" id="homeQuestionCount">문제 확인 중</span><span class="count-badge blue" id="homeTocCount">목차 확인 중</span></div><div class="count-note">questions.js의 실제 문제 수를 앱에서 자동 계산해 표시합니다.</div></div>
         <div class="hc-tags">
           <span class="hc-tag qz">초급 1~3단계</span>
           <span class="hc-tag qz">초급 심화</span>
@@ -824,6 +839,7 @@ function goScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
   document.getElementById(id).classList.add('show');
   window.scrollTo(0,0);
+  if(id==='screenHome') updateHomeCounts();
   if(id==='screenTheory') buildTheorySubjects();
   if(id==='screenQuiz') init();
 }
@@ -834,6 +850,41 @@ function goHome(){
   goScreen('screenHome');
 }
 
+
+
+/* ── v20 홈 화면 문제·이론 수량 자동 확인 ── */
+function updateHomeCounts(){
+  try{
+    const qTotal = (typeof DB !== 'undefined' && DB) ? Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0) : 0;
+    const tocTotal = (typeof QUESTION_TOC !== 'undefined' && QUESTION_TOC) ? QUESTION_TOC.length : ((typeof DB !== 'undefined' && DB) ? Object.keys(DB).length : 0);
+
+    let basicTheory = 0;
+    let cautionTheory = 0;
+    let subjectTotal = 0;
+    if(typeof THEORY !== 'undefined' && THEORY){
+      subjectTotal = Object.keys(THEORY).length;
+      Object.keys(THEORY).forEach(subject=>{
+        const cnt = (THEORY[subject].chapters||[]).reduce((a,ch)=>a+((ch.sections||[]).length),0);
+        if(subject === '시험주의사항') cautionTheory += cnt;
+        else basicTheory += cnt;
+      });
+    }
+
+    const qEl=document.getElementById('homeQuestionCount');
+    const tocEl=document.getElementById('homeTocCount');
+    const thEl=document.getElementById('homeTheoryCount');
+    const caEl=document.getElementById('homeTheoryCautionCount');
+
+    if(qEl) qEl.textContent = '문제 '+qTotal+'문제';
+    if(tocEl) tocEl.textContent = '문제목차 '+tocTotal+'개';
+    if(thEl) thEl.textContent = '기본 이론 '+basicTheory+'항목';
+    if(caEl) caEl.textContent = '주의사항 '+cautionTheory+'항목';
+
+    console.log('[RavenBix count check]', {qTotal,tocTotal,basicTheory,cautionTheory,subjectTotal});
+  }catch(e){
+    console.warn('count check failed', e);
+  }
+}
 
 /* ── 홈 화면 빠른 실행 ── */
 function openSettingsFromAnywhere(e){
@@ -2009,6 +2060,7 @@ function tryLoadV(){
 if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
 initSettingsOnce();
 tryLoadV();
+setTimeout(updateHomeCounts,200);
 
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
