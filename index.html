@@ -307,6 +307,15 @@
 
 
 
+
+  /* ── v17 설정 저장 시스템 ── */
+  .settings-save-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0 10px;}
+  .settings-save-row .test-btn{margin:0;}
+  .settings-save-row .save-main{border-color:#1D9E75;background:#0A2E22;color:#9FE1CB;}
+  .settings-save-row .restore-main{border-color:#BA7517;background:#1A140A;color:#FFD9A0;}
+  .settings-dirty-note{font-size:10px;color:#BA7517;margin:4px 0 8px;display:none;}
+  .settings-dirty-note.show{display:block;}
+
   /* ── v12 이론 자동재생·챕터 이동 UI ── */
   .theory-nav-5{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 16px;}
   .theory-nav-5 .tnav{font-size:11px;min-height:42px;padding:8px 4px;}
@@ -426,9 +435,14 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정</div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
-    <button class="test-btn" onclick="resetToUserDefaultSettings()" style="margin-bottom:12px;">✅ 요청 기본설정 적용</button>
-    <p class="s-hint" style="margin-top:-4px;">속도 1.1. 음높이 1.0. 보기 1번 2번. 보기 사이 0.5초. 생각 3초. 해설 자동낭독 ON. 해설 후 다음 문제 ON.</p>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v17</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-save-row">
+      <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
+      <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
+    </div>
+    <p class="s-hint" style="color:#9FE1CB;">v17. 설정은 저장 버튼을 눌렀을 때만 저장됩니다.</p>
+<div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
+    
     <div class="s-title">
       <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
       음성 선택
@@ -438,8 +452,8 @@
     </div>
     <div class="sl-row">
       <label>속도</label>
-      <input type="range" min="0.5" max="1.8" step="0.1" value="0.9" oninput="document.getElementById('rv').textContent=parseFloat(this.value).toFixed(1);rate=parseFloat(this.value);">
-      <span id="rv">0.9</span>
+      <input type="range" min="0.5" max="1.8" step="0.1" value="1.1" oninput="document.getElementById('rv').textContent=parseFloat(this.value).toFixed(1);rate=parseFloat(this.value);">
+      <span id="rv">1.1</span>
     </div>
     <div class="sl-row">
       <label>음높이</label>
@@ -451,18 +465,18 @@
       <div>
         <div class="s-sub">보기 읽기 방식</div>
         <div class="seg" id="nsRow">
-          <button class="sb on" onclick="setNS(0,this)">1번, 2번</button>
-          <button class="sb" onclick="setNS(1,this)">1. 2. 3.</button>
-          <button class="sb" onclick="setNS(2,this)">첫번째</button>
+          <button class="sb on" data-ns-index="0" onclick="setNS(0,this)">1번, 2번</button>
+          <button class="sb" data-ns-index="1" onclick="setNS(1,this)">1. 2. 3.</button>
+          <button class="sb" data-ns-index="2" onclick="setNS(2,this)">첫번째</button>
         </div>
       </div>
       <div>
         <div class="s-sub">보기 사이 쉬는 시간</div>
         <div class="seg" id="pbRow">
-          <button class="sb on" onclick="setPB(0,this)">없음</button>
-          <button class="sb" onclick="setPB(0.5,this)">0.5초</button>
-          <button class="sb" onclick="setPB(1,this)">1초</button>
-          <button class="sb" onclick="setPB(2,this)">2초</button>
+          <button class="sb" data-pb-value="0" onclick="setPB(0,this)">없음</button>
+          <button class="sb on" data-pb-value="0.5" onclick="setPB(0.5,this)">0.5초</button>
+          <button class="sb" data-pb-value="1" onclick="setPB(1,this)">1초</button>
+          <button class="sb" data-pb-value="2" onclick="setPB(2,this)">2초</button>
         </div>
       </div>
     </div>
@@ -486,10 +500,10 @@
       생각할 시간 (이동모드 보기 후 대기)
     </div>
     <div class="seg-row-h" id="thRow">
-      <button class="sb" onclick="setTH(3,this)">3초</button>
-      <button class="sb on" onclick="setTH(5,this)">5초</button>
-      <button class="sb" onclick="setTH(10,this)">10초</button>
-      <button class="sb" onclick="setTH(15,this)">15초</button>
+      <button class="sb on" data-th-value="3" onclick="setTH(3,this)">3초</button>
+      <button class="sb" data-th-value="5" onclick="setTH(5,this)">5초</button>
+      <button class="sb" data-th-value="10" onclick="setTH(10,this)">10초</button>
+      <button class="sb" data-th-value="15" onclick="setTH(15,this)">15초</button>
     </div>
     <div class="s-sep"></div>
     <div class="s-title">
@@ -800,7 +814,7 @@ let curLevel = '초급1';
 let Qs = DB[curLevel];
 let cur=0, answered=false, driveOn=false, paused=false, locked=false;
 let synth=window.speechSynthesis, voices=[], selV=null;
-let rate=1.1, pitch=1.0, ns=0, pb=0, th=5;
+let rate=1.1, pitch=1.0, ns=0, pb=0.5, th=3;
 let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null, resumeTask=null;
 const NL=[['1번','2번','3번','4번'],['1.','2.','3.','4.'],['첫번째','두번째','세번째','네번째']];
 
@@ -998,17 +1012,18 @@ let theoryAutoMode='once';
 let theoryNextRemain=0;
 function setTheoryAutoMode(mode,btn){
   theoryAutoMode=mode;
-  try{localStorage.setItem('pipe_theory_auto_mode',mode);}catch(e){}
-  document.querySelectorAll('#theoryAutoRow .sb').forEach(b=>b.classList.remove('on'));
-  if(btn) btn.classList.add('on');
+  if(appSettings) appSettings.theoryAutoMode=mode;
+  document.querySelectorAll('#theoryAutoRow .sb, #theoryAutoRowTop .sb').forEach(b=>{
+    b.classList.toggle('on', b.getAttribute('data-theory-auto')===mode);
+  });
+  markSettingsDirty();
   updateTheoryAutoStatus();
 }
 function loadTheoryAutoMode(){
-  let m='next';
-  try{m=localStorage.getItem('pipe_theory_auto_mode')||'next';}catch(e){}
-  theoryAutoMode=m;
-  document.querySelectorAll('#theoryAutoRow .sb').forEach(b=>{
-    b.classList.toggle('on', b.getAttribute('data-theory-auto')===m);
+  if(!appSettings) appSettings=loadSettings();
+  theoryAutoMode=appSettings.theoryAutoMode || 'next';
+  document.querySelectorAll('#theoryAutoRow .sb, #theoryAutoRowTop .sb').forEach(b=>{
+    b.classList.toggle('on', b.getAttribute('data-theory-auto')===theoryAutoMode);
   });
 }
 function theoryAutoModeLabel(){
@@ -1310,52 +1325,103 @@ function toggleSettings(force){
   p.classList.toggle('show',show);
   if(bd) bd.classList.toggle('show',show);
   document.querySelectorAll('.setting-trigger,#settingBtn').forEach(b=>b.classList.toggle('active',show));
-  if(show) setTimeout(()=>{loadV(); applyUserRequestedDefaultSettings();},50);
+  if(show) setTimeout(()=>{loadV();},50);
 }
 function closeSettings(e){
   if(e){e.stopPropagation(); e.preventDefault();}
   const p=document.getElementById('settingsPanel');
   if(p && p.classList.contains('show')) toggleSettings(false);
 }
-function setNS(i,b){ns=i;document.querySelectorAll('#nsRow .sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
-function setPB(v,b){pb=v;document.querySelectorAll('#pbRow .sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
-function setTH(v,b){th=v;document.querySelectorAll('#thRow .sb').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+function setNS(i,b){
+  ns=Number(i);
+  document.querySelectorAll('#nsRow .sb').forEach(x=>x.classList.remove('on'));
+  if(b) b.classList.add('on');
+  if(appSettings) appSettings.numberStyle=ns;
+  markSettingsDirty();
+}
+function setPB(v,b){
+  pb=Number(v);
+  document.querySelectorAll('#pbRow .sb').forEach(x=>x.classList.remove('on'));
+  if(b) b.classList.add('on');
+  if(appSettings) appSettings.pauseBetweenChoices=pb;
+  markSettingsDirty();
+}
+function setTH(v,b){
+  th=Number(v);
+  document.querySelectorAll('#thRow .sb').forEach(x=>x.classList.remove('on'));
+  if(b) b.classList.add('on');
+  if(appSettings) appSettings.thinkTime=th;
+  markSettingsDirty();
+}
 
 /* ── 음성 로드 ── */
 
-function preferKoreanOnlineVoice(){
-  if(!voices || !voices.length) return;
-  const saved=localStorage.getItem('voiceName');
-  if(saved) return;
-  const pick = voices.find(v => (v.lang||'').toLowerCase().startsWith('ko') && /한국의|online|온라인|natural|google|microsoft/i.test((v.name||'')+' '+(v.voiceURI||'')))
-            || voices.find(v => (v.lang||'').toLowerCase().startsWith('ko'))
-            || voices[0];
-  if(pick){
-    selV=pick;
-    localStorage.setItem('voiceName', pick.name);
-  }
-}
+function preferKoreanOnlineVoice(){}
+
 
 function loadV(){
-  applyUserRequestedDefaultSettings();
-  applyDefaultVoiceSettingsIfFirstRun();
-  preferKoreanOnlineVoice();
-  loadTheoryAutoMode();
-  ensureDefaultTogglesVisual();
+  if(!appSettings) appSettings=loadSettings();
+
   let a=synth.getVoices();
-  voices=a.filter(v=>v.lang.startsWith('ko'));
+  voices=a.filter(v=>v.lang && v.lang.startsWith('ko'));
   if(!voices.length) voices=a.slice(0,6);
+
   const g=document.getElementById('voiceGrid');
-  if(!voices.length){g.innerHTML='<div style="font-size:11px;color:#555;grid-column:span 2;padding:4px;">한국어 음성 없음 — 기기 설정에서 추가해주세요</div>';return;}
+  if(!g){
+    applySettings(appSettings);
+    return;
+  }
+
+  if(!voices.length){
+    g.innerHTML='<div style="font-size:11px;color:#555;grid-column:span 2;padding:4px;">한국어 음성 없음 — 기기 설정에서 추가해주세요</div>';
+    applySettings(appSettings);
+    return;
+  }
+
+  selV = voices.find(v=>v.name===appSettings.voiceName) || preferredKoreanVoice();
+
   g.innerHTML='';
-  voices.forEach((v,i)=>{
-    const c=document.createElement('div'); c.className='voice-card'+(i===0?' active':'');
+  voices.forEach((v)=>{
+    const c=document.createElement('div');
+    c.className='voice-card'+(selV && v.name===selV.name ? ' active' : '');
+    c.setAttribute('data-voice-name',v.name);
     const n=v.name.replace(/Microsoft |Google |Apple /g,'').split(' ').slice(0,2).join(' ');
     c.innerHTML='<div class="vn">'+n+'</div><div class="vl">'+v.lang+(v.localService?' · 로컬':' · 온라인')+'</div>';
-    c.onclick=()=>{document.querySelectorAll('.voice-card').forEach(x=>x.classList.remove('active'));c.classList.add('active');selV=v;};
-    if(i===0) selV=v;
+    c.onclick=()=>{
+      document.querySelectorAll('.voice-card').forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      selV=v;
+      if(appSettings) appSettings.voiceName=v.name;
+      markSettingsDirty();
+    };
     g.appendChild(c);
   });
+
+  applySettings(appSettings);
+
+  const sliders=document.querySelectorAll('.sl-row input[type="range"]');
+  if(sliders[0]){
+    sliders[0].oninput=function(){
+      rate=parseFloat(this.value);
+      if(appSettings) appSettings.rate=rate;
+      const rv=document.getElementById('rv'); if(rv) rv.textContent=rate.toFixed(1);
+      markSettingsDirty();
+    };
+  }
+  if(sliders[1]){
+    sliders[1].oninput=function(){
+      pitch=parseFloat(this.value);
+      if(appSettings) appSettings.pitch=pitch;
+      const pv=document.getElementById('pv'); if(pv) pv.textContent=pitch.toFixed(1);
+      markSettingsDirty();
+    };
+  }
+
+  const ae=document.getElementById('autoEx');
+  const an=document.getElementById('autoNx');
+  if(ae) ae.onchange=()=>{ if(appSettings) appSettings.autoExplain=ae.checked; markSettingsDirty(); };
+  if(an) an.onchange=()=>{ if(appSettings) appSettings.autoNext=an.checked; markSettingsDirty(); };
+  updateDirtyNote();
 }
 
 /* ── Wake Lock ── */
@@ -1442,88 +1508,174 @@ function togglePause(){
 
 
 
-function ensureDefaultTogglesVisual(){
-  const ae=document.getElementById('autoEx');
-  const an=document.getElementById('autoNx');
-  if(ae && localStorage.getItem('autoEx')===null) ae.checked=true;
-  if(an && localStorage.getItem('autoNx')===null) an.checked=true;
-}
+function ensureDefaultTogglesVisual(){}
+
 
 
 /* ── v15 기본 설정 즉시 적용 ── */
-function applyUserRequestedDefaultSettings(force=false){
-  const flag='pipe_v15_user_requested_defaults_applied';
-  if(!force && localStorage.getItem(flag)==='yes') return;
 
-  localStorage.setItem('rate','1.1');
-  localStorage.setItem('pitch','1.0');
-  localStorage.setItem('ns','koNum');
-  localStorage.setItem('pb','0.5');
-  localStorage.setItem('th','3');
-  localStorage.setItem('autoEx','true');
-  localStorage.setItem('autoNx','true');
-  localStorage.setItem('pipe_theory_auto_mode','next');
-  localStorage.setItem(flag,'yes');
+/* ── v16 설정값 ↔ 화면 동기화 ── */
+function setActiveInRow(rowSel, predicate){
+  document.querySelectorAll(rowSel+' .sb').forEach(b=>b.classList.toggle('on', predicate(b)));
+}
+function applySettingsToRuntimeAndUI(){}
 
-  rate=1.1;
-  pitch=1.0;
-  ns='koNum';
-  pb=0.5;
-  th=3;
-  theoryAutoMode='next';
 
-  const rateEl=document.getElementById('rate');
-  const pitchEl=document.getElementById('pitch');
-  if(rateEl) rateEl.value='1.1';
-  if(pitchEl) pitchEl.value='1.0';
+function applyUserRequestedDefaultSettings(){}
 
-  const rateVal=document.getElementById('rateVal');
-  const pitchVal=document.getElementById('pitchVal');
-  if(rateVal) rateVal.textContent='1.1';
-  if(pitchVal) pitchVal.textContent='1.0';
+function resetToUserDefaultSettings(){}
+
+
+/* ── v14 사용자 기본 설정값 ── */
+function applyDefaultVoiceSettingsIfFirstRun(){}
+
+
+
+/* ── v17 통합 설정 저장 시스템 ── */
+const SETTINGS_KEY='pipe_master_settings_v17';
+const DEFAULT_SETTINGS={
+  voiceName:'',
+  rate:1.1,
+  pitch:1.0,
+  numberStyle:0,
+  pauseBetweenChoices:0.5,
+  thinkTime:3,
+  autoExplain:true,
+  autoNext:true,
+  theoryAutoMode:'next'
+};
+let appSettings=null;
+let settingsDirty=false;
+
+function normalizeSettings(obj){
+  const s=Object.assign({}, DEFAULT_SETTINGS, obj||{});
+  s.rate=Math.max(0.5, Math.min(1.8, Number(s.rate)||DEFAULT_SETTINGS.rate));
+  s.pitch=Math.max(0.5, Math.min(2.0, Number(s.pitch)||DEFAULT_SETTINGS.pitch));
+  s.numberStyle=[0,1,2].includes(Number(s.numberStyle))?Number(s.numberStyle):DEFAULT_SETTINGS.numberStyle;
+  s.pauseBetweenChoices=[0,0.5,1,2].includes(Number(s.pauseBetweenChoices))?Number(s.pauseBetweenChoices):DEFAULT_SETTINGS.pauseBetweenChoices;
+  s.thinkTime=[3,5,10,15].includes(Number(s.thinkTime))?Number(s.thinkTime):DEFAULT_SETTINGS.thinkTime;
+  s.autoExplain=!!s.autoExplain;
+  s.autoNext=!!s.autoNext;
+  s.theoryAutoMode=['once','next','subject','all'].includes(s.theoryAutoMode)?s.theoryAutoMode:DEFAULT_SETTINGS.theoryAutoMode;
+  s.voiceName=String(s.voiceName||'');
+  return s;
+}
+function loadSettings(){
+  try{
+    const saved=localStorage.getItem(SETTINGS_KEY);
+    if(saved) return normalizeSettings(JSON.parse(saved));
+  }catch(e){}
+  return normalizeSettings(DEFAULT_SETTINGS);
+}
+function mirrorLegacySettings(s){
+  try{
+    localStorage.setItem('rate',String(s.rate));
+    localStorage.setItem('pitch',String(s.pitch));
+    localStorage.setItem('ns',String(s.numberStyle));
+    localStorage.setItem('pb',String(s.pauseBetweenChoices));
+    localStorage.setItem('th',String(s.thinkTime));
+    localStorage.setItem('autoEx',String(s.autoExplain));
+    localStorage.setItem('autoNx',String(s.autoNext));
+    localStorage.setItem('pipe_theory_auto_mode',s.theoryAutoMode);
+    if(s.voiceName) localStorage.setItem('voiceName',s.voiceName);
+    else localStorage.removeItem('voiceName');
+  }catch(e){}
+}
+function saveSettings(settings){
+  const s=normalizeSettings(settings);
+  localStorage.setItem(SETTINGS_KEY,JSON.stringify(s));
+  mirrorLegacySettings(s);
+  appSettings=s;
+  settingsDirty=false;
+  updateDirtyNote();
+}
+function markSettingsDirty(){
+  settingsDirty=true;
+  updateDirtyNote();
+}
+function updateDirtyNote(){
+  const n=document.getElementById('settingsDirtyNote');
+  if(n) n.classList.toggle('show',settingsDirty);
+}
+function preferredKoreanVoice(){
+  if(!voices || !voices.length) return null;
+  return voices.find(v=>(v.lang||'').toLowerCase().startsWith('ko') && /한국의|online|온라인|natural|google|microsoft/i.test((v.name||'')+' '+(v.voiceURI||'')))
+      || voices.find(v=>(v.lang||'').toLowerCase().startsWith('ko'))
+      || voices[0];
+}
+function setRowActive(rowSel,predicate){
+  document.querySelectorAll(rowSel+' .sb').forEach(b=>b.classList.toggle('on',!!predicate(b)));
+}
+function applySettings(settings, rebuildVoiceCards=false){
+  appSettings=normalizeSettings(settings);
+  rate=appSettings.rate;
+  pitch=appSettings.pitch;
+  ns=appSettings.numberStyle;
+  pb=appSettings.pauseBetweenChoices;
+  th=appSettings.thinkTime;
+  theoryAutoMode=appSettings.theoryAutoMode;
+
+  const sliders=document.querySelectorAll('.sl-row input[type="range"]');
+  if(sliders[0]) sliders[0].value=String(rate);
+  if(sliders[1]) sliders[1].value=String(pitch);
+  const rv=document.getElementById('rv'); if(rv) rv.textContent=rate.toFixed(1);
+  const pv=document.getElementById('pv'); if(pv) pv.textContent=pitch.toFixed(1);
+
+  setRowActive('#nsRow', b=>Number(b.getAttribute('data-ns-index'))===ns);
+  setRowActive('#pbRow', b=>Math.abs(Number(b.getAttribute('data-pb-value'))-pb)<0.001);
+  setRowActive('#thRow', b=>Number(b.getAttribute('data-th-value'))===th);
+
+  document.querySelectorAll('#theoryAutoRow .sb, #theoryAutoRowTop .sb').forEach(b=>{
+    b.classList.toggle('on',b.getAttribute('data-theory-auto')===theoryAutoMode);
+  });
 
   const ae=document.getElementById('autoEx');
   const an=document.getElementById('autoNx');
-  if(ae) ae.checked=true;
-  if(an) an.checked=true;
+  if(ae) ae.checked=appSettings.autoExplain;
+  if(an) an.checked=appSettings.autoNext;
 
-  document.querySelectorAll('#nsRow .sb').forEach(b=>b.classList.remove('on'));
-  const nsBtn=document.querySelector('#nsRow .sb[data-v="koNum"], #nsRow .sb[data-ns="koNum"]');
-  if(nsBtn) nsBtn.classList.add('on');
-
-  document.querySelectorAll('#pbRow .sb').forEach(b=>b.classList.remove('on'));
-  const pbBtn=document.querySelector('#pbRow .sb[data-v="0.5"], #pbRow .sb[data-pb="0.5"]');
-  if(pbBtn) pbBtn.classList.add('on');
-
-  document.querySelectorAll('#thRow .sb').forEach(b=>b.classList.remove('on'));
-  const thBtn=document.querySelector('#thRow .sb[data-v="3"], #thRow .sb[data-th="3"]');
-  if(thBtn) thBtn.classList.add('on');
-
-  document.querySelectorAll('#theoryAutoRow .sb').forEach(b=>b.classList.remove('on'));
-  const theoryBtn=document.querySelector('#theoryAutoRow .sb[data-theory-auto="next"]');
-  if(theoryBtn) theoryBtn.classList.add('on');
-
+  if(voices && voices.length){
+    selV = voices.find(v=>v.name===appSettings.voiceName) || preferredKoreanVoice();
+    document.querySelectorAll('.voice-card').forEach(c=>{
+      c.classList.toggle('active', c.getAttribute('data-voice-name')===(selV&&selV.name));
+    });
+  }
   if(typeof updateTheoryAutoStatus==='function') updateTheoryAutoStatus();
 }
-function resetToUserDefaultSettings(){
-  applyUserRequestedDefaultSettings(true);
-  if(typeof loadV==='function') loadV();
-  alert('요청하신 기본 설정으로 적용했습니다.');
+function collectSettingsFromUI(){
+  const sliders=document.querySelectorAll('.sl-row input[type="range"]');
+  const activeNs=document.querySelector('#nsRow .sb.on');
+  const activePb=document.querySelector('#pbRow .sb.on');
+  const activeTh=document.querySelector('#thRow .sb.on');
+  const activeTheory=document.querySelector('#theoryAutoRow .sb.on, #theoryAutoRowTop .sb.on');
+  return normalizeSettings({
+    voiceName: selV ? selV.name : '',
+    rate: sliders[0] ? Number(sliders[0].value) : rate,
+    pitch: sliders[1] ? Number(sliders[1].value) : pitch,
+    numberStyle: activeNs ? Number(activeNs.getAttribute('data-ns-index')) : ns,
+    pauseBetweenChoices: activePb ? Number(activePb.getAttribute('data-pb-value')) : pb,
+    thinkTime: activeTh ? Number(activeTh.getAttribute('data-th-value')) : th,
+    autoExplain: !!(document.getElementById('autoEx') && document.getElementById('autoEx').checked),
+    autoNext: !!(document.getElementById('autoNx') && document.getElementById('autoNx').checked),
+    theoryAutoMode: activeTheory ? activeTheory.getAttribute('data-theory-auto') : theoryAutoMode
+  });
 }
-
-/* ── v14 사용자 기본 설정값 ── */
-function applyDefaultVoiceSettingsIfFirstRun(){
-  const flag='pipe_v14_default_settings_applied';
-  if(localStorage.getItem(flag)==='yes') return;
-  localStorage.setItem('rate','1.1');
-  localStorage.setItem('pitch','1.0');
-  localStorage.setItem('ns','koNum');
-  localStorage.setItem('pb','0.5');
-  localStorage.setItem('th','3');
-  localStorage.setItem('autoEx','true');
-  localStorage.setItem('autoNx','true');
-  localStorage.setItem('pipe_theory_auto_mode','next');
-  localStorage.setItem(flag,'yes');
+function saveSettingsFromUI(){
+  const s=collectSettingsFromUI();
+  saveSettings(s);
+  applySettings(s);
+  alert('설정이 저장되었습니다.');
+}
+function resetSettingsToDefault(){
+  const s=normalizeSettings(DEFAULT_SETTINGS);
+  saveSettings(s);
+  applySettings(s);
+  loadV();
+  alert('기본값으로 복원하고 저장했습니다.');
+}
+function initSettingsOnce(){
+  appSettings=loadSettings();
+  applySettings(appSettings);
 }
 
 /* ── v13 STS 계열 TTS 발음 보정 ── */
@@ -1849,6 +2001,7 @@ function tryLoadV(){
   [300,600,1000,2000,3000].forEach(t=>setTimeout(loadV,t));
 }
 if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
+initSettingsOnce();
 tryLoadV();
 
 /* Service Worker 등록 */

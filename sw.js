@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v15-force-default-settings-theory-ui-visible';
+const CACHE_NAME = 'pipe-master-v17-settings-save-system';
 const ASSETS = [
   './',
   './index.html',
