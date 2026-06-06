@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v17-settings-save-system';
+const CACHE_NAME = 'pipe-master-v18-all-uploaded-questions-recorded';
 const ASSETS = [
   './',
   './index.html',
