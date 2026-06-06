@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v8-nav-settings-theory-autoread';
+const CACHE_NAME = 'pipe-master-v9-responsive-desktop-mobile';
 const ASSETS = [
   './',
   './index.html',

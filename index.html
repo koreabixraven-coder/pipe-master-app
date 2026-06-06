@@ -304,6 +304,56 @@
   .footer p{font-size:10px;color:#333;line-height:1.8;}
 
 
+
+  /* ── v9 모바일·데스크탑 반응형 연동 ── */
+  body{min-height:100vh;}
+  .screen{width:100%;}
+  @media (min-width: 760px){
+    .app{max-width:960px;padding:24px 28px 36px;}
+    .home-wrap{max-width:760px;margin:0 auto;}
+    .home-logo{text-align:center;}
+    .home-card{padding:26px 28px;}
+    .home-card-row{display:flex;align-items:center;gap:18px;}
+    .home-card-icon{flex:0 0 auto;}
+    .home-card-body{flex:1;}
+    .topbar{max-width:960px;margin:0 auto 16px;}
+    .settings-panel.global-settings{max-width:560px;}
+    .quiz-shell{max-width:960px;margin:0 auto;}
+    .level-tabs{justify-content:flex-start;overflow-x:auto;padding-bottom:4px;}
+    .level-tabs .tab{min-width:72px;}
+    .stat-row{grid-template-columns:repeat(3,1fr);gap:14px;}
+    .dots{max-width:760px;margin-left:auto;margin-right:auto;}
+    .q-card{padding:26px 28px;}
+    .opts{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .opt{min-height:58px;text-align:left;}
+    .ctrl-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+    .ctrl-row .btn{width:100%;}
+    .theory-subject-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .chapter-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .section-card{padding:20px 22px;}
+    .theory-content{max-width:920px;margin:0 auto;}
+    .theory-topline{max-width:960px;margin-left:auto;margin-right:auto;}
+    .desktop-two-col{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:14px;align-items:start;}
+  }
+  @media (min-width: 1180px){
+    .app{max-width:1180px;}
+    .quiz-shell{max-width:1180px;}
+    .topbar{max-width:1180px;}
+    .desktop-quiz-grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;align-items:start;}
+    .desktop-side-panel{display:block;}
+    .desktop-side-panel .side-card{background:#121212;border:0.5px solid #2A2A2A;border-radius:14px;padding:14px;margin-bottom:12px;}
+    .desktop-side-panel .side-title{font-size:12px;color:#9FE1CB;font-weight:700;margin-bottom:8px;}
+    .desktop-side-panel .side-txt{font-size:11px;color:#999;line-height:1.55;}
+  }
+  @media (max-width: 1179px){
+    .desktop-side-panel{display:none;}
+  }
+  @media (max-width: 759px){
+    .opts{display:block;}
+    .opt{width:100%;}
+    .ctrl-row{display:flex;}
+  }
+
   /* ── v8 공통 설정 오버레이 / 홈 네비 ── */
   .settings-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:1800;}
   .settings-backdrop.show{display:block;}
@@ -421,7 +471,20 @@
       <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
       음성 테스트 재생
     </button>
-  </div>
+  
+      <div class="divider"></div>
+      <div class="s-title">모바일·데스크탑 진도 연동</div>
+      <div class="s-row">
+        <button class="test-btn" onclick="exportProgress()">진도 백업코드 만들기</button>
+      </div>
+      <div class="s-row">
+        <textarea id="progressBox" placeholder="여기에 백업코드를 붙여넣고 복구를 누르세요" style="width:100%;min-height:72px;background:#0A0A0A;color:#ddd;border:0.5px solid #2A2A2A;border-radius:10px;padding:9px;font-size:11px;resize:vertical;"></textarea>
+      </div>
+      <div class="s-row">
+        <button class="test-btn" onclick="importProgress()">진도 복구하기</button>
+      </div>
+      <p class="s-hint">서버 없이 무료로 쓰는 방식입니다. 휴대폰에서 백업코드를 만들고 PC에 붙여넣으면 진도 기록을 옮길 수 있습니다.</p>
+</div>
 
 
 
@@ -646,6 +709,7 @@
   <div class="status" id="status"></div>
 
   <!-- 문제 카드 -->
+  <div class="desktop-quiz-grid"><div class="desktop-main-panel">
   <div class="q-card">
     <div class="q-meta">
       <span class="q-num" id="qNum">문제 1 / -</span>
@@ -1420,6 +1484,37 @@ tryLoadV();
 /* 홈화면 시작 */
 document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
 document.getElementById('screenHome').classList.add('show');
+
+/* ── v9 모바일·데스크탑 진도 백업/복구 ── */
+function exportProgress(){
+  const data={};
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k && (k.startsWith('pipe_') || k.startsWith('pipeMaster') || k.includes('pipe'))){
+      data[k]=localStorage.getItem(k);
+    }
+  }
+  const raw=JSON.stringify({app:'pipe-master-app',ver:'v9',date:new Date().toISOString(),data});
+  const code=btoa(unescape(encodeURIComponent(raw)));
+  const box=document.getElementById('progressBox');
+  if(box){box.value=code; box.select();}
+  alert('진도 백업코드를 만들었습니다. 복사해서 다른 기기 설정창에 붙여넣으세요.');
+}
+function importProgress(){
+  const box=document.getElementById('progressBox');
+  const code=(box&&box.value||'').trim();
+  if(!code){alert('복구할 백업코드를 먼저 붙여넣어 주세요.');return;}
+  try{
+    const raw=decodeURIComponent(escape(atob(code)));
+    const obj=JSON.parse(raw);
+    if(!obj || obj.app!=='pipe-master-app' || !obj.data) throw new Error('invalid');
+    Object.keys(obj.data).forEach(k=>localStorage.setItem(k,obj.data[k]));
+    alert('진도 복구가 완료되었습니다. 화면을 새로고침합니다.');
+    location.reload();
+  }catch(e){
+    alert('백업코드를 읽지 못했습니다. 코드 전체를 다시 복사해 주세요.');
+  }
+}
 </script>
 </body>
 </html>
