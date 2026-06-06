@@ -427,6 +427,8 @@
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
     <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정</div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <button class="test-btn" onclick="resetToUserDefaultSettings()" style="margin-bottom:12px;">✅ 요청 기본설정 적용</button>
+    <p class="s-hint" style="margin-top:-4px;">속도 1.1. 음높이 1.0. 보기 1번 2번. 보기 사이 0.5초. 생각 3초. 해설 자동낭독 ON. 해설 후 다음 문제 ON.</p>
     <div class="s-title">
       <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
       음성 선택
@@ -465,7 +467,21 @@
       </div>
     </div>
     <div class="s-sep"></div>
-    <div class="s-title">
+    
+    <div class="s-sep"></div>
+    <div class="s-title theory-auto-title">
+      <svg viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
+      이론 자동재생
+    </div>
+    <div class="seg-row-h" id="theoryAutoRow">
+      <button class="sb" data-theory-auto="once" onclick="setTheoryAutoMode('once',this)">현재 챕터만</button>
+      <button class="sb on" data-theory-auto="next" onclick="setTheoryAutoMode('next',this)">다음 챕터 1회</button>
+      <button class="sb" data-theory-auto="subject" onclick="setTheoryAutoMode('subject',this)">과목 전체</button>
+      <button class="sb" data-theory-auto="all" onclick="setTheoryAutoMode('all',this)">전체 이론</button>
+    </div>
+    <p class="s-hint">이론 전체읽기에서 현재 챕터가 끝난 뒤 어디까지 이어 들을지 정합니다.</p>
+
+<div class="s-title">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       생각할 시간 (이동모드 보기 후 대기)
     </div>
@@ -988,12 +1004,12 @@ function setTheoryAutoMode(mode,btn){
   updateTheoryAutoStatus();
 }
 function loadTheoryAutoMode(){
-  let m='once';
-  try{m=localStorage.getItem('pipe_theory_auto_mode')||'once';}catch(e){}
+  let m='next';
+  try{m=localStorage.getItem('pipe_theory_auto_mode')||'next';}catch(e){}
   theoryAutoMode=m;
-  const map={once:0,next:1,subject:2,all:3};
-  const btns=document.querySelectorAll('#theoryAutoRow .sb');
-  btns.forEach((b,i)=>b.classList.toggle('on',i===(map[m]??0)));
+  document.querySelectorAll('#theoryAutoRow .sb').forEach(b=>{
+    b.classList.toggle('on', b.getAttribute('data-theory-auto')===m);
+  });
 }
 function theoryAutoModeLabel(){
   return {once:'현재 챕터만',next:'다음 챕터 1회',subject:'현재 과목 전체',all:'전체 이론'}[theoryAutoMode]||'현재 챕터만';
@@ -1294,7 +1310,7 @@ function toggleSettings(force){
   p.classList.toggle('show',show);
   if(bd) bd.classList.toggle('show',show);
   document.querySelectorAll('.setting-trigger,#settingBtn').forEach(b=>b.classList.toggle('active',show));
-  if(show) setTimeout(()=>loadV(),50);
+  if(show) setTimeout(()=>{loadV(); applyUserRequestedDefaultSettings();},50);
 }
 function closeSettings(e){
   if(e){e.stopPropagation(); e.preventDefault();}
@@ -1321,6 +1337,7 @@ function preferKoreanOnlineVoice(){
 }
 
 function loadV(){
+  applyUserRequestedDefaultSettings();
   applyDefaultVoiceSettingsIfFirstRun();
   preferKoreanOnlineVoice();
   loadTheoryAutoMode();
@@ -1430,6 +1447,68 @@ function ensureDefaultTogglesVisual(){
   const an=document.getElementById('autoNx');
   if(ae && localStorage.getItem('autoEx')===null) ae.checked=true;
   if(an && localStorage.getItem('autoNx')===null) an.checked=true;
+}
+
+
+/* ── v15 기본 설정 즉시 적용 ── */
+function applyUserRequestedDefaultSettings(force=false){
+  const flag='pipe_v15_user_requested_defaults_applied';
+  if(!force && localStorage.getItem(flag)==='yes') return;
+
+  localStorage.setItem('rate','1.1');
+  localStorage.setItem('pitch','1.0');
+  localStorage.setItem('ns','koNum');
+  localStorage.setItem('pb','0.5');
+  localStorage.setItem('th','3');
+  localStorage.setItem('autoEx','true');
+  localStorage.setItem('autoNx','true');
+  localStorage.setItem('pipe_theory_auto_mode','next');
+  localStorage.setItem(flag,'yes');
+
+  rate=1.1;
+  pitch=1.0;
+  ns='koNum';
+  pb=0.5;
+  th=3;
+  theoryAutoMode='next';
+
+  const rateEl=document.getElementById('rate');
+  const pitchEl=document.getElementById('pitch');
+  if(rateEl) rateEl.value='1.1';
+  if(pitchEl) pitchEl.value='1.0';
+
+  const rateVal=document.getElementById('rateVal');
+  const pitchVal=document.getElementById('pitchVal');
+  if(rateVal) rateVal.textContent='1.1';
+  if(pitchVal) pitchVal.textContent='1.0';
+
+  const ae=document.getElementById('autoEx');
+  const an=document.getElementById('autoNx');
+  if(ae) ae.checked=true;
+  if(an) an.checked=true;
+
+  document.querySelectorAll('#nsRow .sb').forEach(b=>b.classList.remove('on'));
+  const nsBtn=document.querySelector('#nsRow .sb[data-v="koNum"], #nsRow .sb[data-ns="koNum"]');
+  if(nsBtn) nsBtn.classList.add('on');
+
+  document.querySelectorAll('#pbRow .sb').forEach(b=>b.classList.remove('on'));
+  const pbBtn=document.querySelector('#pbRow .sb[data-v="0.5"], #pbRow .sb[data-pb="0.5"]');
+  if(pbBtn) pbBtn.classList.add('on');
+
+  document.querySelectorAll('#thRow .sb').forEach(b=>b.classList.remove('on'));
+  const thBtn=document.querySelector('#thRow .sb[data-v="3"], #thRow .sb[data-th="3"]');
+  if(thBtn) thBtn.classList.add('on');
+
+  document.querySelectorAll('#theoryAutoRow .sb').forEach(b=>b.classList.remove('on'));
+  const theoryBtn=document.querySelector('#theoryAutoRow .sb[data-theory-auto="next"]');
+  if(theoryBtn) theoryBtn.classList.add('on');
+
+  if(typeof updateTheoryAutoStatus==='function') updateTheoryAutoStatus();
+}
+function resetToUserDefaultSettings(){
+  applyUserRequestedDefaultSettings(true);
+  if(typeof loadV==='function') loadV();
+  alert('요청하신 기본 설정으로 적용했습니다.');
 }
 
 /* ── v14 사용자 기본 설정값 ── */

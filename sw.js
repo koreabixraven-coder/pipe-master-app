@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v14-default-settings-theory-autoplay-fix';
+const CACHE_NAME = 'pipe-master-v15-force-default-settings-theory-ui-visible';
 const ASSETS = [
   './',
   './index.html',
