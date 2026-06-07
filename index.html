@@ -142,7 +142,7 @@
   .theory-content-wrap{max-width:480px;margin:0 auto;padding:0 14px 24px;}
   .section-card{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:12px;padding:14px;margin-bottom:10px;}
   .sec-title{font-size:14px;font-weight:600;color:#9FE1CB;margin-bottom:8px;padding-bottom:8px;border-bottom:0.5px solid #222;}
-  .sec-content{font-size:13px;color:#CCC;line-height:1.8;margin-bottom:10px;}
+  .sec-content{font-size:13px;color:#CCC;line-height:1.8;margin-bottom:10px;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;}
   .sec-points{display:flex;flex-direction:column;gap:5px;}
   .sec-point{display:flex;align-items:flex-start;gap:7px;font-size:12px;color:#888;line-height:1.6;}
   .sec-point::before{content:'▸';color:#1D9E75;flex-shrink:0;margin-top:1px;}
@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.3</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.4</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.3. 배관공작 27~47페이지 유지. 배관재료 50~61페이지 원문 데이터를 추가 적용했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.4. 화면 문단 나누기와 이론 TTS 영문 괄호 제외를 적용했습니다. 데이터는 v30.3 기준 유지.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -1116,6 +1116,39 @@ function openSubject(key){
   goScreen('screenChapter');
 }
 
+
+function escapeTheoryHTML(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+function splitTheoryParagraphs(s){
+  let t=String(s||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+
+  /* 긴 한 줄 원문을 목차 기호 단위로 읽기 좋게 줄바꿈한다.
+     원문 문자는 삭제하지 않고 줄바꿈만 추가한다. */
+  const circled='①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮';
+  const smallCircled='㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷';
+  const alphaCircled='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ';
+  t=t.replace(/([^\n])\s*(\([0-9]+\)\s*)/g,'$1\n$2');
+  t=t.replace(/([^\n])\s*(\([가-힣]\)\s*)/g,'$1\n$2');
+  t=t.replace(new RegExp('([^\\n])\\s*(['+circled+'])\\s*','g'),'$1\n$2 ');
+  t=t.replace(new RegExp('([^\\n])\\s*(['+smallCircled+'])\\s*','g'),'$1\n$2 ');
+  t=t.replace(new RegExp('([^\\n])\\s*(['+alphaCircled+'])\\s*','g'),'$1\n$2 ');
+  t=t.replace(/([^\n])\s*(\[[0-9]+페이지\]\s*)/g,'$1\n$2');
+  t=t.replace(/\n{3,}/g,'\n\n').trim();
+  return t;
+}
+function formatTheoryDisplay(s){
+  return escapeTheoryHTML(splitTheoryParagraphs(s));
+}
+function formatTheoryPoint(s){
+  return escapeTheoryHTML(splitTheoryParagraphs(s));
+}
+
 function openChapter(idx){
   curChapterIdx=idx;
   const s=THEORY[curSubject];
@@ -1128,12 +1161,12 @@ function openChapter(idx){
     const card=document.createElement('div');
     card.className='section-card tts-track-target';
     if(sec.tts) card.setAttribute('data-tts',sec.tts);
-    const pts=(sec.points||[]).map(p=>`<div class="sec-point">${p}</div>`).join('');
+    const pts=(sec.points||[]).map(p=>`<div class="sec-point">${formatTheoryPoint(p)}</div>`).join('');
     const level=sec.level?`<div class="sec-level">${sec.level}</div>`:'';
-    const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content">${sec.key}</div></div>`:'';
-    const detail=sec.detail?`<div class="sec-block"><div class="sec-label">상세설명</div><div class="sec-content">${sec.detail}</div></div>`:`<div class="sec-content">${sec.content||''}</div>`;
+    const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content">${formatTheoryDisplay(sec.key)}</div></div>`:'';
+    const detail=sec.detail?`<div class="sec-block"><div class="sec-label">상세설명</div><div class="sec-content">${formatTheoryDisplay(sec.detail)}</div></div>`:`<div class="sec-content">${formatTheoryDisplay(sec.content||'')}</div>`;
     const exam=pts?`<div class="sec-block"><div class="sec-label">시험포인트</div><div class="sec-points">${pts}</div></div>`:'';
-    const memory=sec.memory?`<div class="sec-memory"><b>암기문장.</b> ${sec.memory}</div>`:'';
+    const memory=sec.memory?`<div class="sec-memory"><b>암기문장.</b> ${formatTheoryDisplay(sec.memory)}</div>`:'';
     card.innerHTML=`${level}<div class="sec-title">${sec.title}</div>${key}${detail}${exam}${memory}`;
     area.appendChild(card);
   });
@@ -1362,6 +1395,11 @@ function cleanTheorySpeechText(s){
     .replace(/\$kgf\/mm\^2\$/g,'킬로그램힘 매 제곱밀리미터')
     .replace(/\$\\times\$/g,'곱하기')
     .replace(/\\times/g,'곱하기')
+    .replace(/\(([A-Za-z][A-Za-z0-9/ .\-×x+]*?)\)/g,'')
+    .replace(/\$\^\\circ C\$/g,'도')
+    .replace(/\$\s*/g,'')
+    .replace(/\\frac\{1\}\{2\}H/g,'이분의 일 H')
+    .replace(/\\circ/g,'도')
     .replace(/\s+/g,' ')
     .replace(/핵심개념\s*\.?\s*/g,'')
     .replace(/상세설명\s*\.?\s*/g,'')
