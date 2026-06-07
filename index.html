@@ -21,6 +21,15 @@
 
 
 
+
+  /* ── v26 문제풀이 TTS 위치 자동추적 ── */
+  .quiz-tts-reading{position:relative;transition:border-color .18s ease,background .18s ease,box-shadow .18s ease,transform .18s ease;}
+  #screenQuiz .q-card.quiz-tts-reading{border-color:#378ADD!important;background:#0C2D4A!important;box-shadow:0 0 0 1px rgba(55,138,221,.35),0 8px 24px rgba(0,0,0,.35);transform:translateY(-1px);}
+  #screenQuiz .opt.quiz-tts-reading{border-color:#1D9E75!important;background:#0A2E22!important;color:#EFFFF8!important;box-shadow:0 0 0 1px rgba(29,158,117,.35),0 6px 20px rgba(0,0,0,.32);}
+  #screenQuiz .ex-box.quiz-tts-reading{border-color:#BA7517!important;background:#1A140A!important;box-shadow:0 0 0 1px rgba(186,117,23,.35),0 8px 24px rgba(0,0,0,.35);}
+  .quiz-track-status{font-size:11px;color:#A8D2FF;text-align:center;margin:-4px 0 8px;min-height:16px;}
+  .quiz-track-status.on{color:#9FE1CB;}
+
   /* ── v24 문제풀이 이론형 목차 UI. 문제 로직 변경 없음 ── */
   .quiz-toc-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
   .quiz-toc-card{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;-webkit-tap-highlight-color:transparent;}
@@ -515,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v24</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v26</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v24. 문제풀이를 이론처럼 목차→단계→풀이 화면 구조로 정리했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v26. 일반 전체읽기 완전 자동진행과 문제풀이 TTS 위치추적을 추가했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -598,6 +607,14 @@
       <label>해설 후 자동 다음 문제</label>
       <label class="tog"><input type="checkbox" id="autoNx" checked><span class="tog-sl"></span></label>
     </div>
+    <div class="tog-row">
+      <label>일반 전체읽기 완전 자동진행</label>
+      <label class="tog"><input type="checkbox" id="quizFullAuto"><span class="tog-sl"></span></label>
+    </div>
+    <div class="tog-row" style="margin-bottom:10px;">
+      <label>문제풀이 TTS 읽는 위치 자동추적</label>
+      <label class="tog"><input type="checkbox" id="quizTrack" checked><span class="tog-sl"></span></label>
+    </div>
     <button class="test-btn" onclick="ttsTest()">
       <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
       음성 테스트 재생
@@ -614,7 +631,7 @@
       <div class="s-row">
         <button class="test-btn" onclick="importProgress()">진도 복구하기</button>
       </div>
-      <p class="s-hint">정답 후 해설 자동낭독과 해설 후 자동 다음 문제를 함께 켜면 문제 읽기 후 생각할 시간. 정답과 해설. 다음 문제 이동 순서로 진행됩니다.</p>
+      <p class="s-hint">정답 후 해설 자동낭독. 해설 후 자동 다음 문제. 일반 전체읽기 완전 자동진행을 함께 켜면 문제 읽기부터 다음 문제까지 자동 반복됩니다.</p>
       <p class="s-hint">서버 없이 무료로 쓰는 방식입니다. 휴대폰에서 백업코드를 만들고 PC에 붙여넣으면 진도 기록을 옮길 수 있습니다.</p>
 </div>
 
@@ -924,7 +941,7 @@
     <button class="tb" id="bA" onclick="mRead('ans')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>해설
     </button>
-    <button class="tb stop" onclick="tStop()">
+    <button class="tb stop" onclick="stopQuizTts()">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>정지
     </button>
   </div>
@@ -1341,7 +1358,7 @@ function makeTheoryChapterIntro(){
   const ch=getCurrentTheoryChapter();
   if(!s || !ch) return '';
   let level=(ch.title||'').replace(/\s*10항목\s*/g,'').trim();
-  return s.title+'. '+level+'을 시작합니다. 지금부터 핵심개념 반복 대신 상세설명 중심으로 읽겠습니다. 시험포인트는 공통 주의사항만 한 번 안내합니다.';
+  return s.title+'. '+level+'을 시작합니다. 지금부터 핵심개념 반복 대신 상세설명 중심으로 읽겠습니다. 암기문장은 마지막에 짧게 한 번만 읽습니다. 시험포인트는 공통 주의사항만 한 번 안내합니다.';
 }
 function makeTheoryCommonExamPoint(){
   const ch=getCurrentTheoryChapter();
@@ -1835,8 +1852,12 @@ function loadV(){
 
   const ae=document.getElementById('autoEx');
   const an=document.getElementById('autoNx');
+  const qfa=document.getElementById('quizFullAuto');
+  const qtr=document.getElementById('quizTrack');
   if(ae) ae.onchange=()=>{ if(appSettings) appSettings.autoExplain=ae.checked; markSettingsDirty(); };
   if(an) an.onchange=()=>{ if(appSettings) appSettings.autoNext=an.checked; markSettingsDirty(); };
+  if(qfa) qfa.onchange=()=>{ if(appSettings) appSettings.quizFullAuto=qfa.checked; markSettingsDirty(); };
+  if(qtr) qtr.onchange=()=>{ if(appSettings) appSettings.quizTrack=qtr.checked; markSettingsDirty(); };
   updateDirtyNote();
 }
 
@@ -1958,6 +1979,8 @@ const DEFAULT_SETTINGS={
   thinkTime:3,
   autoExplain:true,
   autoNext:true,
+  quizFullAuto:false,
+  quizTrack:true,
   theoryAutoMode:'subject'
 };
 let appSettings=null;
@@ -1972,6 +1995,8 @@ function normalizeSettings(obj){
   s.thinkTime=[3,5,10,15].includes(Number(s.thinkTime))?Number(s.thinkTime):DEFAULT_SETTINGS.thinkTime;
   s.autoExplain=!!s.autoExplain;
   s.autoNext=!!s.autoNext;
+  s.quizFullAuto=!!s.quizFullAuto;
+  s.quizTrack=(s.quizTrack===undefined)?true:!!s.quizTrack;
   s.theoryAutoMode=['once','next','subject','all'].includes(s.theoryAutoMode)?s.theoryAutoMode:DEFAULT_SETTINGS.theoryAutoMode;
   s.voiceName=String(s.voiceName||'');
   return s;
@@ -1992,6 +2017,8 @@ function mirrorLegacySettings(s){
     localStorage.setItem('th',String(s.thinkTime));
     localStorage.setItem('autoEx',String(s.autoExplain));
     localStorage.setItem('autoNx',String(s.autoNext));
+    localStorage.setItem('quizFullAuto',String(s.quizFullAuto));
+    localStorage.setItem('quizTrack',String(s.quizTrack));
     localStorage.setItem('pipe_theory_auto_mode',s.theoryAutoMode);
     if(s.voiceName) localStorage.setItem('voiceName',s.voiceName);
     else localStorage.removeItem('voiceName');
@@ -2047,8 +2074,12 @@ function applySettings(settings, rebuildVoiceCards=false){
 
   const ae=document.getElementById('autoEx');
   const an=document.getElementById('autoNx');
+  const qfa=document.getElementById('quizFullAuto');
+  const qtr=document.getElementById('quizTrack');
   if(ae) ae.checked=appSettings.autoExplain;
   if(an) an.checked=appSettings.autoNext;
+  if(qfa) qfa.checked=appSettings.quizFullAuto;
+  if(qtr) qtr.checked=appSettings.quizTrack;
 
   if(voices && voices.length){
     selV = voices.find(v=>v.name===appSettings.voiceName) || preferredKoreanVoice();
@@ -2073,6 +2104,8 @@ function collectSettingsFromUI(){
     thinkTime: activeTh ? Number(activeTh.getAttribute('data-th-value')) : th,
     autoExplain: !!(document.getElementById('autoEx') && document.getElementById('autoEx').checked),
     autoNext: !!(document.getElementById('autoNx') && document.getElementById('autoNx').checked),
+    quizFullAuto: !!(document.getElementById('quizFullAuto') && document.getElementById('quizFullAuto').checked),
+    quizTrack: !(document.getElementById('quizTrack') && !document.getElementById('quizTrack').checked),
     theoryAutoMode: activeTheory ? activeTheory.getAttribute('data-theory-auto') : theoryAutoMode
   });
 }
@@ -2195,14 +2228,15 @@ function spk(txt,cb){
    수정: 정답 안내는 항상 '정답은 4번입니다.' 형식으로 고정한다. */
 function ansNo(q){ return (Number(q.ans)+1)+'번'; }
 function spkAns(L,q,cb){
+  const correctEl=document.querySelectorAll('#opts .opt')[Number(q.ans)];
+  quizTtsFocus(correctEl,'정답 '+ansNo(q)+' 읽는 중');
   spk('정답은 '+ansNo(q)+'입니다.',()=>{
     setTimeout(()=>{
-      if(paused){ resumeTask=()=>spk('해설. '+q.ex, cb); return; }
+      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spk('해설. '+q.ex, cb);}; return; }
       let done=false;
       const finish=()=>{ if(done) return; done=true; if(cb) cb(); };
+      quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중');
       spk('해설. '+q.ex, finish);
-      /* 모바일 TTS에서 onend가 누락되는 경우를 대비한 안전 타이머.
-         글자수와 현재 속도를 기준으로 넉넉하게 계산하며, onend가 먼저 오면 중복 실행되지 않는다. */
       const safeMs=Math.min(25000, Math.max(4500, Math.round((String(q.ex||'').length*115)/Math.max(0.7,rate))));
       setTimeout(()=>{ if(!paused) finish(); }, safeMs);
     },500);
@@ -2212,6 +2246,9 @@ function spkOpts(opts,labels,cb){
   let i=0;
   function go(){
     if(i>=opts.length){if(cb)cb();return;}
+    const curIdx=i;
+    const optEl=document.querySelectorAll('#opts .opt')[curIdx];
+    quizTtsFocus(optEl, labels[curIdx]+' 보기 읽는 중');
     const txt=labels[i]+'. '+opts[i]; i++;
     spk(txt,()=>{
       if(pb>0&&i<opts.length){pbTimer=setTimeout(()=>{if(paused) resumeTask=go; else go();},pb*1000);}
@@ -2232,7 +2269,7 @@ function tStop(){
   if(btn) btn.classList.remove('paused');
   const tw=document.getElementById('thinkWrap');
   if(tw) tw.classList.remove('paused');
-  clrB(); clearTheoryTrack(); setSt('');
+  clrB(); clearTheoryTrack(); quizTtsClearTrack(); setSt('');
 }
 function ttsStop(){ tStop(); }
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
@@ -2242,21 +2279,33 @@ function mRead(t){
   if(driveOn) return;
   if(!Qs.length){setSt('이 단계에 문제가 없습니다');return;}
   const q=Qs[cur], L=NL[ns]; clrB();
-  if(t==='q'){document.getElementById('bQ').classList.add('on');setSt('🔊 문제 읽는 중...');spk('문제. '+q.q,()=>setSt(''));}
-  else if(t==='opts'){document.getElementById('bO').classList.add('on');setSt('🔊 보기 읽는 중...');spkOpts(q.opts,L,()=>setSt(''));}
+  if(t!=='all') normalFullAuto=false;
+  if(t==='q'){
+    document.getElementById('bQ').classList.add('on');
+    setSt('🔊 문제 읽는 중...');
+    quizSpeakProblem(q,()=>setSt(''));
+  }
+  else if(t==='opts'){
+    document.getElementById('bO').classList.add('on');
+    setSt('🔊 보기 읽는 중...');
+    spkOpts(q.opts,L,()=>{quizTtsClearTrack();setSt('');});
+  }
   else if(t==='ans'){
     if(!answered){setSt('⚠️ 먼저 답을 선택해주세요');return;}
     document.getElementById('bA').classList.add('on'); setSt('🔊 해설 읽는 중...');
-    spkAns(L,q,()=>setSt(''));
+    spkAns(L,q,()=>{quizTtsClearTrack();setSt('');});
   } else if(t==='all'){
-    setSt('🔊 전체 읽는 중...');
-    spk('문제. '+q.q,()=>{
+    normalFullAuto=quizFullAutoEnabled();
+    setSt(normalFullAuto?'🔊 전체읽기 완전 자동 진행 중...':'🔊 전체 읽는 중...');
+    quizSpeakProblem(q,()=>{
       spkOpts(q.opts,L,()=>{
-        if(answered) spkAns(L,q,()=>setSt(''));
+        if(answered) spkAns(L,q,()=>safeExplainDone(q));
         else if(document.getElementById('autoEx').checked){
           setSt('💭 생각할 시간 '+th+'초 후 정답과 해설을 자동 낭독합니다.');
           startTH(()=>manualAutoReveal());
         } else {
+          normalFullAuto=false;
+          quizTtsClearTrack();
           setSt('');
         }
       });
@@ -2305,6 +2354,7 @@ function autoPlay(){
   if(!driveOn||paused||!Qs.length) return;
   const q=Qs[cur], L=NL[ns];
   setSt('🔊 문제 읽는 중...');
+  quizTtsFocus(document.querySelector('#screenQuiz .q-card') || document.getElementById('qText'),'문제 읽는 중');
   spk('문제 '+(cur+1)+'번. '+q.q,()=>{
     if(!driveOn) return;
     setSt('🔊 보기 읽는 중...');
@@ -2441,9 +2491,48 @@ document.getElementById('screenHome').classList.add('show');
 
 /* ── v10 해설 후 자동 다음문제 공통 처리 ── */
 let autoNextLock=false;
+
+/* ── v26 일반 전체읽기 완전 자동 + 문제풀이 TTS 위치추적 ── */
+let normalFullAuto=false;
+function quizFullAutoEnabled(){
+  const e=document.getElementById('quizFullAuto');
+  return !!(e ? e.checked : (appSettings && appSettings.quizFullAuto));
+}
+function quizTrackEnabled(){
+  const e=document.getElementById('quizTrack');
+  return !!(e ? e.checked : (!appSettings || appSettings.quizTrack!==false));
+}
+function quizTtsClearTrack(){
+  document.querySelectorAll('#screenQuiz .quiz-tts-reading').forEach(el=>el.classList.remove('quiz-tts-reading'));
+  const st=document.getElementById('quizTrackStatus');
+  if(st){st.textContent='';st.classList.remove('on');}
+}
+function quizTtsFocus(el,label){
+  if(!quizTrackEnabled() || !el) return;
+  quizTtsClearTrack();
+  el.classList.add('quiz-tts-reading');
+  const st=document.getElementById('quizTrackStatus');
+  if(st){st.textContent=label||'읽는 위치 추적 중';st.classList.add('on');}
+  setTimeout(()=>{
+    try{el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});}
+    catch(e){try{el.scrollIntoView(true);}catch(_e){}}
+  },70);
+}
+function quizSpeakProblem(q,cb){
+  quizTtsFocus(document.querySelector('#screenQuiz .q-card') || document.getElementById('qText'),'문제 읽는 중');
+  spk('문제. '+q.q,cb);
+}
+function stopQuizTts(){
+  normalFullAuto=false;
+  tStop();
+  quizTtsClearTrack();
+  setSt('정지했습니다.');
+}
+
 function scheduleAutoNextAfterExplain(reason){
   if(driveOn) return;
   if(!document.getElementById('autoNx') || !document.getElementById('autoNx').checked){
+    normalFullAuto=false;
     setSt('');
     return;
   }
@@ -2452,14 +2541,18 @@ function scheduleAutoNextAfterExplain(reason){
   const isLast=cur>=Qs.length-1;
   if(isLast){
     setSt('마지막 문제입니다.');
-    setTimeout(()=>{autoNextLock=false; showResult();},800);
+    normalFullAuto=false;
+    setTimeout(()=>{autoNextLock=false; showResult(); quizTtsClearTrack();},800);
     return;
   }
-  setSt('해설 후 자동 다음 문제로 이동합니다.');
+  setSt(normalFullAuto?'해설 후 다음 문제를 자동으로 읽습니다.':'해설 후 자동 다음 문제로 이동합니다.');
   if(nxTimer){clearTimeout(nxTimer); nxTimer=null;}
   nxTimer=setTimeout(()=>{
     autoNextLock=false;
     nextQ();
+    if(normalFullAuto && !driveOn && cur<Qs.length){
+      setTimeout(()=>mRead('all'),650);
+    }
   },1200);
 }
 function safeExplainDone(q){
@@ -2501,4 +2594,5 @@ function importProgress(){
 </html>
   <button class="theory-back-mini quiz-return-btn" onclick="returnToQuizStage()">← 문제풀이 돌아가기</button>
   <div class="quiz-current-title" id="quizCurrentTitle">문제 단계</div>
+  <div class="quiz-track-status" id="quizTrackStatus"></div>
 
