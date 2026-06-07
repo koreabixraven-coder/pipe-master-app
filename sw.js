@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-theory-input-manager';
+const CACHE_NAME = 'pipe-master-v30-theory-no-filler-tts';
 const ASSETS = [
   './',
   './index.html',

@@ -493,49 +493,6 @@
   .theory-drive-mini{width:100%;padding:11px 12px;border-radius:12px;border:0.5px solid #1D9E75;background:#0A2E22;color:#9FE1CB;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:12px;cursor:pointer;}
   .theory-back-mini{width:100%;padding:10px 12px;border-radius:12px;border:0.5px solid #2A2A2A;background:#1A1A1A;color:#CCC;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:10px;cursor:pointer;}
 
-
-
-  /* ── v31 이론 입력·관리 화면 ── */
-  .tm-card{background:#181818;border:0.5px solid #2A2A2A;border-radius:16px;padding:14px;margin-bottom:12px;}
-  .tm-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
-  .tm-title{font-size:17px;font-weight:800;color:#9FE1CB;letter-spacing:-0.5px;}
-  .tm-sub{font-size:12px;color:#777;line-height:1.6;margin-top:4px;}
-  .tm-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .tm-field{display:flex;flex-direction:column;gap:5px;}
-  .tm-field label{font-size:12px;color:#9FE1CB;font-weight:700;}
-  .tm-field input,.tm-field textarea,.tm-field select{width:100%;box-sizing:border-box;background:#0A0A0A;color:#E8E8E8;border:0.5px solid #2A2A2A;border-radius:10px;padding:10px;font-size:13px;line-height:1.55;outline:none;}
-  .tm-field textarea{min-height:74px;resize:vertical;}
-  .tm-field textarea.big{min-height:140px;}
-  .tm-field input:focus,.tm-field textarea:focus,.tm-field select:focus{border-color:#1D9E75;box-shadow:0 0 0 1px rgba(29,158,117,.22);}
-  .tm-span2{grid-column:span 2;}
-  .tm-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px;}
-  .tm-btn{border:0.5px solid #1D9E75;background:#0A2E22;color:#9FE1CB;border-radius:11px;padding:11px 8px;font-size:12px;font-weight:700;cursor:pointer;}
-  .tm-btn.warn{border-color:#BA7517;background:#221606;color:#F1CB9B;}
-  .tm-btn.danger{border-color:#6B1F1F;background:#210C0C;color:#F08C8C;}
-  .tm-btn.gray{border-color:#333;background:#111;color:#CCC;}
-  .tm-btn:active{transform:scale(.985);}
-  .tm-list{display:flex;flex-direction:column;gap:8px;}
-  .tm-item{background:#121212;border:0.5px solid #2A2A2A;border-radius:12px;padding:11px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;}
-  .tm-item-title{font-size:14px;color:#EEE;font-weight:800;margin-bottom:4px;}
-  .tm-item-meta{font-size:11px;color:#777;line-height:1.5;}
-  .tm-item-actions{display:flex;gap:6px;}
-  .tm-mini{border:0.5px solid #2A2A2A;background:#0A0A0A;color:#CCC;border-radius:9px;padding:8px 9px;font-size:11px;cursor:pointer;}
-  .tm-mini.edit{border-color:#1D9E75;color:#9FE1CB;}
-  .tm-mini.del{border-color:#5A1515;color:#E24B4A;}
-  .tm-alert{font-size:12px;color:#9FE1CB;background:#08261D;border:0.5px solid #1D9E75;border-radius:12px;padding:10px;line-height:1.65;margin-bottom:10px;}
-  .tm-empty{border:0.5px dashed #333;border-radius:14px;padding:18px;color:#777;font-size:13px;line-height:1.7;text-align:center;}
-  .tm-checkline{font-size:11px;color:#777;line-height:1.55;margin-top:6px;}
-  .tm-checkline b{color:#9FE1CB;}
-  .tm-importbox{min-height:140px;font-family:ui-monospace,Consolas,monospace;font-size:11px;}
-  .tm-count-pill{font-size:11px;color:#1D9E75;border:0.5px solid #1D9E75;border-radius:999px;padding:5px 8px;background:#061E16;white-space:nowrap;}
-  .tm-template-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
-  .orig-block{margin-top:10px;border:0.5px solid #2A2A2A;border-radius:10px;background:#0B0B0B;overflow:hidden;}
-  .orig-block summary{cursor:pointer;color:#9FE1CB;font-size:12px;font-weight:700;padding:9px 10px;background:#111;}
-  .orig-content{white-space:pre-wrap;color:#CFCFCF;font-size:12px;line-height:1.65;padding:10px;}
-  .meta-chip-wrap{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
-  .meta-chip{font-size:10px;color:#9FE1CB;border:0.5px solid #244;background:#0A1B17;border-radius:999px;padding:4px 7px;}
-  @media(max-width:640px){.tm-grid{grid-template-columns:1fr}.tm-span2{grid-column:span 1}.tm-actions{grid-template-columns:1fr 1fr}.tm-template-row{grid-template-columns:1fr}.tm-item{grid-template-columns:1fr}.tm-item-actions{justify-content:flex-end}}
-
   /* ── 스크롤바 ── */
   ::-webkit-scrollbar{width:4px;}
   ::-webkit-scrollbar-track{background:#121212;}
@@ -567,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v31</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v31. 이론 입력·관리 템플릿을 추가했습니다. 기존 이론은 비우고 사용자가 직접 입력합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30. 이론 TTS에서 반복 학습문장을 제거하고 항목별 설명만 남겼습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -663,17 +620,6 @@
       음성 테스트 재생
     </button>
   
-
-      <div class="divider"></div>
-      <div class="s-title">이론 관리</div>
-      <div class="s-row">
-        <button class="test-btn" onclick="openTheoryManagerFromSettings(event)">📚 이론 입력·관리 열기</button>
-      </div>
-      <div class="s-row">
-        <button class="test-btn" style="border-color:#6B1F1F;color:#F08C8C;" onclick="clearAllTheoryFromSettings()">🧹 이론 전체 초기화</button>
-      </div>
-      <p class="s-hint">v31. 기존 이론은 비우고 사용자가 직접 원문. 화면문. TTS문. 암기포인트. 시험포인트를 입력해 저장합니다. 문제 DB는 그대로 유지됩니다.</p>
-
       <div class="divider"></div>
       <div class="s-title">모바일·데스크탑 진도 연동</div>
       <div class="s-row">
@@ -767,7 +713,7 @@
       </div>
     </div>
     <button class="theory-drive-mini" onclick="startTheoryListenFromCurrent(event)">🎧 이론 이동 중 청취 모드</button>
-    <div class="home-help" style="margin-bottom:10px;text-align:left;">과목을 선택하면 챕터 목차가 열립니다. 입력은 이론 관리에서 직접 할 수 있습니다.</div><button class="theory-back-mini" onclick="goScreen('screenTheoryManager')">＋ 이론 입력·관리</button>
+    <div class="home-help" style="margin-bottom:10px;text-align:left;">과목을 선택하면 챕터 목차가 열립니다. 각 챕터에는 TTS 읽기문이 포함되어 있습니다.</div>
     <div class="theory-subject-list" id="theorySubjectList"></div>
   </div>
 </div>
@@ -835,89 +781,6 @@
 </div>
 
 <!-- ════ 문제풀기 화면 ════ -->
-
-
-
-<!-- ════ v31 이론 입력·관리 화면 ════ -->
-<div class="screen" id="screenTheoryManager">
-  <div class="theory-wrap">
-    <div class="theory-topline">
-      <div class="theory-logo-home" onclick="goHome()" title="홈으로 이동">
-        <div class="tl-name">RavenBix · 배관기능장</div>
-        <div class="tl-sub">홈으로 이동</div>
-      </div>
-      <div class="theory-action-col">
-        <button class="home-icon-btn" onclick="goScreen('screenTheory')" aria-label="이론 학습으로"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-        <button class="icon-btn setting-trigger" onclick="openSettingsFromAnywhere(event)" aria-label="설정">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </button>
-      </div>
-    </div>
-
-    <div class="tm-card">
-      <div class="tm-head">
-        <div>
-          <div class="tm-title">📚 이론 입력·관리</div>
-          <div class="tm-sub">원문을 보존하고. 화면 표시문. TTS 낭독문. 암기포인트. 시험포인트를 직접 입력합니다.</div>
-        </div>
-        <div class="tm-count-pill" id="tmCountPill">0항목</div>
-      </div>
-      <div class="tm-alert">기존 이론은 비운 상태입니다. 입력한 이론은 이 기기의 localStorage에 저장됩니다. PC에서 입력하고 JSON으로 내보낸 뒤 모바일에서 가져오면 됩니다.</div>
-      <div class="tm-template-row">
-        <button class="tm-btn" onclick="tmLoadTemplate21()">2.1 템플릿 불러오기</button>
-        <button class="tm-btn gray" onclick="tmNewCard()">새 항목 입력</button>
-      </div>
-    </div>
-
-    <div class="tm-card">
-      <div class="tm-head"><div class="tm-title" id="tmFormTitle">새 이론 항목</div><div class="tm-count-pill" id="tmEditBadge">신규</div></div>
-      <div class="tm-grid">
-        <div class="tm-field"><label>장</label><input id="tmChapter" placeholder="예. 제1장 배관공작"></div>
-        <div class="tm-field"><label>절</label><input id="tmSection" placeholder="예. 2. 배관용 공구 및 기계"></div>
-        <div class="tm-field"><label>소절</label><input id="tmSubsection" placeholder="예. 2.1 수가공 및 측정공구"></div>
-        <div class="tm-field"><label>그룹</label><input id="tmGroup" placeholder="예. 수가공 공구 또는 측정공구"></div>
-        <div class="tm-field tm-span2"><label>항목명</label><input id="tmTitle" placeholder="예. 줄(file)"></div>
-        <div class="tm-field tm-span2"><label>원문 originalText. 한자·영문·숫자·단위 보존</label><textarea class="big" id="tmOriginal" placeholder="책 원문을 그대로 붙여넣습니다."></textarea></div>
-        <div class="tm-field tm-span2"><label>화면 표시문 screenText</label><textarea id="tmScreen" placeholder="화면에 보기 좋게 정리합니다. 원문 내용 삭제 금지."></textarea></div>
-        <div class="tm-field tm-span2"><label>TTS 낭독문 ttsText</label><textarea id="tmTts" placeholder="기호와 영문을 듣기 좋게 바꾼 낭독문입니다."></textarea></div>
-        <div class="tm-field"><label>암기포인트. 줄마다 1개</label><textarea id="tmMemory" placeholder="숫자. 종류. 용도. 비교만 짧게"></textarea></div>
-        <div class="tm-field"><label>시험포인트. 줄마다 1개</label><textarea id="tmExam" placeholder="문제로 나올 때 헷갈리는 부분"></textarea></div>
-        <div class="tm-field"><label>한자 보존 목록</label><input id="tmHanja" placeholder="예. 鉛管, 押輪"></div>
-        <div class="tm-field"><label>영문 병기</label><input id="tmEnglish" placeholder="예. file, chisel, rule"></div>
-        <div class="tm-field"><label>숫자·단위</label><input id="tmNumbers" placeholder="예. 100~400[mm], 50[mm], 60°"></div>
-        <div class="tm-field"><label>용어</label><input id="tmTerms" placeholder="예. 평줄, 각줄, 원형줄"></div>
-        <div class="tm-field"><label>이미지 필요</label><select id="tmImageRequired"><option value="false">아니오</option><option value="true">예</option></select></div>
-        <div class="tm-field"><label>이미지 메모</label><input id="tmImageMemo" placeholder="나중에 필요한 이미지 설명"></div>
-      </div>
-      <div class="tm-checkline" id="tmAutoCheck">입력 전입니다.</div>
-      <div class="tm-actions">
-        <button class="tm-btn" onclick="tmSaveCard()">저장</button>
-        <button class="tm-btn gray" onclick="tmAutoFillFromOriginal()">원문에서 자동 추출</button>
-        <button class="tm-btn warn" onclick="tmResetForm()">입력 초기화</button>
-        <button class="tm-btn danger" onclick="tmDeleteEditing()">현재 항목 삭제</button>
-      </div>
-    </div>
-
-    <div class="tm-card">
-      <div class="tm-head"><div class="tm-title">JSON 가져오기·내보내기</div><div class="tm-count-pill">백업</div></div>
-      <div class="tm-grid">
-        <div class="tm-field tm-span2"><label>JSON 백업 코드</label><textarea class="tm-importbox" id="tmJsonBox" placeholder="내보내기 결과 또는 가져올 JSON을 붙여넣습니다."></textarea></div>
-      </div>
-      <div class="tm-actions">
-        <button class="tm-btn" onclick="tmExportJson()">JSON 내보내기</button>
-        <button class="tm-btn warn" onclick="tmImportJson()">JSON 가져오기</button>
-        <button class="tm-btn gray" onclick="tmDownloadJson()">JSON 파일 저장</button>
-        <button class="tm-btn danger" onclick="tmClearAll()">전체 이론 삭제</button>
-      </div>
-    </div>
-
-    <div class="tm-card">
-      <div class="tm-head"><div class="tm-title">저장된 이론 목록</div><div class="tm-count-pill" id="tmListCount">0개</div></div>
-      <div class="tm-list" id="tmCardList"></div>
-    </div>
-  </div>
-</div>
-
 
 <!-- ════ 문제풀이 목차 화면 ════ -->
 <div class="screen" id="screenQuizToc">
@@ -1115,7 +978,6 @@ function goScreen(id){
   if(id==='screenTheory') buildTheorySubjects();
   if(id==='screenQuizToc') buildQuizToc();
   if(id==='screenQuizStage') buildQuizStage();
-  if(id==='screenTheoryManager') tmRenderManager();
   if(id==='screenQuiz'){ if(!quizPrepared) init(); updateQuizCurrentTitle(); }
 }
 function goHome(){
@@ -1259,20 +1121,13 @@ function openChapter(idx){
     const card=document.createElement('div');
     card.className='section-card tts-track-target';
     if(sec.tts) card.setAttribute('data-tts',sec.tts);
-    const htmlEsc=(s)=>String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-    const arr=(v)=>Array.isArray(v)?v:(v?String(v).split(/\n|,/).map(x=>x.trim()).filter(Boolean):[]);
-    const pts=arr(sec.points||sec.examPoints).map(p=>`<div class="sec-point">${htmlEsc(p)}</div>`).join('');
-    const mems=arr(sec.memoryPoints||sec.memory);
-    const memory=mems.length?`<div class="sec-memory"><b>암기포인트.</b><br>${mems.map(m=>'• '+htmlEsc(m)).join('<br>')}</div>`:'';
-    const level=sec.level?`<div class="sec-level">${htmlEsc(sec.level)}</div>`:'';
-    const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content">${htmlEsc(sec.key)}</div></div>`:'';
-    const mainTxt=sec.detail||sec.content||sec.screenText||'';
-    const detail=mainTxt?`<div class="sec-block"><div class="sec-label">화면 표시</div><div class="sec-content">${htmlEsc(mainTxt)}</div></div>`:'';
+    const pts=(sec.points||[]).map(p=>`<div class="sec-point">${p}</div>`).join('');
+    const level=sec.level?`<div class="sec-level">${sec.level}</div>`:'';
+    const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content">${sec.key}</div></div>`:'';
+    const detail=sec.detail?`<div class="sec-block"><div class="sec-label">상세설명</div><div class="sec-content">${sec.detail}</div></div>`:`<div class="sec-content">${sec.content||''}</div>`;
     const exam=pts?`<div class="sec-block"><div class="sec-label">시험포인트</div><div class="sec-points">${pts}</div></div>`:'';
-    const meta=[...(arr(sec.terms).map(x=>'용어 '+x)),...(arr(sec.numbers).map(x=>'수치 '+x)),...(arr(sec.hanja).map(x=>'한자 '+x)),...(arr(sec.english).map(x=>'영문 '+x))];
-    const metaHtml=meta.length?`<div class="meta-chip-wrap">${meta.map(x=>'<span class="meta-chip">'+htmlEsc(x)+'</span>').join('')}</div>`:'';
-    const original=sec.originalText?`<details class="orig-block"><summary>원문 보기</summary><div class="orig-content">${htmlEsc(sec.originalText)}</div></details>`:'';
-    card.innerHTML=`${level}<div class="sec-title">${htmlEsc(sec.title)}</div>${key}${detail}${exam}${memory}${metaHtml}${original}`;
+    const memory=sec.memory?`<div class="sec-memory"><b>암기문장.</b> ${sec.memory}</div>`:'';
+    card.innerHTML=`${level}<div class="sec-title">${sec.title}</div>${key}${detail}${exam}${memory}`;
     area.appendChild(card);
   });
   updateTheoryNavButtons();
@@ -2298,20 +2153,19 @@ function toKorean(txt){
     'STPG':'에스티피지','STPA':'에스티피에이','SPPG':'에스피피지',
     'KS':'케이에스','JIS':'제이아이에스','ASTM':'에이에스티엠',
     'ISO':'아이에스오','PVC':'피브이씨','CPVC':'씨피브이씨','PE':'피이','HDPE':'에이치디피이','LDPE':'엘디피이','PP':'피피',
-    'PTFE':'피티에프이','TIG':'티아이지','MIG':'엠아이지','MAG':'엠에이지','RT':'알티','UT':'유티','MT':'엠티','PT':'피티',
+    'PTFE':'피티에프이','TIG':'티아이지','MIG':'엠아이지','MAG':'엠에이지',
     'TTS':'티티에스','API':'에이피아이','ANSI':'에이엔에스아이',
     'ASME':'에이에스엠이','DIN':'디아이엔','DN':'디엔',
     'NPT':'엔피티','PT':'피티','PF':'피에프',
     'GPM':'지피엠','LPM':'엘피엠','RPM':'알피엠',
     'MPa':'메가파스칼','kPa':'킬로파스칼','Pa':'파스칼',
     'kW':'킬로와트','kWh':'킬로와트시',
-    'pH':'피에이치','CO2':'이산화탄소','H2O':'물','O2':'산소','C2H2':'아세틸렌',
+    'pH':'피에이치','CO2':'이산화탄소','H2O':'물',
     'QCD':'큐씨디','QC':'큐씨','PDCA':'피디씨에이','PERT':'퍼트','CPM':'씨피엠',
     'A':'에이','B':'비','C':'씨','D':'디',
     'No':'번호','no':'번호'
   };
   let result = String(txt||'');
-  result = result.replace(/△L/g,'델타 엘').replace(/△t/g,'델타 티').replace(/α/g,'알파').replace(/×/g,' 곱하기 ');
 
   /* 케이에스(KS), KS(케이에스), 에스피피(SPP) 같은 중복 낭독 제거 */
   Object.keys(map).sort((a,b)=>b.length-a.length).forEach(k=>{
@@ -2331,10 +2185,6 @@ function toKorean(txt){
   result = result.replace(/(\d+(?:\.\d+)?)\s*m²/g, '$1제곱미터');
   result = result.replace(/(\d+(?:\.\d+)?)\s*m3/g, '$1세제곱미터');
   result = result.replace(/(\d+(?:\.\d+)?)\s*A\b/g, '$1에이');
-  result = result.replace(/\[(mm|㎜)\]/gi,'밀리미터');
-  result = result.replace(/\[A\]/g,'에이');
-  result = result.replace(/\[%\]/g,'퍼센트');
-  result = result.replace(/(\d+(?:\.\d+)?)\s*%/g,'$1퍼센트');
 
   /* 긴 약어부터 치환 */
   Object.keys(map).sort((a,b)=>b.length-a.length).forEach(k=>{
@@ -2634,184 +2484,7 @@ if('serviceWorker' in navigator){
 if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
 tryLoadV();
 
-
-
-/* ── v31 사용자 직접 입력 이론 관리 ── */
-const TM_STORE_KEY='ravenbix_pipe_theory_cards_v31';
-let tmEditingId=null;
-function tmEsc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function tmLines(v){return String(v||'').split(/\n|,/).map(x=>x.trim()).filter(Boolean);}
-function tmGetCards(){
-  try{const raw=localStorage.getItem(TM_STORE_KEY); const a=raw?JSON.parse(raw):[]; return Array.isArray(a)?a:[];}catch(e){return [];}
-}
-function tmSetCards(cards){localStorage.setItem(TM_STORE_KEY, JSON.stringify(cards||[])); tmLoadTheoryToGlobal();}
-function tmMakeId(){return 'tm_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);}
-function tmGroupTitle(c){return [c.section,c.subsection,c.group].filter(Boolean).join(' / ') || '사용자 입력 이론';}
-function tmCardsToTheory(cards){
-  const db={};
-  cards.forEach(c=>{
-    const subj=c.chapter||'사용자 이론';
-    if(!db[subj]) db[subj]={title:subj, icon:'📚', chapters:[]};
-    const chTitle=tmGroupTitle(c);
-    let ch=db[subj].chapters.find(x=>x.title===chTitle);
-    if(!ch){ch={id:'ch_'+db[subj].chapters.length, title:chTitle, sections:[]}; db[subj].chapters.push(ch);}
-    ch.sections.push({
-      title:c.title||'제목 없음',
-      content:c.screenText||c.originalText||'',
-      detail:c.screenText||c.originalText||'',
-      originalText:c.originalText||'',
-      tts:c.ttsText||c.screenText||c.originalText||'',
-      memoryPoints:Array.isArray(c.memoryPoints)?c.memoryPoints:tmLines(c.memoryPoints),
-      points:Array.isArray(c.examPoints)?c.examPoints:tmLines(c.examPoints),
-      terms:Array.isArray(c.terms)?c.terms:tmLines(c.terms),
-      numbers:Array.isArray(c.numbers)?c.numbers:tmLines(c.numbers),
-      hanja:Array.isArray(c.hanja)?c.hanja:tmLines(c.hanja),
-      english:Array.isArray(c.english)?c.english:tmLines(c.english)
-    });
-  });
-  return db;
-}
-function tmLoadTheoryToGlobal(){
-  try{ if(typeof THEORY!=='undefined') THEORY=tmCardsToTheory(tmGetCards()); }catch(e){ console.warn('이론 로드 실패',e); }
-}
-function openTheoryManagerFromSettings(e){ if(e){e.stopPropagation(); e.preventDefault();} closeSettings(); goScreen('screenTheoryManager'); }
-function tmVal(id){return (document.getElementById(id)?.value||'').trim();}
-function tmSet(id,v){const el=document.getElementById(id); if(el) el.value=v||'';}
-function tmArr(id){return tmLines(tmVal(id));}
-function tmRenderManager(){
-  tmLoadTheoryToGlobal();
-  const cards=tmGetCards();
-  const pill=document.getElementById('tmCountPill'); if(pill) pill.textContent=cards.length+'항목';
-  const cnt=document.getElementById('tmListCount'); if(cnt) cnt.textContent=cards.length+'개';
-  const list=document.getElementById('tmCardList'); if(!list) return;
-  if(!cards.length){list.innerHTML='<div class="tm-empty">저장된 이론이 없습니다.<br>2.1 템플릿을 불러오거나 새 항목을 입력하세요.</div>'; return;}
-  list.innerHTML='';
-  cards.forEach(c=>{
-    const div=document.createElement('div');
-    div.className='tm-item';
-    div.innerHTML='<div><div class="tm-item-title">'+tmEsc(c.title||'제목 없음')+'</div><div class="tm-item-meta">'+tmEsc((c.chapter||'')+' · '+tmGroupTitle(c))+'</div></div>'+
-      '<div class="tm-item-actions"><button class="tm-mini edit" onclick="tmEditCard(\''+c.id+'\')">수정</button><button class="tm-mini del" onclick="tmDeleteCard(\''+c.id+'\')">삭제</button></div>';
-    list.appendChild(div);
-  });
-}
-function tmNewCard(){tmEditingId=null; tmResetForm(); const b=document.getElementById('tmEditBadge'); if(b)b.textContent='신규';}
-function tmResetForm(){
-  ['tmChapter','tmSection','tmSubsection','tmGroup','tmTitle','tmOriginal','tmScreen','tmTts','tmMemory','tmExam','tmHanja','tmEnglish','tmNumbers','tmTerms','tmImageMemo'].forEach(id=>tmSet(id,''));
-  tmSet('tmImageRequired','false');
-  const t=document.getElementById('tmFormTitle'); if(t)t.textContent='새 이론 항목';
-  const b=document.getElementById('tmEditBadge'); if(b)b.textContent=tmEditingId?'수정':'신규';
-  tmUpdateCheck();
-}
-function tmAutoExtract(text){
-  const s=String(text||'');
-  return {
-    hanja:Array.from(new Set((s.match(/[\u4E00-\u9FFF]+/g)||[]))),
-    english:Array.from(new Set((s.match(/\(([A-Za-z0-9/ &.\-]+)\)/g)||[]).map(x=>x.replace(/[()]/g,'').trim()))),
-    numbers:Array.from(new Set((s.match(/\d+(?:\.\d+)?(?:\s*[~×x]\s*\d+(?:\.\d+)?)?\s*(?:\[[^\]]+\]|[%°℃A]|MPa|rpm|g|mm|m|L\/h)?/g)||[]).map(x=>x.trim()).filter(Boolean)))
-  };
-}
-function tmAutoFillFromOriginal(){
-  const o=tmVal('tmOriginal');
-  if(!o){alert('원문을 먼저 입력하세요.');return;}
-  const ex=tmAutoExtract(o);
-  if(!tmVal('tmScreen')) tmSet('tmScreen',o);
-  if(!tmVal('tmTts')) tmSet('tmTts',toKorean(o));
-  if(!tmVal('tmHanja')) tmSet('tmHanja',ex.hanja.join(', '));
-  if(!tmVal('tmEnglish')) tmSet('tmEnglish',ex.english.join(', '));
-  if(!tmVal('tmNumbers')) tmSet('tmNumbers',ex.numbers.join(', '));
-  tmUpdateCheck();
-}
-function tmUpdateCheck(){
-  const el=document.getElementById('tmAutoCheck'); if(!el) return;
-  const o=tmVal('tmOriginal'); const ex=tmAutoExtract(o);
-  el.innerHTML='자동 점검. 한자 <b>'+ex.hanja.length+'</b>개. 영문 <b>'+ex.english.length+'</b>개. 숫자·단위 <b>'+ex.numbers.length+'</b>개.';
-}
-function tmCardFromForm(){
-  return {
-    id:tmEditingId||tmMakeId(),
-    chapter:tmVal('tmChapter'), section:tmVal('tmSection'), subsection:tmVal('tmSubsection'), group:tmVal('tmGroup'), title:tmVal('tmTitle'),
-    originalText:tmVal('tmOriginal'), screenText:tmVal('tmScreen'), ttsText:tmVal('tmTts'),
-    memoryPoints:tmArr('tmMemory'), examPoints:tmArr('tmExam'), hanja:tmArr('tmHanja'), english:tmArr('tmEnglish'), numbers:tmArr('tmNumbers'), terms:tmArr('tmTerms'),
-    imageRequired:tmVal('tmImageRequired')==='true', imageMemo:tmVal('tmImageMemo'), updatedAt:new Date().toISOString()
-  };
-}
-function tmSaveCard(){
-  const c=tmCardFromForm();
-  if(!c.chapter||!c.section||!c.title||!c.originalText){alert('장. 절. 항목명. 원문은 필수입니다.');return;}
-  if(!c.screenText) c.screenText=c.originalText;
-  if(!c.ttsText) c.ttsText=toKorean(c.screenText);
-  const cards=tmGetCards();
-  const i=cards.findIndex(x=>x.id===c.id);
-  if(i>=0) cards[i]=c; else cards.push(c);
-  tmSetCards(cards);
-  tmEditingId=c.id;
-  tmRenderManager();
-  buildTheorySubjects();
-  alert('이론 항목을 저장했습니다.');
-}
-function tmEditCard(id){
-  const c=tmGetCards().find(x=>x.id===id); if(!c) return;
-  tmEditingId=id;
-  tmSet('tmChapter',c.chapter); tmSet('tmSection',c.section); tmSet('tmSubsection',c.subsection); tmSet('tmGroup',c.group); tmSet('tmTitle',c.title);
-  tmSet('tmOriginal',c.originalText); tmSet('tmScreen',c.screenText); tmSet('tmTts',c.ttsText);
-  tmSet('tmMemory',(c.memoryPoints||[]).join('\n')); tmSet('tmExam',(c.examPoints||[]).join('\n'));
-  tmSet('tmHanja',(c.hanja||[]).join(', ')); tmSet('tmEnglish',(c.english||[]).join(', ')); tmSet('tmNumbers',(c.numbers||[]).join(', ')); tmSet('tmTerms',(c.terms||[]).join(', '));
-  tmSet('tmImageRequired',c.imageRequired?'true':'false'); tmSet('tmImageMemo',c.imageMemo||'');
-  const t=document.getElementById('tmFormTitle'); if(t)t.textContent='이론 항목 수정';
-  const b=document.getElementById('tmEditBadge'); if(b)b.textContent='수정';
-  tmUpdateCheck();
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function tmDeleteCard(id){
-  if(!confirm('이 항목을 삭제할까요?')) return;
-  const cards=tmGetCards().filter(x=>x.id!==id); tmSetCards(cards);
-  if(tmEditingId===id){tmEditingId=null; tmResetForm();}
-  tmRenderManager(); buildTheorySubjects();
-}
-function tmDeleteEditing(){ if(!tmEditingId){tmResetForm();return;} tmDeleteCard(tmEditingId); }
-function tmClearAll(){
-  if(!confirm('저장된 이론 전체를 삭제합니다. 문제 데이터는 유지됩니다. 계속할까요?')) return;
-  tmSetCards([]); tmEditingId=null; tmResetForm(); tmRenderManager(); buildTheorySubjects();
-}
-function clearAllTheoryFromSettings(){ closeSettings(); goScreen('screenTheoryManager'); setTimeout(tmClearAll,100); }
-function tmExportJson(){
-  const data={app:'pipe-master-app',type:'theory-cards',version:'v31',exportedAt:new Date().toISOString(),cards:tmGetCards()};
-  const box=document.getElementById('tmJsonBox'); if(box){box.value=JSON.stringify(data,null,2); box.select();}
-}
-function tmImportJson(){
-  const box=document.getElementById('tmJsonBox'); const raw=(box&&box.value||'').trim();
-  if(!raw){alert('가져올 JSON을 붙여넣으세요.');return;}
-  try{
-    const obj=JSON.parse(raw); const cards=Array.isArray(obj)?obj:(Array.isArray(obj.cards)?obj.cards:null);
-    if(!cards) throw new Error('cards 없음');
-    const normalized=cards.map(c=>({...c,id:c.id||tmMakeId()}));
-    tmSetCards(normalized); tmEditingId=null; tmResetForm(); tmRenderManager(); buildTheorySubjects(); alert('이론 JSON을 가져왔습니다.');
-  }catch(e){alert('JSON 형식이 맞지 않습니다. '+e.message);}
-}
-function tmDownloadJson(){
-  const data={app:'pipe-master-app',type:'theory-cards',version:'v31',exportedAt:new Date().toISOString(),cards:tmGetCards()};
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='pipe_theory_cards_v31.json'; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-}
-function tmLoadTemplate21(){
-  tmEditingId=null; tmResetForm();
-  tmSet('tmChapter','제1장 배관공작');
-  tmSet('tmSection','2. 배관용 공구 및 기계');
-  tmSet('tmSubsection','2.1 수가공 및 측정공구');
-  tmSet('tmGroup','수가공 공구');
-  tmSet('tmTitle','줄(file)');
-  tmSet('tmOriginal','줄(file) : 금속 및 비금속판이나 관을 절삭하거나 다듬질할 때 사용\n(가) 단면 형상에 따른 종류 : 평줄, 각줄, 원형줄, 반원줄, 삼각줄\n(나) 길이에 따른 종류 : 100~400[mm]까지 50[mm] 간격으로 종류가 있다.');
-  tmSet('tmScreen','줄(file)은 금속 및 비금속판이나 관을 절삭하거나 다듬질할 때 사용하는 수가공 공구이다. 단면 형상에 따른 종류에는 평줄. 각줄. 원형줄. 반원줄. 삼각줄이 있다. 길이에 따른 종류는 100~400[mm]까지 50[mm] 간격으로 구분한다.');
-  tmSet('tmTts','줄. 금속 및 비금속판이나 관을 절삭하거나 다듬질할 때 사용하는 공구입니다. 단면 형상에 따른 종류는 평줄. 각줄. 원형줄. 반원줄. 삼각줄입니다. 길이는 100에서 400밀리미터까지 50밀리미터 간격으로 구분합니다.');
-  tmSet('tmMemory','줄 용도. 절삭. 다듬질.\n단면 형상. 평줄. 각줄. 원형줄. 반원줄. 삼각줄.\n길이. 100~400[mm]. 50[mm] 간격.');
-  tmSet('tmExam','줄은 절삭과 다듬질 공구로 구분한다.\n단면 형상 5가지를 묶어서 암기한다.');
-  tmSet('tmEnglish','file'); tmSet('tmNumbers','100~400[mm], 50[mm]'); tmSet('tmTerms','줄, 평줄, 각줄, 원형줄, 반원줄, 삼각줄'); tmSet('tmImageRequired','true'); tmSet('tmImageMemo','평줄. 각줄. 원형줄. 반원줄. 삼각줄 단면 비교 이미지');
-  tmUpdateCheck();
-}
-['tmOriginal','tmScreen','tmTts','tmHanja','tmEnglish','tmNumbers'].forEach(id=>document.addEventListener('input',e=>{if(e.target&&e.target.id===id) tmUpdateCheck();}));
-
 /* 홈화면 시작 */
-tmLoadTheoryToGlobal();
 document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
 document.getElementById('screenHome').classList.add('show');
 
