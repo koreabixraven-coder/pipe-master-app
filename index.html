@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.1</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.2</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.1. 이론 TTS는 제목. 본문. 암기문장만 기본 낭독합니다. 시험포인트는 선택사항입니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.2. 27~47페이지 배관공작 원문 데이터를 적용했습니다. 이론 TTS는 제목. 본문. 암기문장만 기본 낭독합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -2185,7 +2185,7 @@ function toKorean(txt){
     'GPM':'지피엠','LPM':'엘피엠','RPM':'알피엠',
     'MPa':'메가파스칼','kPa':'킬로파스칼','Pa':'파스칼',
     'kW':'킬로와트','kWh':'킬로와트시',
-    'pH':'피에이치','CO2':'이산화탄소','H2O':'물',
+    'pH':'피에이치','CO2':'이산화탄소','CO₂':'이산화탄소','O₂':'산소','O2':'산소','C₂H₂':'아세틸렌','C2H2':'아세틸렌','H2O':'물','H₂O':'물','DCSP':'디씨에스피','DCRP':'디씨알피','BCuP':'비씨유피','BAg':'비에이지',
     'QCD':'큐씨디','QC':'큐씨','PDCA':'피디씨에이','PERT':'퍼트','CPM':'씨피엠',
     'A':'에이','B':'비','C':'씨','D':'디',
     'No':'번호','no':'번호'
@@ -2210,6 +2210,21 @@ function toKorean(txt){
   result = result.replace(/(\d+(?:\.\d+)?)\s*m²/g, '$1제곱미터');
   result = result.replace(/(\d+(?:\.\d+)?)\s*m3/g, '$1세제곱미터');
   result = result.replace(/(\d+(?:\.\d+)?)\s*A\b/g, '$1에이');
+
+
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[mm\]/g, '$1밀리미터');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[A\]/g, '$1에이');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[℃\]/g, '$1도');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[%\]/g, '$1퍼센트');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[MPa\]/g, '$1메가파스칼');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[rpm\]/g, '$1알피엠');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[g\]/g, '$1그램');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[L\/h\]/g, '$1리터 매 시간');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[kgf\/cm²\]/g, '$1킬로그램힘 매 제곱센티미터');
+  result = result.replace(/(\d+(?:\.\d+)?(?:~\d+(?:\.\d+)?)?)\s*\[mmHg\]/g, '$1밀리미터 수은주');
+  result = result.replace(/10⁻⁴/g, '10의 마이너스 4승');
+  result = result.replace(/10⁻⁶/g, '10의 마이너스 6승');
+  result = result.replace(/²/g, '제곱');
 
   /* 긴 약어부터 치환 */
   Object.keys(map).sort((a,b)=>b.length-a.length).forEach(k=>{
