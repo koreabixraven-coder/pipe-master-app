@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v29-theory-duplicate-zero-audit';
+const CACHE_NAME = 'pipe-master-v31-theory-input-manager';
 const ASSETS = [
   './',
   './index.html',
