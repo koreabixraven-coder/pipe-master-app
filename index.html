@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.1</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30. 이론 TTS에서 반복 학습문장을 제거하고 항목별 설명만 남겼습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.1. 이론 TTS는 제목. 본문. 암기문장만 기본 낭독합니다. 시험포인트는 선택사항입니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -583,6 +583,13 @@
       <button class="sb" data-theory-auto="all" onclick="setTheoryAutoMode('all',this)">전체 이론</button>
     </div>
     <p class="s-hint">이론 전체읽기에서 현재 챕터가 끝난 뒤 어디까지 이어 들을지 정합니다. 과목 전체는 초급. 중급. 고급 순서로 재생합니다.</p>
+
+    <div class="tog-row" style="margin-top:8px;margin-bottom:10px;">
+      <label>이론 시험포인트 낭독</label>
+      <label class="tog"><input type="checkbox" id="theoryExamTTS"><span class="tog-sl"></span></label>
+    </div>
+    <p class="s-hint">기본 OFF. 이론 TTS는 제목. 본문. 암기문장만 읽습니다. 켜면 시험포인트를 마지막에 추가로 읽습니다.</p>
+
 
 <div class="s-title">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1172,16 +1179,15 @@ function theoryReplayChapter(){
 }
 
 function theoryTextForRead(sec){
-  if(sec.tts) return sec.tts;
   let txt='';
-  if(sec.level) txt+=sec.level+'. ';
-  txt+=sec.title+'. ';
-  if(sec.key) txt+='핵심개념. '+sec.key+'. ';
-  if(sec.detail) txt+='상세설명. '+sec.detail+'. ';
-  else if(sec.content) txt+=sec.content+'. ';
-  if(sec.points&&sec.points.length) txt+='시험포인트. '+sec.points.join('. ')+'. ';
+  txt+=(sec.title||'이론')+'. ';
+  const body=sec.detail || sec.content || sec.screenText || sec.originalText || '';
+  if(body) txt+=body+'. ';
   if(sec.memory) txt+='암기문장. '+sec.memory+'. ';
-  return txt;
+  if(appSettings && appSettings.theoryExamTTS && sec.points && sec.points.length){
+    txt+=sec.points.join('. ')+'. ';
+  }
+  return cleanTheorySpeechText(txt);
 }
 
 
@@ -1338,7 +1344,7 @@ function focusTheoryTarget(el,label){
   }
 }
 
-/* ── v21 이론 TTS 반복 제거·상세설명 중심 낭독 ── */
+/* ── v30.1 이론 TTS 본문+암기문장 전용 낭독 ── */
 function getCurrentTheoryChapter(){
   try{
     const s=THEORY[curSubject];
@@ -1348,37 +1354,60 @@ function getCurrentTheoryChapter(){
 function cleanTheorySpeechText(s){
   return String(s||'')
     .replace(/\s+/g,' ')
-    .replace(/핵심개념\s*/g,'')
-    .replace(/상세설명\s*/g,'')
-    .replace(/시험포인트\s*/g,'')
+    .replace(/핵심개념\s*\.?\s*/g,'')
+    .replace(/상세설명\s*\.?\s*/g,'')
+    .replace(/화면표시문\s*\.?\s*/g,'')
+    .replace(/설명문\s*\.?\s*/g,'')
     .trim();
 }
 function makeTheoryChapterIntro(){
-  const s=THEORY[curSubject];
-  const ch=getCurrentTheoryChapter();
-  if(!s || !ch) return '';
-  let level=(ch.title||'').replace(/\s*10항목\s*/g,'').trim();
-  return s.title+'. '+level+'을 시작합니다. 지금부터 핵심개념 반복 대신 상세설명 중심으로 읽겠습니다. 암기문장은 마지막에 짧게 한 번만 읽습니다. 시험포인트는 공통 주의사항만 한 번 안내합니다.';
+  return '';
 }
 function makeTheoryCommonExamPoint(){
-  const ch=getCurrentTheoryChapter();
-  const title=(ch&&ch.title)||'';
-  if(title.includes('초급')) return '공통 시험포인트. 초급은 용어의 뜻과 기본 기능을 먼저 맞히는 단계입니다.';
-  if(title.includes('중급')) return '공통 시험포인트. 중급은 원인과 결과. 적용 위치를 함께 구분하는 단계입니다.';
-  if(title.includes('고급')) return '공통 시험포인트. 고급은 현장 상황에서 가장 안전하고 적절한 대책을 고르는 단계입니다.';
-  return '공통 시험포인트. 비슷한 용어와 기능을 서로 바꾸어 내는 오답에 주의합니다.';
+  return '';
+}
+function getTheoryBodyFromCard(el){
+  const blocks=Array.from(el.querySelectorAll('.sec-block'));
+  const detailBlock=blocks.find(b=>{
+    const label=(b.querySelector('.sec-label')?.textContent||'').trim();
+    return label.includes('상세설명') || label.includes('본문') || label.includes('화면 표시');
+  });
+  if(detailBlock){
+    return (detailBlock.querySelector('.sec-content')?.textContent || '').trim();
+  }
+
+  const directContent=Array.from(el.children).find(child=>{
+    return child.classList && child.classList.contains('sec-content');
+  });
+  if(directContent) return directContent.textContent.trim();
+
+  const fallbackBlock=blocks.find(b=>{
+    const label=(b.querySelector('.sec-label')?.textContent||'').trim();
+    return !label.includes('핵심개념') && !label.includes('시험포인트');
+  });
+  if(fallbackBlock){
+    return (fallbackBlock.querySelector('.sec-content')?.textContent || '').trim();
+  }
+
+  const clone=el.cloneNode(true);
+  clone.querySelectorAll('.sec-title,.sec-level,.sec-label,.sec-points,.sec-point,.sec-memory').forEach(n=>n.remove());
+  return clone.textContent.replace(/\s+/g,' ').trim();
+}
+function getTheoryExamPointsFromCard(el){
+  return Array.from(el.querySelectorAll('.sec-point')).map(p=>p.textContent.trim()).filter(Boolean);
 }
 function makeTheorySectionSpeech(el, idx){
   const title=(el.querySelector('.sec-title')?.textContent || ('항목 '+(idx+1))).trim();
-  const detail=(el.querySelector('.sec-block .sec-label')?.textContent==='상세설명')
-    ? (el.querySelector('.sec-block .sec-content')?.textContent || '')
-    : (Array.from(el.querySelectorAll('.sec-block')).find(b=>(b.querySelector('.sec-label')?.textContent||'').includes('상세설명'))?.querySelector('.sec-content')?.textContent || '');
+  const body=getTheoryBodyFromCard(el);
   const memory=(el.querySelector('.sec-memory')?.textContent || '').replace(/^암기문장\.\s*/,'').trim();
+  const exam=getTheoryExamPointsFromCard(el);
 
   let text = title+'. ';
-  if(detail) text += detail+'. ';
-  else text += el.innerText.replace(/\s+/g,' ')+'. ';
-  if(memory) text += '암기문장. '+memory;
+  if(body) text += body+'. ';
+  if(memory) text += '암기문장. '+memory+'. ';
+  if(appSettings && appSettings.theoryExamTTS && exam.length){
+    text += exam.join('. ')+'. ';
+  }
   return cleanTheorySpeechText(text);
 }
 
@@ -1386,14 +1415,6 @@ function buildTheoryReadQueue(){
   let targets=getTheoryTrackTargets();
   if(!targets.length){annotateTheoryCards(); targets=getTheoryTrackTargets();}
   const q=[];
-  const intro=makeTheoryChapterIntro();
-  if(intro){
-    q.push({el:targets[0]||document.getElementById('theoryContentArea'), title:'챕터 시작 안내', text:intro});
-  }
-  const commonPoint=makeTheoryCommonExamPoint();
-  if(commonPoint){
-    q.push({el:targets[0]||document.getElementById('theoryContentArea'), title:'공통 시험포인트', text:commonPoint});
-  }
   targets.forEach((el,idx)=>{
     const title=(el.querySelector('.sec-title')?.textContent || ('이론 '+(idx+1))).trim();
     const text=makeTheorySectionSpeech(el,idx);
@@ -1981,6 +2002,7 @@ const DEFAULT_SETTINGS={
   autoNext:true,
   quizFullAuto:false,
   quizTrack:true,
+  theoryExamTTS:false,
   theoryAutoMode:'subject'
 };
 let appSettings=null;
@@ -1997,6 +2019,7 @@ function normalizeSettings(obj){
   s.autoNext=!!s.autoNext;
   s.quizFullAuto=!!s.quizFullAuto;
   s.quizTrack=(s.quizTrack===undefined)?true:!!s.quizTrack;
+  s.theoryExamTTS=!!s.theoryExamTTS;
   s.theoryAutoMode=['once','next','subject','all'].includes(s.theoryAutoMode)?s.theoryAutoMode:DEFAULT_SETTINGS.theoryAutoMode;
   s.voiceName=String(s.voiceName||'');
   return s;
@@ -2019,6 +2042,7 @@ function mirrorLegacySettings(s){
     localStorage.setItem('autoNx',String(s.autoNext));
     localStorage.setItem('quizFullAuto',String(s.quizFullAuto));
     localStorage.setItem('quizTrack',String(s.quizTrack));
+    localStorage.setItem('theoryExamTTS',String(s.theoryExamTTS));
     localStorage.setItem('pipe_theory_auto_mode',s.theoryAutoMode);
     if(s.voiceName) localStorage.setItem('voiceName',s.voiceName);
     else localStorage.removeItem('voiceName');
@@ -2106,6 +2130,7 @@ function collectSettingsFromUI(){
     autoNext: !!(document.getElementById('autoNx') && document.getElementById('autoNx').checked),
     quizFullAuto: !!(document.getElementById('quizFullAuto') && document.getElementById('quizFullAuto').checked),
     quizTrack: !(document.getElementById('quizTrack') && !document.getElementById('quizTrack').checked),
+    theoryExamTTS: !!(document.getElementById('theoryExamTTS') && document.getElementById('theoryExamTTS').checked),
     theoryAutoMode: activeTheory ? activeTheory.getAttribute('data-theory-auto') : theoryAutoMode
   });
 }

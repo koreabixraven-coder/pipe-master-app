@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-theory-no-filler-tts';
+const CACHE_NAME = 'pipe-master-v30-1-theory-tts-body-memory-only';
 const ASSETS = [
   './',
   './index.html',
