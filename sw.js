@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v26-quiz-full-auto-track';
+const CACHE_NAME = 'pipe-master-v29-theory-duplicate-zero-audit';
 const ASSETS = [
   './',
   './index.html',
