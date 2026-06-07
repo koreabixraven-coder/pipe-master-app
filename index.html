@@ -20,6 +20,30 @@
   .screen.show{display:block;}
 
 
+
+  /* ── v24 문제풀이 이론형 목차 UI. 문제 로직 변경 없음 ── */
+  .quiz-toc-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
+  .quiz-toc-card{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+  .quiz-toc-card:active{transform:scale(.99);}
+  .quiz-toc-card.on{border-color:#378ADD;background:#0C2D4A;}
+  .quiz-toc-icon{width:38px;height:38px;border-radius:11px;background:#0C2D4A;color:#A8D2FF;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .quiz-toc-info{flex:1;min-width:0;}
+  .quiz-toc-title{font-size:14px;font-weight:700;color:#E0E0E0;margin-bottom:4px;}
+  .quiz-toc-desc{font-size:11px;color:#777;line-height:1.45;}
+  .quiz-stat-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px;}
+  .quiz-stat{font-size:10px;border:0.5px solid #2A2A2A;border-radius:999px;padding:3px 7px;color:#888;background:#111;}
+  .quiz-stat.ok{border-color:#1D9E75;color:#9FE1CB;background:#0A2E22;}
+  .quiz-stat.ng{border-color:#E24B4A;color:#FFB0B0;background:#2D1010;}
+  .quiz-stat.rt{border-color:#378ADD;color:#A8D2FF;background:#0C2D4A;}
+  .quiz-toc-chevron{width:18px;height:18px;stroke:#378ADD;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;}
+  .quiz-stage-head{background:#121212;border:0.5px solid #2A2A2A;border-radius:14px;padding:13px 14px;margin-bottom:12px;}
+  .quiz-stage-title{font-size:15px;font-weight:800;color:#A8D2FF;margin-bottom:4px;}
+  .quiz-stage-sub{font-size:11px;color:#777;line-height:1.5;}
+  .quiz-return-btn{width:100%;margin:0 0 10px;}
+  .quiz-current-title{font-size:12px;color:#A8D2FF;text-align:center;margin:-2px 0 10px;}
+  #screenQuiz .level-bar{display:none!important;}
+  @media(min-width:760px){.quiz-toc-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;}}
+
   /* ── v23 메인 UI 정리. 로직 변경 없음 ── */
   .home-wrap.clean-home{padding:26px 16px 28px;}
   .home-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;padding:4px 2px 10px;border-bottom:0.5px solid #1E1E1E;}
@@ -491,12 +515,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v23</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v24</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v23. 메인은 로고·설정·이론카드·문제카드만 남기고 핵심 정보는 목차 안으로 정리했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v24. 문제풀이를 이론처럼 목차→단계→풀이 화면 구조로 정리했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -634,7 +658,7 @@
       </div>
 
       <!-- 3행: 문제 풀이 카드 -->
-      <div class="home-card quiz" onclick="goScreen('screenQuiz')">
+      <div class="home-card quiz" onclick="goScreen('screenQuizToc')">
         <div class="hc-top">
           <div class="hc-icon qz">✏️</div>
           <div>
@@ -740,6 +764,52 @@
 </div>
 
 <!-- ════ 문제풀기 화면 ════ -->
+
+<!-- ════ 문제풀이 목차 화면 ════ -->
+<div class="screen" id="screenQuizToc">
+  <div class="theory-wrap">
+    <div class="theory-topline">
+      <div class="theory-logo-home" onclick="goHome()" title="홈으로 이동">
+        <div class="tl-name">RavenBix · 배관기능장</div>
+        <div class="tl-sub">홈으로 이동</div>
+      </div>
+      <div class="theory-action-col">
+        <button class="icon-btn setting-trigger" onclick="openSettingsFromAnywhere(event)" aria-label="설정">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="quiz-stage-head">
+      <div class="quiz-stage-title">문제 풀이 목차</div>
+      <div class="quiz-stage-sub">초급. 중급. 고급. 심화 중 먼저 풀 단계를 선택합니다.</div>
+    </div>
+    <div class="quiz-toc-list" id="quizTocList"></div>
+  </div>
+</div>
+
+<!-- ════ 문제풀이 서브메뉴 화면 ════ -->
+<div class="screen" id="screenQuizStage">
+  <div class="theory-wrap">
+    <div class="theory-topline">
+      <div class="theory-logo-home" onclick="goHome()" title="홈으로 이동">
+        <div class="tl-name">RavenBix · 배관기능장</div>
+        <div class="tl-sub">홈으로 이동</div>
+      </div>
+      <div class="theory-action-col">
+        <button class="icon-btn setting-trigger" onclick="openSettingsFromAnywhere(event)" aria-label="설정">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06A2 2 0 0 1 20.73 7.1l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </div>
+    <button class="theory-back-mini quiz-return-btn" onclick="goScreen('screenQuizToc')">← 문제풀이 돌아가기</button>
+    <div class="quiz-stage-head">
+      <div class="quiz-stage-title" id="quizStageTitle">문제 단계 선택</div>
+      <div class="quiz-stage-sub" id="quizStageSub">1단계부터 4단계까지 선택합니다.</div>
+    </div>
+    <div class="quiz-toc-list" id="quizStageList"></div>
+  </div>
+</div>
+
 <div class="screen" id="screenQuiz">
 <div class="app">
 
@@ -889,7 +959,9 @@ function goScreen(id){
   window.scrollTo(0,0);
   if(id==='screenHome') updateHomeCounts();
   if(id==='screenTheory') buildTheorySubjects();
-  if(id==='screenQuiz') init();
+  if(id==='screenQuizToc') buildQuizToc();
+  if(id==='screenQuizStage') buildQuizStage();
+  if(id==='screenQuiz'){ if(!quizPrepared) init(); updateQuizCurrentTitle(); }
 }
 function goHome(){
   tStop();
@@ -1340,6 +1412,123 @@ function theoryReadAll(manualStart=true){
   theoryReadNext();
 }
 
+
+/* ── v24 문제풀이 목차/서브메뉴. DB와 풀이 로직은 기존 그대로 사용 ── */
+let curQuizGroup='초급';
+let quizPrepared=false;
+const QUIZ_GROUPS=[
+  {key:'초급', icon:'①', desc:'용어와 기본 기능을 확인합니다.', levels:['초급1','초급2','초급3','초급심화'], labels:['1단계','2단계','3단계','4단계']},
+  {key:'중급', icon:'②', desc:'원인과 결과를 연결합니다.', levels:['중급1','중급2','중급3','중급심화'], labels:['1단계','2단계','3단계','4단계']},
+  {key:'고급', icon:'③', desc:'현장 상황과 대책을 판단합니다.', levels:['고급1','고급2','고급3','고급심화'], labels:['1단계','2단계','3단계','4단계']},
+  {key:'심화', icon:'④', desc:'고난도와 종합 판단을 훈련합니다.', levels:['심화1','심화2','심화3','심화심화'], labels:['1단계','2단계','3단계','4단계']}
+];
+function getQuizLevelLabel(lv){
+  for(const g of QUIZ_GROUPS){
+    const i=g.levels.indexOf(lv);
+    if(i>=0) return g.key+' '+g.labels[i];
+  }
+  return lv;
+}
+function getQuizGroupByKey(key){return QUIZ_GROUPS.find(g=>g.key===key)||QUIZ_GROUPS[0];}
+function getQuizGroupByLevel(lv){return QUIZ_GROUPS.find(g=>g.levels.includes(lv))||QUIZ_GROUPS[0];}
+function calcQuizStats(levels){
+  let ok=0, ng=0;
+  levels.forEach(lv=>{
+    const d=scoreData[lv];
+    if(d){ok+=Number(d.ok||0); ng+=Number(d.ng||0);}
+  });
+  const total=ok+ng;
+  const rt=total?Math.round(ok/total*100):0;
+  return {ok,ng,rt,total};
+}
+function statHtml(stats){
+  return '<div class="quiz-stat-row">'
+    +'<span class="quiz-stat ok">정답 '+stats.ok+'</span>'
+    +'<span class="quiz-stat ng">오답 '+stats.ng+'</span>'
+    +'<span class="quiz-stat rt">정답률 '+stats.rt+'%</span>'
+    +'</div>';
+}
+function buildQuizToc(){
+  const list=document.getElementById('quizTocList');
+  if(!list) return;
+  list.innerHTML='';
+  QUIZ_GROUPS.forEach(g=>{
+    const count=g.levels.reduce((a,lv)=>a+((DB[lv]&&DB[lv].length)||0),0);
+    const stats=calcQuizStats(g.levels);
+    const div=document.createElement('div');
+    div.className='quiz-toc-card'+(g.key===curQuizGroup?' on':'');
+    div.innerHTML='<span class="quiz-toc-icon">'+g.icon+'</span>'
+      +'<div class="quiz-toc-info">'
+      +'<div class="quiz-toc-title">'+g.key+'</div>'
+      +'<div class="quiz-toc-desc">'+g.desc+' · '+count+'문제</div>'
+      +statHtml(stats)
+      +'</div>'
+      +'<svg class="quiz-toc-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+    div.onclick=()=>{curQuizGroup=g.key; goScreen('screenQuizStage');};
+    list.appendChild(div);
+  });
+}
+function buildQuizStage(){
+  const g=getQuizGroupByKey(curQuizGroup);
+  const title=document.getElementById('quizStageTitle');
+  const sub=document.getElementById('quizStageSub');
+  const list=document.getElementById('quizStageList');
+  if(title) title.textContent=g.key+' 문제풀이';
+  if(sub) sub.textContent=g.key+' 1단계부터 4단계까지 선택합니다.';
+  if(!list) return;
+  list.innerHTML='';
+  g.levels.forEach((lv,i)=>{
+    const count=(DB[lv]&&DB[lv].length)||0;
+    const stats=calcQuizStats([lv]);
+    const div=document.createElement('div');
+    div.className='quiz-toc-card';
+    div.innerHTML='<span class="quiz-toc-icon">'+(i+1)+'</span>'
+      +'<div class="quiz-toc-info">'
+      +'<div class="quiz-toc-title">'+g.key+' '+g.labels[i]+'</div>'
+      +'<div class="quiz-toc-desc">'+lv+' · '+count+'문제</div>'
+      +statHtml(stats)
+      +'</div>'
+      +'<svg class="quiz-toc-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+    div.onclick=()=>startQuizLevel(lv);
+    list.appendChild(div);
+  });
+}
+function prepareQuizLevel(lv){
+  curLevel=lv;
+  curQuizGroup=getQuizGroupByLevel(lv).key;
+  Qs=DB[curLevel]||[];
+  cur=0;
+  answered=false;
+  retryMode=false;
+  initScore();
+  buildLevelBar();
+  buildDots();
+  renderQ();
+  const rs=document.getElementById('resultScreen');
+  if(rs) rs.classList.remove('show');
+  const qa=document.getElementById('quizArea');
+  if(qa) qa.style.display='block';
+  const sb=document.getElementById('scoreBar');
+  if(sb) sb.style.display='flex';
+  updateQuizCurrentTitle();
+}
+function startQuizLevel(lv){
+  quizPrepared=true;
+  prepareQuizLevel(lv);
+  goScreen('screenQuiz');
+  quizPrepared=false;
+}
+function returnToQuizStage(){
+  tStop();
+  if(driveOn) toggleDrive();
+  curQuizGroup=getQuizGroupByLevel(curLevel).key;
+  goScreen('screenQuizStage');
+}
+function updateQuizCurrentTitle(){
+  const el=document.getElementById('quizCurrentTitle');
+  if(el) el.textContent='현재 풀이. '+getQuizLevelLabel(curLevel)+' · '+((DB[curLevel]&&DB[curLevel].length)||0)+'문제';
+}
+
 let scoreData = {}; // { '초급1': { ok:0, ng:0, sk:0, wrong:[] } }
 let sessionOk=0, sessionNg=0, wrongQs=[];
 let retryMode=false;
@@ -1538,7 +1727,7 @@ function switchLevel(lv){
   curLevel=lv; Qs=DB[lv]; cur=0; answered=false;
   retryMode=false;
   initScore();
-  buildLevelBar(); buildDots(); renderQ();
+  curQuizGroup=getQuizGroupByLevel(lv).key; buildLevelBar(); buildDots(); renderQ(); updateQuizCurrentTitle();
   document.getElementById('resultScreen').classList.remove('show');
   document.getElementById('quizArea').style.display='block';
   document.getElementById('scoreBar').style.display='flex';
@@ -2219,13 +2408,7 @@ function buildDots(){
 
 /* ── 초기화 ── */
 function init(){
-  curLevel='초급1';
-  Qs=DB[curLevel];
-  cur=0; answered=false;
-  initScore();
-  buildLevelBar();
-  buildDots();
-  renderQ();
+  prepareQuizLevel(curLevel || '초급1');
 }
 
 /* 음성 로드 - Android는 늦게 로드되므로 여러번 시도 */
@@ -2316,3 +2499,6 @@ function importProgress(){
 </script>
 </body>
 </html>
+  <button class="theory-back-mini quiz-return-btn" onclick="returnToQuizStage()">← 문제풀이 돌아가기</button>
+  <div class="quiz-current-title" id="quizCurrentTitle">문제 단계</div>
+

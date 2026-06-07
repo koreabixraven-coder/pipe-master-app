@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v23-clean-home-ui';
+const CACHE_NAME = 'pipe-master-v24-quiz-submenu-like-theory';
 const ASSETS = [
   './',
   './index.html',
