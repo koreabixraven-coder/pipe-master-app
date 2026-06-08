@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.6</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.7</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.6. 이론 재생 중 정지 버튼을 일시정지/이어서 재생 토글로 교체했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.7. 이론 일시정지 후 이어서 재생이 다시 시작되지 않던 문제를 수정했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -1411,21 +1411,32 @@ function toggleTheoryPauseResume(){
     setTheoryTrackText('현재 재생 중인 이론이 없습니다.');
     return;
   }
+
   if(paused){
+    /* 일부 모바일 브라우저에서는 speechSynthesis.resume()이 정상 재개되지 않는다.
+       따라서 현재 항목부터 다시 speak하도록 재개 방식을 변경한다. */
     paused=false;
-    synth.resume();
     resetTheoryPauseButton();
     setTheoryTrackText('이론 낭독을 이어서 재생합니다.');
-    if(resumeTask){
-      const fn=resumeTask;
-      resumeTask=null;
-      setTimeout(()=>{ if(!paused) fn(); },80);
-    }
+    const fn=resumeTask;
+    resumeTask=null;
+    try{synth.cancel();}catch(e){}
+    setTimeout(()=>{
+      if(paused) return;
+      if(fn) fn();
+      else theoryReadNext();
+    },160);
   }else{
+    /* 일시정지 시 현재 읽던 항목 번호를 되돌려 둔다.
+       이어서 재생하면 현재 항목의 처음부터 다시 읽는다. */
     paused=true;
-    synth.pause();
+    const currentIdx=Math.max(0,(theoryReadIndex||1)-1);
+    theoryReadIndex=currentIdx;
+    resumeTask=null;
+    try{synth.pause();}catch(e){}
+    setTimeout(()=>{ if(paused){ try{synth.cancel();}catch(e){} } },80);
     setTheoryPauseButtonPaused();
-    setTheoryTrackText('이론 낭독 일시정지 중입니다.');
+    setTheoryTrackText('이론 낭독 일시정지 중입니다. 이어서 재생하면 현재 항목부터 다시 읽습니다.');
   }
 }
 
@@ -1535,6 +1546,10 @@ function buildTheoryReadQueue(){
   return q;
 }
 function theoryReadNext(){
+  if(paused){
+    resumeTask=theoryReadNext;
+    return;
+  }
   if(!theoryReadQueue.length || theoryReadIndex>=theoryReadQueue.length){
     paused=false;
     resetTheoryPauseButton();
@@ -1546,7 +1561,7 @@ function theoryReadNext(){
   focusTheoryTarget(item.el,'읽는 중. '+item.title);
   spk(item.text,()=>{
     if(paused){ resumeTask=theoryReadNext; return; }
-    setTimeout(theoryReadNext,350);
+    setTimeout(()=>{ if(!paused) theoryReadNext(); else resumeTask=theoryReadNext; },350);
   });
 }
 function theoryReadAll(manualStart=true){
