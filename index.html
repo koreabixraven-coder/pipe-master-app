@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.10</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.12</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.10. 이론 TTS에서 항목기호와 본문 사이 대기시간을 추가했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.12. 배관재료 62~76페이지 원문 데이터를 추가 적용했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -972,7 +972,7 @@ let Qs = DB[curLevel];
 let cur=0, answered=false, driveOn=false, theoryDriveOn=false, paused=false, locked=false;
 let synth=window.speechSynthesis, voices=[], selV=null;
 let rate=1.1, pitch=1.0, ns=0, pb=0.5, th=3;
-let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null, resumeTask=null;
+let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, wakeWanted=false, wakeLastReason='', wakeRetryTimer=null, wakeWatchTimer=null, holdTimer=null, resumeTask=null;
 const NL=[['1번','2번','3번','4번'],['1.','2.','3.','4.'],['첫번째','두번째','세번째','네번째']];
 
 /* ── 화면 전환 ── */
@@ -1060,7 +1060,7 @@ function startTheoryDriveMode(){
   theoryDriveOn=true;
   paused=false;
   closeSettings();
-  reqWake();
+  reqWake('이론 이동 중 청취');
   setTheoryTrackText('이론 이동 중 청취 모드를 시작합니다.');
   setTimeout(()=>{
     if(theoryDriveOn && !locked){
@@ -1319,6 +1319,7 @@ function handleTheoryReadFinished(){
   const mode=theoryAutoMode || 'once';
   if(mode==='once'){
     updateTheoryAutoStatus('현재 챕터 읽기가 끝났습니다.');
+    if(!driveOn && !theoryDriveOn) relWake();
     setTimeout(()=>clearTheoryTrack(),1200);
     return;
   }
@@ -1334,6 +1335,7 @@ function handleTheoryReadFinished(){
       }
     }
     updateTheoryAutoStatus('다음 챕터 1회 자동재생이 끝났습니다.');
+    if(!driveOn && !theoryDriveOn) relWake();
     setTimeout(()=>clearTheoryTrack(),1200);
     return;
   }
@@ -1345,6 +1347,7 @@ function handleTheoryReadFinished(){
       setTimeout(()=>openTheoryLocation({subject:curSubject,chapter:curChapterIdx+1},true),900);
     }else{
       updateTheoryAutoStatus('현재 과목 전체 읽기가 끝났습니다.');
+      if(!driveOn && !theoryDriveOn) relWake();
       setTimeout(()=>clearTheoryTrack(),1200);
     }
     return;
@@ -1357,6 +1360,7 @@ function handleTheoryReadFinished(){
       setTimeout(()=>openTheoryLocation(loc,true),900);
     }else{
       updateTheoryAutoStatus('전체 이론 읽기가 끝났습니다.');
+      if(!driveOn && !theoryDriveOn) relWake();
       setTimeout(()=>clearTheoryTrack(),1200);
     }
     return;
@@ -1668,6 +1672,7 @@ function theoryReadAll(manualStart=true){
     alert('읽을 이론 내용이 없습니다.');
     return;
   }
+  reqWake(theoryDriveOn?'이론 이동 중 청취':'이론 전체읽기');
   updateTheoryAutoStatus('이론 전체읽기를 시작합니다. '+theoryAutoModeLabel());
   setTheoryTrackText('이론 전체읽기를 시작합니다.');
   theoryReadNext();
@@ -2105,22 +2110,102 @@ function loadV(){
   updateDirtyNote();
 }
 
-/* ── Wake Lock ── */
-async function reqWake(){
-  try{
-    if('wakeLock' in navigator){
-      wakeLock=await navigator.wakeLock.request('screen');
-      document.getElementById('wakePill').textContent='화면유지 켜짐';
-    } else {
-      document.getElementById('wakePill').textContent='미지원';
-      document.getElementById('wakePill').style.background='#444';
-    }
-  } catch(e){
-    document.getElementById('wakePill').textContent='실패';
-    document.getElementById('wakePill').style.background='#5A1515';
+/* ── Wake Lock 안정화 ── */
+function wakePill(){
+  return document.getElementById('wakePill');
+}
+function setWakePill(text, color){
+  const el=wakePill();
+  if(!el) return;
+  el.textContent=text;
+  if(color) el.style.background=color;
+}
+function clearWakeRetry(){
+  if(wakeRetryTimer){
+    clearTimeout(wakeRetryTimer);
+    wakeRetryTimer=null;
   }
 }
-function relWake(){if(wakeLock){wakeLock.release();wakeLock=null;}}
+function scheduleWakeRetry(ms){
+  clearWakeRetry();
+  if(!wakeWanted) return;
+  wakeRetryTimer=setTimeout(()=>{
+    wakeRetryTimer=null;
+    if(wakeWanted) reqWake(wakeLastReason||'재요청');
+  }, ms||1500);
+}
+async function reqWake(reason){
+  wakeWanted=true;
+  wakeLastReason=reason||wakeLastReason||'화면유지';
+  clearWakeRetry();
+
+  if(!('wakeLock' in navigator)){
+    setWakePill('화면유지 미지원','#444');
+    return false;
+  }
+  if(document.visibilityState && document.visibilityState!=='visible'){
+    setWakePill('화면유지 대기','#55420F');
+    return false;
+  }
+  if(wakeLock){
+    setWakePill('화면유지 켜짐','#1D5A36');
+    return true;
+  }
+
+  try{
+    wakeLock=await navigator.wakeLock.request('screen');
+    setWakePill('화면유지 켜짐','#1D5A36');
+    wakeLock.addEventListener('release',()=>{
+      wakeLock=null;
+      if(wakeWanted && document.visibilityState==='visible'){
+        setWakePill('화면유지 재요청','#55420F');
+        scheduleWakeRetry(700);
+      }else{
+        setWakePill('화면유지 해제','#444');
+      }
+    });
+    return true;
+  }catch(e){
+    setWakePill('화면유지 실패','#5A1515');
+    if(wakeWanted) scheduleWakeRetry(3000);
+    return false;
+  }
+}
+function relWake(){
+  wakeWanted=false;
+  wakeLastReason='';
+  clearWakeRetry();
+  if(wakeLock){
+    const wl=wakeLock;
+    wakeLock=null;
+    try{ wl.release(); }catch(e){}
+  }
+  setWakePill('화면유지 꺼짐','#444');
+}
+function keepWakeForPlayback(reason){
+  if(driveOn || theoryDriveOn || (theoryReadQueue && theoryReadQueue.length) || normalFullAuto){
+    reqWake(reason||'재생 중');
+  }
+}
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible' && wakeWanted){
+    setWakePill('화면유지 복구중','#55420F');
+    setTimeout(()=>reqWake(wakeLastReason||'화면복귀'),300);
+  }
+});
+document.addEventListener('click',()=>{
+  if(wakeWanted) reqWake(wakeLastReason||'사용자 조작');
+},{passive:true});
+document.addEventListener('touchstart',()=>{
+  if(wakeWanted) reqWake(wakeLastReason||'사용자 조작');
+},{passive:true});
+if(!wakeWatchTimer){
+  wakeWatchTimer=setInterval(()=>{
+    if(wakeWanted && document.visibilityState==='visible' && !wakeLock){
+      reqWake(wakeLastReason||'주기확인');
+    }
+  },30000);
+}
 
 /* ── 화면 잠금 ── */
 function lockScreen(){
@@ -2154,8 +2239,8 @@ function toggleDrive(){
   document.getElementById('driveBar').classList.toggle('show',driveOn);
   document.getElementById('driveStartBtn').style.display=driveOn?'none':'flex';
   document.getElementById('driveToggleBtn').classList.toggle('active',driveOn);
-  if(driveOn){reqWake(); resetAuto(); setTimeout(()=>lockScreen(),1500);}
-  else{relWake(); tStop(); if(locked) unlockScreen();}
+  if(driveOn){reqWake('문제 이동 중 청취'); resetAuto(); setTimeout(()=>lockScreen(),1500);}
+  else{tStop(); if(!theoryDriveOn) relWake(); if(locked) unlockScreen();}
 }
 function togglePause(){
   paused=!paused;
@@ -2473,6 +2558,7 @@ function toKorean(txt){
 }
 
 function spk(txt,cb){
+  keepWakeForPlayback('TTS 재생');
   synth.cancel();
   const u=new SpeechSynthesisUtterance(toKorean(txt));
   u.lang='ko-KR'; if(selV) u.voice=selV; u.rate=rate; u.pitch=pitch;
@@ -2535,6 +2621,7 @@ function tStop(){
   if(tw) tw.classList.remove('paused');
   resetTheoryPauseButton();
   clrB(); clearTheoryTrack(); quizTtsClearTrack(); setSt('');
+  if(!driveOn && !theoryDriveOn) relWake();
 }
 function ttsStop(){ tStop(); }
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
