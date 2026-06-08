@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.5</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.6</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.5. 이론 이동 중 청취 모드가 터치불가 잠금화면으로 전환되지 않던 문제를 수정했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.6. 이론 재생 중 정지 버튼을 일시정지/이어서 재생 토글로 교체했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -767,8 +767,8 @@
       <button class="tb" id="tBtnRead" onclick="theoryReadAll(true)">
         <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>전체읽기
       </button>
-      <button class="tb" onclick="ttsStop()" style="border-color:#3A1515;color:#E24B4A;">
-        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>정지
+      <button class="tb" id="tTheoryPauseBtn" onclick="toggleTheoryPauseResume()" style="border-color:#3A2A15;color:#BA7517;">
+        <svg id="tTheoryPauseIco" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span id="tTheoryPauseLbl">일시정지</span>
       </button>
     </div>
     <div class="tts-track-bar" id="ttsTrackBar" style="display:none;">
@@ -1389,6 +1389,46 @@ function toggleTheoryAutoScroll(e){
   if(btn) btn.textContent=theoryAutoScroll?'자동추적 켜짐':'자동추적 꺼짐';
   setTheoryTrackText(theoryAutoScroll?'읽는 위치 자동 따라가기 켜짐':'읽는 위치 자동 따라가기 꺼짐');
 }
+
+function resetTheoryPauseButton(){
+  const btn=document.getElementById('tTheoryPauseBtn');
+  const ico=document.getElementById('tTheoryPauseIco');
+  const lbl=document.getElementById('tTheoryPauseLbl');
+  if(btn) btn.classList.remove('paused');
+  if(ico) ico.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  if(lbl) lbl.textContent='일시정지';
+}
+function setTheoryPauseButtonPaused(){
+  const btn=document.getElementById('tTheoryPauseBtn');
+  const ico=document.getElementById('tTheoryPauseIco');
+  const lbl=document.getElementById('tTheoryPauseLbl');
+  if(btn) btn.classList.add('paused');
+  if(ico) ico.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';
+  if(lbl) lbl.textContent='이어서 재생';
+}
+function toggleTheoryPauseResume(){
+  if(!theoryReadQueue || !theoryReadQueue.length){
+    setTheoryTrackText('현재 재생 중인 이론이 없습니다.');
+    return;
+  }
+  if(paused){
+    paused=false;
+    synth.resume();
+    resetTheoryPauseButton();
+    setTheoryTrackText('이론 낭독을 이어서 재생합니다.');
+    if(resumeTask){
+      const fn=resumeTask;
+      resumeTask=null;
+      setTimeout(()=>{ if(!paused) fn(); },80);
+    }
+  }else{
+    paused=true;
+    synth.pause();
+    setTheoryPauseButtonPaused();
+    setTheoryTrackText('이론 낭독 일시정지 중입니다.');
+  }
+}
+
 function focusTheoryTarget(el,label){
   if(!el) return;
   document.querySelectorAll('.tts-reading').forEach(x=>x.classList.remove('tts-reading'));
@@ -1496,6 +1536,8 @@ function buildTheoryReadQueue(){
 }
 function theoryReadNext(){
   if(!theoryReadQueue.length || theoryReadIndex>=theoryReadQueue.length){
+    paused=false;
+    resetTheoryPauseButton();
     setTheoryTrackText('현재 챕터 읽기가 끝났습니다.');
     handleTheoryReadFinished();
     return;
@@ -1510,6 +1552,8 @@ function theoryReadNext(){
 function theoryReadAll(manualStart=true){
   closeSettings();
   synth.cancel();
+  paused=false;
+  resetTheoryPauseButton();
   if(manualStart) theoryNextRemain=(theoryAutoMode==='next')?1:0;
   theoryReadQueue=buildTheoryReadQueue();
   theoryReadIndex=0;
@@ -2382,6 +2426,7 @@ function tStop(){
   if(btn) btn.classList.remove('paused');
   const tw=document.getElementById('thinkWrap');
   if(tw) tw.classList.remove('paused');
+  resetTheoryPauseButton();
   clrB(); clearTheoryTrack(); quizTtsClearTrack(); setSt('');
 }
 function ttsStop(){ tStop(); }
