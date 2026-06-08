@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.8</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.9</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.8. 이론 이어서 재생이 처음부터 읽히는 문제를 줄이기 위해 문단 단위 재개로 수정했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.9. 이론 TTS에서 한자 괄호를 제외하고 제목·문단 사이 대기시간을 적용했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -1367,6 +1367,7 @@ let theoryAutoScroll=true;
 let theoryReadQueue=[];
 let theoryReadIndex=0;
 let theoryActiveIndex=0;
+const THEORY_TTS_GAP_MS=650;
 
 function getTheoryTrackTargets(){
   return Array.from(document.querySelectorAll('#theoryContentArea .tts-track-target'));
@@ -1473,6 +1474,7 @@ function cleanTheorySpeechText(s){
     .replace(/\$\\times\$/g,'곱하기')
     .replace(/\\times/g,'곱하기')
     .replace(/\(([A-Za-z][A-Za-z0-9/ .\-×x+]*?)\)/g,'')
+    .replace(/\([\u4E00-\u9FFF]+\)/g,'')
     .replace(/\$\^\\circ C\$/g,'도')
     .replace(/\$\s*/g,'')
     .replace(/\\frac\{1\}\{2\}H/g,'이분의 일 H')
@@ -1574,9 +1576,7 @@ function buildTheoryReadQueue(){
       : [];
 
     const chunks=[];
-    if(titleText && bodyChunks.length){
-      chunks.push(titleText+'. '+bodyChunks.shift());
-    }else if(titleText){
+    if(titleText){
       chunks.push(titleText+'.');
     }
     chunks.push(...bodyChunks);
@@ -1609,7 +1609,7 @@ function theoryReadNext(){
   focusTheoryTarget(item.el,'읽는 중. '+item.title);
   spk(item.text,()=>{
     if(paused){ resumeTask=theoryReadNext; return; }
-    setTimeout(()=>{ if(!paused) theoryReadNext(); else resumeTask=theoryReadNext; },350);
+    setTimeout(()=>{ if(!paused) theoryReadNext(); else resumeTask=theoryReadNext; },THEORY_TTS_GAP_MS);
   });
 }
 function theoryReadAll(manualStart=true){

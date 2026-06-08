@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-8-theory-resume-chunk-fix';
+const CACHE_NAME = 'pipe-master-v30-9-tts-hanja-skip-paragraph-gap';
 const ASSETS = [
   './',
   './index.html',
