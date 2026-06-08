@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-18-welding-inspection-final';
+const CACHE_NAME = 'pipe-master-v30-19-question-41-accumulated';
 const ASSETS = [
   './',
   './index.html',

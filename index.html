@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>RavenBix · 배관기능장 1600문제</title>
+<title>RavenBix · 배관기능장 1660문제</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
@@ -411,7 +411,7 @@
   .theory-nav-5 .tnav.replay{border-color:#1D9E75;color:#9FE1CB;background:#0A2E22;}
   .theory-autoplay-status{font-size:11px;color:#9FE1CB;background:#0A2E22;border:0.5px solid #1D9E75;border-radius:12px;padding:8px 10px;margin:8px 0 10px;text-align:center;}
   .theory-autoplay-status.off{display:none;}
-  /* ── v30.18 용접검사 보강 + 이론 편집저장 ── */
+  /* ── v30.19 41회 기출문제 누적 + v30.18 이론 유지 ── */
   .theory-edit-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px;background:#111;border:0.5px solid #242424;border-radius:12px;padding:8px;}
   .theory-edit-bar .teb{border:0.5px solid #333;background:#1A1A1A;color:#DDD;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:600;cursor:pointer;}
   .theory-edit-bar .teb.primary{border-color:#1D9E75;background:#0A2E22;color:#9FE1CB;}
@@ -533,12 +533,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.18</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.19</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.18. 용접 검사 48~49페이지를 보강했습니다. 이론 편집저장 기능과 콜론(:) 구분 TTS 딜레이는 유지됩니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.19. 기존 1600문항은 보존하고 2007년 기능장 제41회 필기시험 60문항을 기출41회 목차에 누적 추가했습니다. 이론 편집저장 기능과 콜론(:) 구분 TTS 딜레이는 유지됩니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -698,12 +698,13 @@
             <div class="hc-title">문제 풀이</div>
           </div>
         </div>
-        <div class="hc-sub">초급. 중급. 고급. 심화 단계별 문제를 TTS와 함께 풀어봅니다.</div>
+        <div class="hc-sub">초급. 중급. 고급. 심화. 기출 단계별 문제를 TTS와 함께 풀어봅니다.</div>
         <div class="hc-tags">
           <span class="hc-tag qz">초급</span>
           <span class="hc-tag qz">중급</span>
           <span class="hc-tag qz">고급</span>
           <span class="hc-tag qz">심화</span>
+          <span class="hc-tag qz">기출41회</span>
         </div>
       </div>
     </div>
@@ -981,7 +982,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. 기존 샘플 문제는 제거하고 16개 목차 × 100문제로 구성했습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. 기존 16개 목차 1600문제에 2007년 기능장 제41회 필기시험 60문항을 기출41회로 누적했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '초급1';
 let Qs = DB[curLevel];
@@ -1195,7 +1196,7 @@ function formatTheoryPoint(s){
 }
 
 
-/* ── v30.18 이론 수정·편집·저장 유지 ── */
+/* ── v30.19 이론 수정·편집·저장 유지. 문제는 41회 기출 누적 ── */
 const THEORY_EDIT_STORAGE_KEY='pipe_theory_user_edits_v30_17';
 let theoryEditMode=false;
 function loadTheoryUserEdits(){
@@ -1850,7 +1851,8 @@ const QUIZ_GROUPS=[
   {key:'초급', icon:'①', desc:'용어와 기본 기능을 확인합니다.', levels:['초급1','초급2','초급3','초급심화'], labels:['1단계','2단계','3단계','4단계']},
   {key:'중급', icon:'②', desc:'원인과 결과를 연결합니다.', levels:['중급1','중급2','중급3','중급심화'], labels:['1단계','2단계','3단계','4단계']},
   {key:'고급', icon:'③', desc:'현장 상황과 대책을 판단합니다.', levels:['고급1','고급2','고급3','고급심화'], labels:['1단계','2단계','3단계','4단계']},
-  {key:'심화', icon:'④', desc:'고난도와 종합 판단을 훈련합니다.', levels:['심화1','심화2','심화3','심화심화'], labels:['1단계','2단계','3단계','4단계']}
+  {key:'심화', icon:'④', desc:'고난도와 종합 판단을 훈련합니다.', levels:['심화1','심화2','심화3','심화심화'], labels:['1단계','2단계','3단계','4단계']},
+  {key:'기출', icon:'⑤', desc:'실제 회차형 문제를 훈련합니다.', levels:['기출41회'], labels:['41회']}
 ];
 function getQuizLevelLabel(lv){
   for(const g of QUIZ_GROUPS){
@@ -2113,13 +2115,21 @@ function buildLevelBar(){
         ['고난도','100문제'],
         ['마스터','100문제']
       ]
+    },
+    {
+      title:'기출',
+      desc:'실제 회차형 문제 훈련',
+      keys:['기출41회'],
+      labels:[
+        ['41회','60문제']
+      ]
     }
   ];
 
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기존 16개 목차를 학습 흐름대로 정리했습니다.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · 로직 변경 없음</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기존 16개 목차와 기출41회 목차를 학습 흐름대로 정리했습니다.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · 기존 로직 유지</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
@@ -2991,7 +3001,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.18')
+    navigator.serviceWorker.register('sw.js?v=30.19')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
