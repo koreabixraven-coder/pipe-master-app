@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.13</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.15</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.13. 배관제도 77~87페이지와 배관시공 88~118페이지 원문 데이터를 추가 적용했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.15. 캐시 갱신 구조와 과목 카드 undefined 방어코드를 강화했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -1109,13 +1109,17 @@ function buildTheorySubjects(){
   }
   Object.keys(THEORY).forEach(key=>{
     const s=THEORY[key];
-    const sectionCount=(s.chapters||[]).reduce((a,ch)=>a+((ch.sections||[]).length),0);
+    const rawChapters=Array.isArray(s.chapters)?s.chapters:[];
+    const sectionCount=rawChapters.reduce((a,ch)=>a+((ch.sections||[]).length),0);
     const div=document.createElement('div');
     div.className='ts-card';
-    div.innerHTML=`<span class="ts-icon">${s.icon}</span>
+    const safeIcon = (s && typeof s.icon === 'string' && s.icon.trim() && s.icon !== 'undefined') ? s.icon : '📘';
+    const safeTitle = (s && typeof s.title === 'string' && s.title.trim() && s.title !== 'undefined') ? s.title : key;
+    const safeChapters = Array.isArray(s.chapters) ? s.chapters : [];
+    div.innerHTML=`<span class="ts-icon">${safeIcon}</span>
       <div class="ts-info">
-        <div class="ts-title">${s.title}</div>
-        <div class="ts-count">챕터 ${s.chapters.length}개<span class="ts-small">이론 ${sectionCount}항목</span></div>
+        <div class="ts-title">${safeTitle}</div>
+        <div class="ts-count">챕터 ${safeChapters.length}개<span class="ts-small">이론 ${sectionCount}항목</span></div>
       </div>
       <svg class="ts-chevron" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>`;
     div.onclick=()=>openSubject(key);
@@ -2826,7 +2830,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js')
+    navigator.serviceWorker.register('sw.js?v=30.15')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
