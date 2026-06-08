@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.9</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.10</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.9. 이론 TTS에서 한자 괄호를 제외하고 제목·문단 사이 대기시간을 적용했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.10. 이론 TTS에서 항목기호와 본문 사이 대기시간을 추가했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -1368,6 +1368,7 @@ let theoryReadQueue=[];
 let theoryReadIndex=0;
 let theoryActiveIndex=0;
 const THEORY_TTS_GAP_MS=650;
+const THEORY_TTS_MARKER_GAP_MS=400;
 
 function getTheoryTrackTargets(){
   return Array.from(document.querySelectorAll('#theoryContentArea .tts-track-target'));
@@ -1538,21 +1539,63 @@ function makeTheorySectionSpeech(el, idx){
 }
 
 
+
+function theoryMarkerSpeech(marker){
+  const m=String(marker||'').trim();
+  const circled={'①':'1번','②':'2번','③':'3번','④':'4번','⑤':'5번','⑥':'6번','⑦':'7번','⑧':'8번','⑨':'9번','⑩':'10번','⑪':'11번','⑫':'12번','⑬':'13번','⑭':'14번','⑮':'15번'};
+  const small={'㉮':'가','㉯':'나','㉰':'다','㉱':'라','㉲':'마','㉳':'바','㉴':'사','㉵':'아','㉶':'자','㉷':'차'};
+  const alpha={'ⓐ':'에이','ⓑ':'비','ⓒ':'씨','ⓓ':'디','ⓔ':'이','ⓕ':'에프','ⓖ':'지','ⓗ':'에이치','ⓘ':'아이','ⓙ':'제이'};
+  if(circled[m]) return circled[m]+'.';
+  if(small[m]) return small[m]+'.';
+  if(alpha[m]) return alpha[m]+'.';
+  let par=m.match(/^\(([0-9]+)\)$/);
+  if(par) return par[1]+'번.';
+  par=m.match(/^\(([가-힣])\)$/);
+  if(par) return par[1]+'.';
+  return cleanTheorySpeechText(m)+'.';
+}
+function splitLeadingTheoryMarker(line){
+  const s=String(line||'').trim();
+  const markerRe=/^(\([0-9]+\)|\([가-힣]\)|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]|[㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷]|[ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ])\s*(.*)$/;
+  const m=s.match(markerRe);
+  if(!m) return null;
+  return {marker:m[1], body:m[2].trim()};
+}
+function pushTheorySpeechChunk(arr, text, gapMs){
+  const t=cleanTheorySpeechText(text);
+  if(t) arr.push({text:t, gapMs:gapMs||THEORY_TTS_GAP_MS});
+}
+
 function splitTheoryTTSChunks(text){
   const raw=splitTheoryParagraphs(String(text||''));
   let lines=raw.split(/\n+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
   const chunks=[];
   lines.forEach(line=>{
+    const mb=splitLeadingTheoryMarker(line);
+    if(mb){
+      pushTheorySpeechChunk(chunks, theoryMarkerSpeech(mb.marker), THEORY_TTS_MARKER_GAP_MS);
+      if(mb.body){
+        if(mb.body.length>260){
+          const parts=mb.body.split(/(?<=[.다요음됨함임\.])\s+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
+          if(parts.length>1) parts.forEach(p=>pushTheorySpeechChunk(chunks,p,THEORY_TTS_GAP_MS));
+          else pushTheorySpeechChunk(chunks,mb.body,THEORY_TTS_GAP_MS);
+        }else{
+          pushTheorySpeechChunk(chunks,mb.body,THEORY_TTS_GAP_MS);
+        }
+      }
+      return;
+    }
+
     /* 너무 긴 줄은 문장 단위로 한 번 더 나눈다. */
     if(line.length>260){
       const parts=line.split(/(?<=[.다요음됨함임\.])\s+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
-      if(parts.length>1) chunks.push(...parts);
-      else chunks.push(line);
+      if(parts.length>1) parts.forEach(p=>pushTheorySpeechChunk(chunks,p,THEORY_TTS_GAP_MS));
+      else pushTheorySpeechChunk(chunks,line,THEORY_TTS_GAP_MS);
     }else{
-      chunks.push(line);
+      pushTheorySpeechChunk(chunks,line,THEORY_TTS_GAP_MS);
     }
   });
-  return chunks.filter(Boolean);
+  return chunks.filter(v=>v && v.text);
 }
 function getTheoryCardPartsForSpeech(el, idx){
   const title=(el.querySelector('.sec-title')?.textContent || ('항목 '+(idx+1))).trim();
@@ -1577,15 +1620,15 @@ function buildTheoryReadQueue(){
 
     const chunks=[];
     if(titleText){
-      chunks.push(titleText+'.');
+      chunks.push({text:titleText+'.', gapMs:THEORY_TTS_GAP_MS});
     }
     chunks.push(...bodyChunks);
     chunks.push(...memoryChunks);
     chunks.push(...examChunks);
 
-    chunks.forEach((text,ci)=>{
-      const finalText=cleanTheorySpeechText(text);
-      if(finalText) q.push({el,title:part.title+' '+(ci+1)+'/'+chunks.length,text:finalText});
+    chunks.forEach((chunk,ci)=>{
+      const finalText=cleanTheorySpeechText(chunk.text||chunk);
+      if(finalText) q.push({el,title:part.title+' '+(ci+1)+'/'+chunks.length,text:finalText,gapMs:chunk.gapMs||THEORY_TTS_GAP_MS});
     });
   });
   return q;
@@ -1609,7 +1652,7 @@ function theoryReadNext(){
   focusTheoryTarget(item.el,'읽는 중. '+item.title);
   spk(item.text,()=>{
     if(paused){ resumeTask=theoryReadNext; return; }
-    setTimeout(()=>{ if(!paused) theoryReadNext(); else resumeTask=theoryReadNext; },THEORY_TTS_GAP_MS);
+    setTimeout(()=>{ if(!paused) theoryReadNext(); else resumeTask=theoryReadNext; },item.gapMs||THEORY_TTS_GAP_MS);
   });
 }
 function theoryReadAll(manualStart=true){
