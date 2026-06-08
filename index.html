@@ -411,6 +411,15 @@
   .theory-nav-5 .tnav.replay{border-color:#1D9E75;color:#9FE1CB;background:#0A2E22;}
   .theory-autoplay-status{font-size:11px;color:#9FE1CB;background:#0A2E22;border:0.5px solid #1D9E75;border-radius:12px;padding:8px 10px;margin:8px 0 10px;text-align:center;}
   .theory-autoplay-status.off{display:none;}
+  /* ── v30.18 용접검사 보강 + 이론 편집저장 ── */
+  .theory-edit-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px;background:#111;border:0.5px solid #242424;border-radius:12px;padding:8px;}
+  .theory-edit-bar .teb{border:0.5px solid #333;background:#1A1A1A;color:#DDD;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:600;cursor:pointer;}
+  .theory-edit-bar .teb.primary{border-color:#1D9E75;background:#0A2E22;color:#9FE1CB;}
+  .theory-edit-bar .teb.warn{border-color:#6B3A16;background:#2A1708;color:#F0B36C;}
+  .theory-edit-status{font-size:11px;color:#8A8A8A;line-height:1.4;flex:1 1 100%;}
+  body.theory-editing #theoryContentArea .section-card{border-color:#1D9E75;box-shadow:0 0 0 1px rgba(29,158,117,.18);}
+  body.theory-editing #theoryContentArea [data-edit-field]{outline:1px dashed rgba(29,158,117,.65);border-radius:6px;padding:3px 4px;min-height:18px;}
+  body.theory-editing #theoryContentArea [data-edit-field]:focus{outline:2px solid #1D9E75;background:#071C15;}
   @media(max-width:520px){.theory-nav-5{grid-template-columns:1fr 1fr;}.theory-nav-5 .tnav.replay{grid-column:1 / -1;}}
 
   /* ── v11 이론 TTS 읽는 위치 자동 따라가기 ── */
@@ -524,12 +533,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.16</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.18</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.16. 최종 이론 누적본을 적용했습니다. 배관공작 16~26. 배관시공 119~129. 공업경영 130~159를 추가했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.18. 용접 검사 48~49페이지를 보강했습니다. 이론 편집저장 기능과 콜론(:) 구분 TTS 딜레이는 유지됩니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -770,6 +779,13 @@
       <button class="tb" id="tTheoryPauseBtn" onclick="toggleTheoryPauseResume()" style="border-color:#3A2A15;color:#BA7517;">
         <svg id="tTheoryPauseIco" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span id="tTheoryPauseLbl">일시정지</span>
       </button>
+    </div>
+    <div class="theory-edit-bar">
+      <button class="teb primary" id="theoryEditToggleBtn" onclick="toggleTheoryEditMode(event)">✏️ 이론 편집</button>
+      <button class="teb primary" id="theoryEditSaveBtn" onclick="saveTheoryEditsFromCurrentChapter(event)" style="display:none;">💾 편집 저장</button>
+      <button class="teb" id="theoryEditCancelBtn" onclick="cancelTheoryEditMode(event)" style="display:none;">취소</button>
+      <button class="teb warn" id="theoryEditRestoreBtn" onclick="restoreTheoryOriginalForCurrentChapter(event)" style="display:none;">현재 챕터 원본복원</button>
+      <div class="theory-edit-status" id="theoryEditStatus">편집 저장은 이 브라우저에 보관됩니다.</div>
     </div>
     <div class="tts-track-bar" id="ttsTrackBar" style="display:none;">
       <div class="track-left"><span class="track-dot"></span><span id="ttsTrackText">읽는 위치 자동 따라가기</span></div>
@@ -1178,6 +1194,136 @@ function formatTheoryPoint(s){
   return escapeTheoryHTML(splitTheoryParagraphs(s));
 }
 
+
+/* ── v30.18 이론 수정·편집·저장 유지 ── */
+const THEORY_EDIT_STORAGE_KEY='pipe_theory_user_edits_v30_17';
+let theoryEditMode=false;
+function loadTheoryUserEdits(){
+  try{return JSON.parse(localStorage.getItem(THEORY_EDIT_STORAGE_KEY)||'{}')||{};}catch(e){return {};}
+}
+function saveTheoryUserEdits(edits){
+  localStorage.setItem(THEORY_EDIT_STORAGE_KEY,JSON.stringify(edits||{}));
+}
+function theoryEditKey(subject,chapterIdx,sectionIdx){
+  return [subject,chapterIdx,sectionIdx].join('::');
+}
+function applyTheoryUserEdits(){
+  if(typeof THEORY==='undefined' || !THEORY) return;
+  const edits=loadTheoryUserEdits();
+  Object.keys(edits).forEach(k=>{
+    const parts=k.split('::');
+    const subject=parts[0], chapterIdx=Number(parts[1]), sectionIdx=Number(parts[2]);
+    const sec=THEORY[subject] && THEORY[subject].chapters && THEORY[subject].chapters[chapterIdx] && THEORY[subject].chapters[chapterIdx].sections && THEORY[subject].chapters[chapterIdx].sections[sectionIdx];
+    const patch=edits[k];
+    if(!sec || !patch) return;
+    ['title','key','detail','content','memory'].forEach(field=>{
+      if(Object.prototype.hasOwnProperty.call(patch,field)) sec[field]=String(patch[field]||'');
+    });
+    if(Array.isArray(patch.points)) sec.points=patch.points.map(v=>String(v||'')).filter(Boolean);
+  });
+}
+function setTheoryEditStatus(msg){
+  const el=document.getElementById('theoryEditStatus');
+  if(el) el.textContent=msg || '편집 저장은 이 브라우저에 보관됩니다.';
+}
+function refreshTheoryEditControls(){
+  const toggle=document.getElementById('theoryEditToggleBtn');
+  const save=document.getElementById('theoryEditSaveBtn');
+  const cancel=document.getElementById('theoryEditCancelBtn');
+  const restore=document.getElementById('theoryEditRestoreBtn');
+  if(toggle) toggle.textContent=theoryEditMode?'✏️ 편집 중':'✏️ 이론 편집';
+  if(save) save.style.display=theoryEditMode?'inline-block':'none';
+  if(cancel) cancel.style.display=theoryEditMode?'inline-block':'none';
+  if(restore) restore.style.display=theoryEditMode?'inline-block':'none';
+  document.body.classList.toggle('theory-editing',!!theoryEditMode);
+}
+function applyTheoryEditModeToDom(on){
+  document.querySelectorAll('#theoryContentArea [data-edit-field]').forEach(el=>{
+    if(on){
+      el.setAttribute('contenteditable','true');
+      el.setAttribute('spellcheck','false');
+    }else{
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('spellcheck');
+    }
+  });
+  refreshTheoryEditControls();
+}
+function toggleTheoryEditMode(e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  if(!curSubject || !getCurrentTheoryChapter()){
+    setTheoryEditStatus('편집할 이론 챕터를 먼저 열어주세요.');
+    return;
+  }
+  theoryEditMode=!theoryEditMode;
+  if(theoryEditMode){
+    try{synth.cancel();}catch(err){}
+    paused=false;
+    resetTheoryPauseButton();
+    clearTheoryTrack();
+    setTheoryEditStatus('편집 모드입니다. 제목. 본문. 암기문장. 시험포인트를 수정한 뒤 편집 저장을 누르세요.');
+  }else{
+    setTheoryEditStatus('편집 모드를 종료했습니다. 저장하지 않은 화면 수정은 다시 열면 사라집니다.');
+  }
+  applyTheoryEditModeToDom(theoryEditMode);
+}
+function getEditableText(root,selector){
+  const el=root.querySelector(selector);
+  return el ? el.innerText.replace(/\u00a0/g,' ').trim() : '';
+}
+function saveTheoryEditsFromCurrentChapter(e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  const ch=getCurrentTheoryChapter();
+  if(!ch || !Array.isArray(ch.sections)) return;
+  const edits=loadTheoryUserEdits();
+  document.querySelectorAll('#theoryContentArea .section-card[data-section-index]').forEach(card=>{
+    const idx=Number(card.getAttribute('data-section-index'));
+    const sec=ch.sections[idx];
+    if(!sec) return;
+    const patch={updatedAt:new Date().toISOString()};
+    const title=getEditableText(card,'[data-edit-field="title"]');
+    if(title){sec.title=title; patch.title=title;}
+    ['key','detail','content','memory'].forEach(field=>{
+      const node=card.querySelector('[data-edit-field="'+field+'"]');
+      if(node){
+        const val=node.innerText.replace(/\u00a0/g,' ').trim();
+        sec[field]=val;
+        patch[field]=val;
+      }
+    });
+    const pointNodes=Array.from(card.querySelectorAll('[data-edit-field="points"]'));
+    if(pointNodes.length){
+      const pts=pointNodes.map(n=>n.innerText.replace(/\u00a0/g,' ').trim()).filter(Boolean);
+      sec.points=pts;
+      patch.points=pts;
+    }
+    edits[theoryEditKey(curSubject,curChapterIdx,idx)]=patch;
+  });
+  saveTheoryUserEdits(edits);
+  theoryEditMode=false;
+  applyTheoryEditModeToDom(false);
+  openChapter(curChapterIdx);
+  setTheoryEditStatus('저장 완료. 이 브라우저에서 수정한 이론으로 표시되고 TTS도 수정 내용으로 읽습니다.');
+}
+function cancelTheoryEditMode(e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  theoryEditMode=false;
+  applyTheoryEditModeToDom(false);
+  openChapter(curChapterIdx);
+  setTheoryEditStatus('취소했습니다. 저장하지 않은 수정은 반영하지 않았습니다.');
+}
+function restoreTheoryOriginalForCurrentChapter(e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  if(!curSubject && curSubject!==0) return;
+  if(!confirm('현재 챕터의 저장된 편집 내용을 삭제하고 원본 이론으로 복원할까요?')) return;
+  const edits=loadTheoryUserEdits();
+  Object.keys(edits).forEach(k=>{
+    if(k.startsWith(curSubject+'::'+curChapterIdx+'::')) delete edits[k];
+  });
+  saveTheoryUserEdits(edits);
+  location.reload();
+}
+
 function openChapter(idx){
   curChapterIdx=idx;
   const s=THEORY[curSubject];
@@ -1186,22 +1332,25 @@ function openChapter(idx){
   document.getElementById('contentTitle').textContent=ch.title;
   const area=document.getElementById('theoryContentArea');
   area.innerHTML='';
-  ch.sections.forEach(sec=>{
+  ch.sections.forEach((sec,secIdx)=>{
     const card=document.createElement('div');
     card.className='section-card tts-track-target';
+    card.setAttribute('data-section-index',String(secIdx));
     if(sec.tts) card.setAttribute('data-tts',sec.tts);
-    const pts=(sec.points||[]).map(p=>`<div class="sec-point">${formatTheoryPoint(p)}</div>`).join('');
+    const pts=(sec.points||[]).map((p,pi)=>`<div class="sec-point" data-edit-field="points" data-point-index="${pi}">${formatTheoryPoint(p)}</div>`).join('');
     const level=sec.level?`<div class="sec-level">${sec.level}</div>`:'';
-    const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content">${formatTheoryDisplay(sec.key)}</div></div>`:'';
-    const detail=sec.detail?`<div class="sec-block"><div class="sec-label">상세설명</div><div class="sec-content">${formatTheoryDisplay(sec.detail)}</div></div>`:`<div class="sec-content">${formatTheoryDisplay(sec.content||'')}</div>`;
+    const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content" data-edit-field="key">${formatTheoryDisplay(sec.key)}</div></div>`:'';
+    const detail=sec.detail?`<div class="sec-block"><div class="sec-label">상세설명</div><div class="sec-content" data-edit-field="detail">${formatTheoryDisplay(sec.detail)}</div></div>`:`<div class="sec-content" data-edit-field="content">${formatTheoryDisplay(sec.content||'')}</div>`;
     const exam=pts?`<div class="sec-block"><div class="sec-label">시험포인트</div><div class="sec-points">${pts}</div></div>`:'';
-    const memory=sec.memory?`<div class="sec-memory"><b>암기문장.</b> ${formatTheoryDisplay(sec.memory)}</div>`:'';
-    card.innerHTML=`${level}<div class="sec-title">${sec.title}</div>${key}${detail}${exam}${memory}`;
+    const memory=sec.memory?`<div class="sec-memory"><b>암기문장.</b> <span data-edit-field="memory">${formatTheoryDisplay(sec.memory)}</span></div>`:'';
+    card.innerHTML=`${level}<div class="sec-title" data-edit-field="title">${formatTheoryDisplay(sec.title)}</div>${key}${detail}${exam}${memory}`;
     area.appendChild(card);
   });
   updateTheoryNavButtons();
   updateTheoryAutoStatus();
   annotateTheoryCards();
+  refreshTheoryEditControls();
+  if(theoryEditMode) applyTheoryEditModeToDom(true);
   goScreen('screenTheoryContent');
 }
 
@@ -1377,6 +1526,7 @@ let theoryReadIndex=0;
 let theoryActiveIndex=0;
 const THEORY_TTS_GAP_MS=650;
 const THEORY_TTS_MARKER_GAP_MS=400;
+const THEORY_TTS_COLON_GAP_MS=950;
 
 function getTheoryTrackTargets(){
   return Array.from(document.querySelectorAll('#theoryContentArea .tts-track-target'));
@@ -1574,6 +1724,30 @@ function pushTheorySpeechChunk(arr, text, gapMs){
   if(t) arr.push({text:t, gapMs:gapMs||THEORY_TTS_GAP_MS});
 }
 
+function splitTheoryColonParts(line){
+  const text=cleanTheorySpeechText(line);
+  if(!text) return [];
+  if(!/[:：]/.test(text)) return [text];
+  return text.split(/[:：]+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
+}
+function pushTheoryLineAsChunks(chunks,line,gapMs){
+  const text=cleanTheorySpeechText(line);
+  if(!text) return;
+  const colonParts=splitTheoryColonParts(text);
+  if(colonParts.length>1){
+    colonParts.forEach((part,idx)=>{
+      pushTheorySpeechChunk(chunks,part,(idx<colonParts.length-1)?THEORY_TTS_COLON_GAP_MS:(gapMs||THEORY_TTS_GAP_MS));
+    });
+    return;
+  }
+  if(text.length>260){
+    const parts=text.split(/(?<=[.다요음됨함임\.])\s+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
+    if(parts.length>1) parts.forEach(p=>pushTheorySpeechChunk(chunks,p,gapMs||THEORY_TTS_GAP_MS));
+    else pushTheorySpeechChunk(chunks,text,gapMs||THEORY_TTS_GAP_MS);
+  }else{
+    pushTheorySpeechChunk(chunks,text,gapMs||THEORY_TTS_GAP_MS);
+  }
+}
 function splitTheoryTTSChunks(text){
   const raw=splitTheoryParagraphs(String(text||''));
   let lines=raw.split(/\n+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
@@ -1582,26 +1756,12 @@ function splitTheoryTTSChunks(text){
     const mb=splitLeadingTheoryMarker(line);
     if(mb){
       pushTheorySpeechChunk(chunks, theoryMarkerSpeech(mb.marker), THEORY_TTS_MARKER_GAP_MS);
-      if(mb.body){
-        if(mb.body.length>260){
-          const parts=mb.body.split(/(?<=[.다요음됨함임\.])\s+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
-          if(parts.length>1) parts.forEach(p=>pushTheorySpeechChunk(chunks,p,THEORY_TTS_GAP_MS));
-          else pushTheorySpeechChunk(chunks,mb.body,THEORY_TTS_GAP_MS);
-        }else{
-          pushTheorySpeechChunk(chunks,mb.body,THEORY_TTS_GAP_MS);
-        }
-      }
+      if(mb.body) pushTheoryLineAsChunks(chunks,mb.body,THEORY_TTS_GAP_MS);
       return;
     }
 
-    /* 너무 긴 줄은 문장 단위로 한 번 더 나눈다. */
-    if(line.length>260){
-      const parts=line.split(/(?<=[.다요음됨함임\.])\s+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
-      if(parts.length>1) parts.forEach(p=>pushTheorySpeechChunk(chunks,p,THEORY_TTS_GAP_MS));
-      else pushTheorySpeechChunk(chunks,line,THEORY_TTS_GAP_MS);
-    }else{
-      pushTheorySpeechChunk(chunks,line,THEORY_TTS_GAP_MS);
-    }
+    /* 소제목:내용 형식은 콜론 앞뒤를 분리하여 TTS가 잠시 쉬게 한다. */
+    pushTheoryLineAsChunks(chunks,line,THEORY_TTS_GAP_MS);
   });
   return chunks.filter(v=>v && v.text);
 }
@@ -2823,6 +2983,7 @@ function tryLoadV(){
   [300,600,1000,2000,3000].forEach(t=>setTimeout(loadV,t));
 }
 if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
+applyTheoryUserEdits();
 initSettingsOnce();
 tryLoadV();
 setTimeout(updateHomeCounts,200);
@@ -2830,7 +2991,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.16')
+    navigator.serviceWorker.register('sw.js?v=30.18')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
