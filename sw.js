@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-4-paragraph-tts-en-skip';
+const CACHE_NAME = 'pipe-master-v30-5-theory-drive-lock-fix';
 const ASSETS = [
   './',
   './index.html',

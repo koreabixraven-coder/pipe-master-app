@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.4</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.5</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.4. 화면 문단 나누기와 이론 TTS 영문 괄호 제외를 적용했습니다. 데이터는 v30.3 기준 유지.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.5. 이론 이동 중 청취 모드가 터치불가 잠금화면으로 전환되지 않던 문제를 수정했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -969,7 +969,7 @@
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '초급1';
 let Qs = DB[curLevel];
-let cur=0, answered=false, driveOn=false, paused=false, locked=false;
+let cur=0, answered=false, driveOn=false, theoryDriveOn=false, paused=false, locked=false;
 let synth=window.speechSynthesis, voices=[], selV=null;
 let rate=1.1, pitch=1.0, ns=0, pb=0.5, th=3;
 let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, holdTimer=null, resumeTask=null;
@@ -991,6 +991,7 @@ function goHome(){
   tStop();
   closeSettings();
   if(driveOn) toggleDrive();
+  stopTheoryDriveMode();
   goScreen('screenHome');
 }
 
@@ -1054,9 +1055,33 @@ function openTheoryFromHome(e){
 
 
 /* ── 이론 화면 공통 청취 ── */
+
+function startTheoryDriveMode(){
+  theoryDriveOn=true;
+  paused=false;
+  closeSettings();
+  reqWake();
+  setTheoryTrackText('이론 이동 중 청취 모드를 시작합니다.');
+  setTimeout(()=>{
+    if(theoryDriveOn && !locked){
+      lockScreen();
+      const txt=document.getElementById('lockNow');
+      if(txt) txt.textContent='이론 이동 중 청취 모드';
+    }
+  },900);
+}
+function stopTheoryDriveMode(){
+  if(!theoryDriveOn) return;
+  theoryDriveOn=false;
+  if(!driveOn) relWake();
+  if(locked && !driveOn) unlockScreen();
+}
+
 function startTheoryListenFromCurrent(e){
   if(e){e.stopPropagation(); e.preventDefault();}
   closeSettings();
+  startTheoryDriveMode();
+
   if(document.getElementById('screenTheoryContent').classList.contains('show')){
     theoryReadAll();
     return;
@@ -2347,6 +2372,7 @@ function spkOpts(opts,labels,cb){
 function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. STS 304는 에스티에스 삼공사. STS 316은 에스티에스 삼일육으로 읽습니다. KS는 케이에스. 1MPa는 일 메가파스칼로 읽습니다.');}
 function tStop(){
   synth.cancel(); stopTH();
+  stopTheoryDriveMode();
   if(nxTimer){clearTimeout(nxTimer);nxTimer=null;}
   if(pbTimer){clearTimeout(pbTimer);pbTimer=null;}
   resumeTask=null;
