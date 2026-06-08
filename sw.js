@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-15-cache-refresh-icon-guard';
+const CACHE_NAME = 'pipe-master-v30-16-final-theory-cumulative';
 const ASSETS = [
   './',
   './index.html',
