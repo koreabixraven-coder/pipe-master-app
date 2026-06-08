@@ -524,12 +524,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.7</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.8</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.7. 이론 일시정지 후 이어서 재생이 다시 시작되지 않던 문제를 수정했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.8. 이론 이어서 재생이 처음부터 읽히는 문제를 줄이기 위해 문단 단위 재개로 수정했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -1366,6 +1366,7 @@ function handleTheoryReadFinished(){
 let theoryAutoScroll=true;
 let theoryReadQueue=[];
 let theoryReadIndex=0;
+let theoryActiveIndex=0;
 
 function getTheoryTrackTargets(){
   return Array.from(document.querySelectorAll('#theoryContentArea .tts-track-target'));
@@ -1430,13 +1431,13 @@ function toggleTheoryPauseResume(){
     /* 일시정지 시 현재 읽던 항목 번호를 되돌려 둔다.
        이어서 재생하면 현재 항목의 처음부터 다시 읽는다. */
     paused=true;
-    const currentIdx=Math.max(0,(theoryReadIndex||1)-1);
+    const currentIdx=Math.max(0,theoryActiveIndex||0);
     theoryReadIndex=currentIdx;
     resumeTask=null;
     try{synth.pause();}catch(e){}
     setTimeout(()=>{ if(paused){ try{synth.cancel();}catch(e){} } },80);
     setTheoryPauseButtonPaused();
-    setTheoryTrackText('이론 낭독 일시정지 중입니다. 이어서 재생하면 현재 항목부터 다시 읽습니다.');
+    setTheoryTrackText('이론 낭독 일시정지 중입니다. 이어서 재생하면 현재 문단부터 다시 읽습니다.');
   }
 }
 
@@ -1534,14 +1535,58 @@ function makeTheorySectionSpeech(el, idx){
   return cleanTheorySpeechText(text);
 }
 
+
+function splitTheoryTTSChunks(text){
+  const raw=splitTheoryParagraphs(String(text||''));
+  let lines=raw.split(/\n+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
+  const chunks=[];
+  lines.forEach(line=>{
+    /* 너무 긴 줄은 문장 단위로 한 번 더 나눈다. */
+    if(line.length>260){
+      const parts=line.split(/(?<=[.다요음됨함임\.])\s+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
+      if(parts.length>1) chunks.push(...parts);
+      else chunks.push(line);
+    }else{
+      chunks.push(line);
+    }
+  });
+  return chunks.filter(Boolean);
+}
+function getTheoryCardPartsForSpeech(el, idx){
+  const title=(el.querySelector('.sec-title')?.textContent || ('항목 '+(idx+1))).trim();
+  const body=getTheoryBodyFromCard(el);
+  const memory=(el.querySelector('.sec-memory')?.textContent || '').replace(/^암기문장\.\s*/,'').trim();
+  const exam=getTheoryExamPointsFromCard(el);
+  return {title, body, memory, exam};
+}
+
 function buildTheoryReadQueue(){
   let targets=getTheoryTrackTargets();
   if(!targets.length){annotateTheoryCards(); targets=getTheoryTrackTargets();}
   const q=[];
   targets.forEach((el,idx)=>{
-    const title=(el.querySelector('.sec-title')?.textContent || ('이론 '+(idx+1))).trim();
-    const text=makeTheorySectionSpeech(el,idx);
-    if(text) q.push({el,title,text});
+    const part=getTheoryCardPartsForSpeech(el,idx);
+    const titleText=cleanTheorySpeechText(part.title);
+    const bodyChunks=splitTheoryTTSChunks(part.body);
+    const memoryChunks=part.memory ? splitTheoryTTSChunks('암기문장. '+part.memory) : [];
+    const examChunks=(appSettings && appSettings.theoryExamTTS && part.exam && part.exam.length)
+      ? part.exam.flatMap(v=>splitTheoryTTSChunks(v))
+      : [];
+
+    const chunks=[];
+    if(titleText && bodyChunks.length){
+      chunks.push(titleText+'. '+bodyChunks.shift());
+    }else if(titleText){
+      chunks.push(titleText+'.');
+    }
+    chunks.push(...bodyChunks);
+    chunks.push(...memoryChunks);
+    chunks.push(...examChunks);
+
+    chunks.forEach((text,ci)=>{
+      const finalText=cleanTheorySpeechText(text);
+      if(finalText) q.push({el,title:part.title+' '+(ci+1)+'/'+chunks.length,text:finalText});
+    });
   });
   return q;
 }
@@ -1552,12 +1597,15 @@ function theoryReadNext(){
   }
   if(!theoryReadQueue.length || theoryReadIndex>=theoryReadQueue.length){
     paused=false;
+    theoryActiveIndex=0;
     resetTheoryPauseButton();
     setTheoryTrackText('현재 챕터 읽기가 끝났습니다.');
     handleTheoryReadFinished();
     return;
   }
+  const currentIndex=theoryReadIndex;
   const item=theoryReadQueue[theoryReadIndex++];
+  theoryActiveIndex=currentIndex;
   focusTheoryTarget(item.el,'읽는 중. '+item.title);
   spk(item.text,()=>{
     if(paused){ resumeTask=theoryReadNext; return; }
@@ -1572,6 +1620,7 @@ function theoryReadAll(manualStart=true){
   if(manualStart) theoryNextRemain=(theoryAutoMode==='next')?1:0;
   theoryReadQueue=buildTheoryReadQueue();
   theoryReadIndex=0;
+  theoryActiveIndex=0;
   if(!theoryReadQueue.length){
     alert('읽을 이론 내용이 없습니다.');
     return;

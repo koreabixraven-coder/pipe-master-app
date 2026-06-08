@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-7-theory-pause-resume-restart-fix';
+const CACHE_NAME = 'pipe-master-v30-8-theory-resume-chunk-fix';
 const ASSETS = [
   './',
   './index.html',
