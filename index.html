@@ -413,7 +413,7 @@
   .theory-nav-5 .tnav.replay{border-color:#1D9E75;color:#9FE1CB;background:#0A2E22;}
   .theory-autoplay-status{font-size:11px;color:#9FE1CB;background:#0A2E22;border:0.5px solid #1D9E75;border-radius:12px;padding:8px 10px;margin:8px 0 10px;text-align:center;}
   .theory-autoplay-status.off{display:none;}
-  /* ── v30.20_TTS_FIX_01 문제풀이 TTS 영문괄호 제외 + 해설 조기넘김 방지 ── */
+  /* ── v30.20_TTS_FIX_04 이론 전체듣기 모바일 반복 이동 보정 ── */
   .theory-edit-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px;background:#111;border:0.5px solid #242424;border-radius:12px;padding:8px;}
   .theory-edit-bar .teb{border:0.5px solid #333;background:#1A1A1A;color:#DDD;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:600;cursor:pointer;}
   .theory-edit-bar .teb.primary{border-color:#1D9E75;background:#0A2E22;color:#9FE1CB;}
@@ -535,12 +535,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.20 TTS FIX 02</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.20 TTS FIX 04</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.20 TTS FIX 02. 기존 1720문항과 이론 데이터는 그대로 보존하고 문제풀이 화면에 일시정지/이어서재생 버튼을 추가했습니다. 해설 낭독 중 조기 넘김 방지 로직은 유지합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.20 TTS FIX 04. 기존 1720문항과 이론 데이터는 그대로 보존하고 이론 전체듣기 모바일 반복 이동 버그를 보정했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -1333,6 +1333,14 @@ function restoreTheoryOriginalForCurrentChapter(e){
 }
 
 function openChapter(idx){
+  /* 사용자가 챕터를 직접 누르거나 자동 넘김 중 화면이 바뀔 때
+     이전 이론 TTS 콜백이 뒤늦게 들어와 같은 챕터를 다시 여는 것을 막는다. */
+  if(synth && (synth.speaking || synth.pending || paused)){
+    invalidateTheoryReadSession();
+    try{synth.cancel();}catch(e){}
+    paused=false;
+    resetTheoryPauseButton();
+  }
   curChapterIdx=idx;
   const s=THEORY[curSubject];
   const ch=s.chapters[idx];
@@ -1425,6 +1433,29 @@ function annotateTheoryCards(){
 
 let theoryAutoMode='once';
 let theoryNextRemain=0;
+/* v30.20_TTS_FIX_04
+   모바일 브라우저에서 speechSynthesis onend/onerror가 중복 호출되거나
+   화면 전환 중 cancel 이벤트가 늦게 들어오면 같은 이론 챕터 완료 처리가
+   반복될 수 있다. 이론 TTS 전용 세션 번호로 오래된 콜백을 무효화한다. */
+let theoryReadSessionId=0;
+let theoryReadFinishHandled=false;
+let theoryAutoTransitionTimer=null;
+function invalidateTheoryReadSession(){
+  theoryReadSessionId++;
+  theoryReadFinishHandled=false;
+  if(theoryAutoTransitionTimer){
+    clearTimeout(theoryAutoTransitionTimer);
+    theoryAutoTransitionTimer=null;
+  }
+  resumeTask=null;
+  try{speakToken++;}catch(e){}
+}
+function cancelTheorySpeechForNavigation(){
+  invalidateTheoryReadSession();
+  try{synth.cancel();}catch(e){}
+  clearTheoryTrack();
+  resetTheoryPauseButton();
+}
 function setTheoryAutoMode(mode,btn){
   theoryAutoMode=mode;
   if(appSettings) appSettings.theoryAutoMode=mode;
@@ -1463,9 +1494,10 @@ function getNextTheoryLocation(){
 }
 function openTheoryLocation(loc,autoRead){
   if(!loc) return false;
+  let transitionSession=theoryReadSessionId;
   if(autoRead){
-    synth.cancel();
-    clearTheoryTrack();
+    cancelTheorySpeechForNavigation();
+    transitionSession=theoryReadSessionId;
   }
   curSubject=loc.subject;
   curChapterIdx=loc.chapter;
@@ -1473,11 +1505,34 @@ function openTheoryLocation(loc,autoRead){
   const titleEl=document.getElementById('chapterSubjectTitle');
   if(titleEl) titleEl.textContent=s.title;
   openChapter(curChapterIdx);
-  if(autoRead) setTimeout(()=>theoryReadAll(false),360);
+  if(autoRead){
+    /* openChapter 내부에서 모바일 cancel 정리 때문에 세션이 한 번 더 바뀔 수 있으므로
+       자동 읽기 시작 기준 세션을 화면 전환 후 다시 맞춘다. */
+    transitionSession=theoryReadSessionId;
+    setTimeout(()=>{
+      if(transitionSession!==theoryReadSessionId) return;
+      theoryReadAll(false);
+    },360);
+  }
   return true;
 }
-function handleTheoryReadFinished(){
+function handleTheoryReadFinished(sessionId){
+  if(sessionId!==undefined && sessionId!==theoryReadSessionId) return;
+  if(theoryReadFinishHandled) return;
+  theoryReadFinishHandled=true;
+
   const mode=theoryAutoMode || 'once';
+  const scheduleTheoryAutoMove=(loc,msg,delay)=>{
+    const finishedSession=theoryReadSessionId;
+    updateTheoryAutoStatus(msg);
+    if(theoryAutoTransitionTimer){clearTimeout(theoryAutoTransitionTimer);}
+    theoryAutoTransitionTimer=setTimeout(()=>{
+      theoryAutoTransitionTimer=null;
+      if(finishedSession!==theoryReadSessionId) return;
+      openTheoryLocation(loc,true);
+    },delay||900);
+  };
+
   if(mode==='once'){
     updateTheoryAutoStatus('현재 챕터 읽기가 끝났습니다.');
     if(!driveOn && !theoryDriveOn) relWake();
@@ -1490,8 +1545,7 @@ function handleTheoryReadFinished(){
       const loc=getNextTheoryLocation();
       if(loc){
         theoryNextRemain--;
-        updateTheoryAutoStatus('다음 챕터로 자동 이동합니다.');
-        setTimeout(()=>openTheoryLocation(loc,true),900);
+        scheduleTheoryAutoMove(loc,'다음 챕터로 자동 이동합니다.',900);
         return;
       }
     }
@@ -1504,8 +1558,7 @@ function handleTheoryReadFinished(){
   if(mode==='subject'){
     const s=THEORY[curSubject];
     if(s && curChapterIdx<s.chapters.length-1){
-      updateTheoryAutoStatus('다음 챕터로 자동 이동합니다.');
-      setTimeout(()=>openTheoryLocation({subject:curSubject,chapter:curChapterIdx+1},true),900);
+      scheduleTheoryAutoMove({subject:curSubject,chapter:curChapterIdx+1},'다음 챕터로 자동 이동합니다.',900);
     }else{
       updateTheoryAutoStatus('현재 과목 전체 읽기가 끝났습니다.');
       if(!driveOn && !theoryDriveOn) relWake();
@@ -1517,8 +1570,7 @@ function handleTheoryReadFinished(){
   if(mode==='all'){
     const loc=getNextTheoryLocation();
     if(loc){
-      updateTheoryAutoStatus('다음 이론으로 자동 이동합니다.');
-      setTimeout(()=>openTheoryLocation(loc,true),900);
+      scheduleTheoryAutoMove(loc,'다음 이론으로 자동 이동합니다.',900);
     }else{
       updateTheoryAutoStatus('전체 이론 읽기가 끝났습니다.');
       if(!driveOn && !theoryDriveOn) relWake();
@@ -1773,10 +1825,37 @@ function splitTheoryTTSChunks(text){
   });
   return chunks.filter(v=>v && v.text);
 }
+function normalizeTheoryCompareText(s){
+  return cleanTheorySpeechText(s)
+    .replace(/\.\.\./g,'')
+    .replace(/[\s.,:;·ㆍ\-_\/\\()[\]{}<>"'‘’“”]/g,'')
+    .trim();
+}
+function isTheoryDuplicateMemory(body,memory){
+  const b=normalizeTheoryCompareText(body);
+  const m=normalizeTheoryCompareText(memory);
+  if(!b || !m || m.length<60) return false;
+  const mHead=m.slice(0,70);
+  const bHead=b.slice(0,140);
+  if(bHead.includes(mHead)) return true;
+  if(m.includes('조') && String(memory||'').includes('...') && bHead.includes(m.slice(0,50))) return true;
+  if(m.length>120 && b.slice(0,90)===m.slice(0,90)) return true;
+  return false;
+}
+function filterTheoryMemoryForSpeech(body,memory){
+  const mem=String(memory||'').replace(/^암기문장\.\s*/,'').trim();
+  if(!mem) return '';
+  /* 공업경영 일부 챕터처럼 암기문장이 본문 앞부분을 그대로 다시 담고 있으면
+     모바일 TTS에서는 같은 챕터를 반복하는 것처럼 들린다. 화면 원문과 theory.js는
+     유지하고 음성에서만 중복 암기문장 낭독을 생략한다. */
+  if(isTheoryDuplicateMemory(body,mem)) return '';
+  return mem;
+}
 function getTheoryCardPartsForSpeech(el, idx){
   const title=(el.querySelector('.sec-title')?.textContent || ('항목 '+(idx+1))).trim();
   const body=getTheoryBodyFromCard(el);
-  const memory=(el.querySelector('.sec-memory')?.textContent || '').replace(/^암기문장\.\s*/,'').trim();
+  const rawMemory=(el.querySelector('.sec-memory')?.textContent || '').replace(/^암기문장\.\s*/,'').trim();
+  const memory=filterTheoryMemoryForSpeech(body,rawMemory);
   const exam=getTheoryExamPointsFromCard(el);
   return {title, body, memory, exam};
 }
@@ -1809,17 +1888,20 @@ function buildTheoryReadQueue(){
   });
   return q;
 }
-function theoryReadNext(){
+function theoryReadNext(sessionId){
+  sessionId = sessionId || theoryReadSessionId;
+  if(sessionId!==theoryReadSessionId) return;
   if(paused){
-    resumeTask=theoryReadNext;
+    resumeTask=()=>theoryReadNext(sessionId);
     return;
   }
   if(!theoryReadQueue.length || theoryReadIndex>=theoryReadQueue.length){
+    if(sessionId!==theoryReadSessionId) return;
     paused=false;
     theoryActiveIndex=0;
     resetTheoryPauseButton();
     setTheoryTrackText('현재 챕터 읽기가 끝났습니다.');
-    handleTheoryReadFinished();
+    handleTheoryReadFinished(sessionId);
     return;
   }
   const currentIndex=theoryReadIndex;
@@ -1827,13 +1909,20 @@ function theoryReadNext(){
   theoryActiveIndex=currentIndex;
   focusTheoryTarget(item.el,'읽는 중. '+item.title);
   spk(item.text,()=>{
-    if(paused){ resumeTask=theoryReadNext; return; }
-    setTimeout(()=>{ if(!paused) theoryReadNext(); else resumeTask=theoryReadNext; },item.gapMs||THEORY_TTS_GAP_MS);
+    if(sessionId!==theoryReadSessionId) return;
+    if(paused){ resumeTask=()=>theoryReadNext(sessionId); return; }
+    setTimeout(()=>{
+      if(sessionId!==theoryReadSessionId) return;
+      if(!paused) theoryReadNext(sessionId);
+      else resumeTask=()=>theoryReadNext(sessionId);
+    },item.gapMs||THEORY_TTS_GAP_MS);
   });
 }
 function theoryReadAll(manualStart=true){
   closeSettings();
-  synth.cancel();
+  invalidateTheoryReadSession();
+  const sessionId=theoryReadSessionId;
+  try{synth.cancel();}catch(e){}
   paused=false;
   resetTheoryPauseButton();
   if(manualStart) theoryNextRemain=(theoryAutoMode==='next')?1:0;
@@ -1847,7 +1936,7 @@ function theoryReadAll(manualStart=true){
   reqWake(theoryDriveOn?'이론 이동 중 청취':'이론 전체읽기');
   updateTheoryAutoStatus('이론 전체읽기를 시작합니다. '+theoryAutoModeLabel());
   setTheoryTrackText('이론 전체읽기를 시작합니다.');
-  theoryReadNext();
+  theoryReadNext(sessionId);
 }
 
 
@@ -2853,7 +2942,7 @@ function ttsStop(){ tStop(); }
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
 function setSt(m){document.getElementById('status').innerHTML=m;}
 
-/* ── v30.20 TTS FIX 02. 문제풀이 일시정지/이어서재생 버튼 ── */
+/* ── v30.20 TTS FIX 04. 문제풀이 일시정지/이어서재생 버튼 ── */
 function resetQuizPauseButton(){
   const btn=document.getElementById('quizPauseBtn');
   const ico=document.getElementById('quizPauseIco');
