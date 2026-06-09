@@ -996,6 +996,7 @@ let cur=0, answered=false, driveOn=false, theoryDriveOn=false, paused=false, loc
 let synth=window.speechSynthesis, voices=[], selV=null;
 let rate=1.1, pitch=1.0, ns=0, pb=0.5, th=3;
 let thTimer=null, nxTimer=null, pbTimer=null, wakeLock=null, wakeWanted=false, wakeLastReason='', wakeRetryTimer=null, wakeWatchTimer=null, holdTimer=null, resumeTask=null;
+let quizResumeTask=null, speakToken=0;
 const NL=[['1번','2번','3번','4번'],['1.','2.','3.','4.'],['첫번째','두번째','세번째','네번째']];
 
 /* ── 화면 전환 ── */
@@ -2429,27 +2430,28 @@ function togglePause(){
   const ico=document.getElementById('pauseIco');
   const lbl=document.getElementById('pauseLbl');
   if(paused){
-    synth.pause();
+    try{synth.pause();}catch(e){}
+    setTimeout(()=>{ if(paused){ try{synth.cancel();}catch(e){} } },90);
     btn.classList.add('paused');
     document.getElementById('thinkWrap').classList.add('paused');
     ico.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';
     lbl.textContent='재개하기';
-    setSt('⏸ 일시정지 중입니다.');
+    setSt('⏸ 일시정지 중입니다. 재개하면 현재 읽던 구간부터 다시 재생합니다.');
   } else {
-    synth.resume();
     btn.classList.remove('paused');
     document.getElementById('thinkWrap').classList.remove('paused');
     ico.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
     lbl.textContent='일시정지';
     setSt('▶ 재개합니다.');
-    if(resumeTask){
-      const fn=resumeTask;
-      resumeTask=null;
-      setTimeout(()=>{ if(!paused && driveOn) fn(); },80);
+    const fn=quizResumeTask || resumeTask;
+    quizResumeTask=null;
+    resumeTask=null;
+    try{synth.cancel();}catch(e){}
+    if(fn){
+      setTimeout(()=>{ if(!paused && driveOn && typeof fn==='function') fn(); },160);
     }
   }
 }
-
 /* ── TTS ── */
 /* ── 영문 → 한글 발음 변환 ── */
 
@@ -2745,21 +2747,41 @@ function toKorean(txt){
   return result;
 }
 
-function spk(txt,cb){
+function spk(txt,cb,mode){
   keepWakeForPlayback('TTS 재생');
-  synth.cancel();
-  const u=new SpeechSynthesisUtterance(toKorean(txt));
+  const rawTxt=String(txt||'');
+  const isQuiz=(mode==='quiz');
+  const token=++speakToken;
+  try{synth.cancel();}catch(e){}
+  if(isQuiz){
+    quizResumeTask=()=>spk(rawTxt,cb,'quiz');
+  }
+  const u=new SpeechSynthesisUtterance(toKorean(rawTxt));
   u.lang='ko-KR'; if(selV) u.voice=selV; u.rate=rate; u.pitch=pitch;
   u.onend=()=>{
+    if(token!==speakToken) return;
     clrB();
+    if(isQuiz && !paused) quizResumeTask=null;
     if(cb){
-      if(paused) resumeTask=cb;
-      else cb();
+      if(paused){
+        if(isQuiz) quizResumeTask=()=>spk(rawTxt,cb,'quiz');
+        else resumeTask=cb;
+      } else cb();
     }
   };
+  u.onerror=()=>{
+    if(token!==speakToken) return;
+    if(paused){
+      if(isQuiz) quizResumeTask=()=>spk(rawTxt,cb,'quiz');
+      else resumeTask=cb;
+      return;
+    }
+    if(cb) cb();
+  };
   synth.speak(u);
-  if(locked) document.getElementById('lockNow').textContent=txt.length>40?txt.substring(0,40)+'...':txt;
+  if(locked) document.getElementById('lockNow').textContent=rawTxt.length>40?rawTxt.substring(0,40)+'...':rawTxt;
 }
+function spkQ(txt,cb){ spk(txt,cb,'quiz'); }
 /* 정답 낭독은 보기 읽기 방식과 분리한다.
    기존 문제: L[q.ans]가 '4번'인데 뒤에 '번'을 또 붙여 '4번번'으로 낭독됨.
    수정: 정답 안내는 항상 '정답은 4번입니다.' 형식으로 고정한다. */
@@ -2767,13 +2789,13 @@ function ansNo(q){ return (Number(q.ans)+1)+'번'; }
 function spkAns(L,q,cb){
   const correctEl=document.querySelectorAll('#opts .opt')[Number(q.ans)];
   quizTtsFocus(correctEl,'정답 '+ansNo(q)+' 읽는 중');
-  spk('정답은 '+ansNo(q)+'입니다.',()=>{
+  spkQ('정답은 '+ansNo(q)+'입니다.',()=>{
     setTimeout(()=>{
-      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spk('해설. '+q.ex, cb);}; return; }
+      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spkQ('해설. '+q.ex, cb);}; return; }
       let done=false;
       const finish=()=>{ if(done) return; done=true; if(cb) cb(); };
       quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중');
-      spk('해설. '+q.ex, finish);
+      spkQ('해설. '+q.ex, finish);
       /* v30.20 TTS FIX 01
          기존 안전 타이머가 긴 해설을 아직 읽는 중에도 finish()를 호출하여
          자동 다음 문제로 넘어가는 문제가 있었다.
@@ -2801,7 +2823,7 @@ function spkOpts(opts,labels,cb){
     const optEl=document.querySelectorAll('#opts .opt')[curIdx];
     quizTtsFocus(optEl, labels[curIdx]+' 보기 읽는 중');
     const txt=labels[i]+'. '+opts[i]; i++;
-    spk(txt,()=>{
+    spkQ(txt,()=>{
       if(pb>0&&i<opts.length){pbTimer=setTimeout(()=>{if(paused) resumeTask=go; else go();},pb*1000);}
       else go();
     });
@@ -2815,6 +2837,7 @@ function tStop(){
   if(nxTimer){clearTimeout(nxTimer);nxTimer=null;}
   if(pbTimer){clearTimeout(pbTimer);pbTimer=null;}
   resumeTask=null;
+  quizResumeTask=null;
   autoNextLock=false;
   paused=false;
   const btn=document.getElementById('bigBtn');
@@ -2848,14 +2871,15 @@ function setQuizPauseButtonPaused(){
   if(lbl) lbl.textContent='이어서재생';
 }
 function resumeQuizPausedWork(){
-  try{synth.resume();}catch(e){}
   resetQuizPauseButton();
   setSt('▶ 이어서 재생합니다.');
-  if(resumeTask){
-    const fn=resumeTask;
-    resumeTask=null;
-    setTimeout(()=>{ if(!paused && typeof fn==='function') fn(); },80);
-  }
+  const fn=quizResumeTask || resumeTask;
+  quizResumeTask=null;
+  resumeTask=null;
+  try{synth.cancel();}catch(e){}
+  setTimeout(()=>{
+    if(!paused && typeof fn==='function') fn();
+  },160);
 }
 function toggleQuizPause(){
   if(driveOn){ togglePause(); return; }
@@ -2864,16 +2888,17 @@ function toggleQuizPause(){
     resumeQuizPausedWork();
   }else{
     paused=true;
-    try{synth.pause();}catch(e){}
     setQuizPauseButtonPaused();
-    setSt('⏸ 문제풀이 TTS 일시정지 중입니다. 이어서재생을 누르세요.');
+    setSt('⏸ 문제풀이 TTS 일시정지 중입니다. 이어서재생을 누르면 현재 읽던 구간부터 다시 재생합니다.');
+    try{synth.pause();}catch(e){}
+    setTimeout(()=>{ if(paused){ try{synth.cancel();}catch(e){} } },90);
   }
 }
 
 function mRead(t){
   if(driveOn) return;
   if(!Qs.length){setSt('이 단계에 문제가 없습니다');return;}
-  if(paused){paused=false; resetQuizPauseButton(); try{synth.cancel();}catch(e){}}
+  if(paused){paused=false; resetQuizPauseButton(); quizResumeTask=null; try{synth.cancel();}catch(e){}}
   const q=Qs[cur], L=NL[ns]; clrB();
   if(t!=='all') normalFullAuto=false;
   if(t==='q'){
@@ -2951,7 +2976,7 @@ function autoPlay(){
   const q=Qs[cur], L=NL[ns];
   setSt('🔊 문제 읽는 중...');
   quizTtsFocus(document.querySelector('#screenQuiz .q-card') || document.getElementById('qText'),'문제 읽는 중');
-  spk('문제 '+(cur+1)+'번. '+q.q,()=>{
+  spkQ('문제 '+(cur+1)+'번. '+q.q,()=>{
     if(!driveOn) return;
     setSt('🔊 보기 읽는 중...');
     spkOpts(q.opts,L,()=>{
@@ -2979,7 +3004,7 @@ function autoReveal(){
       nxTimer=setTimeout(()=>{cur++;answered=false;renderQ();buildDots();autoPlay();},1800);
     } else {
       setSt('🎉 이 단계 완료! 수고하셨습니다.');
-      spk('이 단계의 모든 문제가 완료되었습니다. 수고하셨습니다.',()=>{});
+      spkQ('이 단계의 모든 문제가 완료되었습니다. 수고하셨습니다.',()=>{});
     }
   });
 }
@@ -3071,7 +3096,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.20-ttsfix02')
+    navigator.serviceWorker.register('sw.js?v=30.20-ttsfix03')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
@@ -3117,7 +3142,7 @@ function quizTtsFocus(el,label){
 }
 function quizSpeakProblem(q,cb){
   quizTtsFocus(document.querySelector('#screenQuiz .q-card') || document.getElementById('qText'),'문제 읽는 중');
-  spk('문제. '+q.q,cb);
+  spkQ('문제. '+q.q,cb);
 }
 function stopQuizTts(){
   normalFullAuto=false;
