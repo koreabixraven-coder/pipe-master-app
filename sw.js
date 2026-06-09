@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-22-tablet-responsive';
+const CACHE_NAME = 'pipe-master-v30-23-tablet-vertical-options';
 const ASSETS = [
   './',
   './index.html',
