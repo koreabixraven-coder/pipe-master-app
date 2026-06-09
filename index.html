@@ -373,6 +373,8 @@
   .tb.on{background:#0A2E22;border-color:#1D9E75;color:#5DCAA5;}
   .tb svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
   .tb.stop{border-color:#3A1515;color:#E24B4A;}
+  .tb.pause{border-color:#5A4215;color:#FAC775;}
+  .tb.pause.paused{background:#1A1000;border-color:#BA7517;color:#FAC775;}
 
   /* ── 액션 버튼 ── */
   .act-row{display:flex;gap:7px;margin-bottom:20px;}
@@ -533,12 +535,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.20 TTS FIX 01</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.20 TTS FIX 02</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.20 TTS FIX 01. 기존 1720문항과 이론 데이터는 그대로 보존하고 문제풀이 TTS에서 한글 용어 뒤 영문 괄호 설명을 낭독하지 않도록 수정했습니다. 해설 낭독이 끝나기 전 자동 다음 문제로 넘어가지 않도록 보강했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.20 TTS FIX 02. 기존 1720문항과 이론 데이터는 그대로 보존하고 문제풀이 화면에 일시정지/이어서재생 버튼을 추가했습니다. 해설 낭독 중 조기 넘김 방지 로직은 유지합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -965,6 +967,9 @@
     </button>
     <button class="tb" id="bA" onclick="mRead('ans')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>해설
+    </button>
+    <button class="tb pause" id="quizPauseBtn" onclick="toggleQuizPause()" title="문제풀이 TTS 일시정지/이어서재생">
+      <svg id="quizPauseIco" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span id="quizPauseLbl">일시정지</span>
     </button>
     <button class="tb stop" onclick="stopQuizTts()">
       <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>정지
@@ -2817,6 +2822,7 @@ function tStop(){
   const tw=document.getElementById('thinkWrap');
   if(tw) tw.classList.remove('paused');
   resetTheoryPauseButton();
+  resetQuizPauseButton();
   clrB(); clearTheoryTrack(); quizTtsClearTrack(); setSt('');
   if(!driveOn && !theoryDriveOn) relWake();
 }
@@ -2824,9 +2830,50 @@ function ttsStop(){ tStop(); }
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
 function setSt(m){document.getElementById('status').innerHTML=m;}
 
+/* ── v30.20 TTS FIX 02. 문제풀이 일시정지/이어서재생 버튼 ── */
+function resetQuizPauseButton(){
+  const btn=document.getElementById('quizPauseBtn');
+  const ico=document.getElementById('quizPauseIco');
+  const lbl=document.getElementById('quizPauseLbl');
+  if(btn) btn.classList.remove('paused');
+  if(ico) ico.innerHTML='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  if(lbl) lbl.textContent='일시정지';
+}
+function setQuizPauseButtonPaused(){
+  const btn=document.getElementById('quizPauseBtn');
+  const ico=document.getElementById('quizPauseIco');
+  const lbl=document.getElementById('quizPauseLbl');
+  if(btn) btn.classList.add('paused');
+  if(ico) ico.innerHTML='<polygon points="5 3 19 12 5 21 5 3"/>';
+  if(lbl) lbl.textContent='이어서재생';
+}
+function resumeQuizPausedWork(){
+  try{synth.resume();}catch(e){}
+  resetQuizPauseButton();
+  setSt('▶ 이어서 재생합니다.');
+  if(resumeTask){
+    const fn=resumeTask;
+    resumeTask=null;
+    setTimeout(()=>{ if(!paused && typeof fn==='function') fn(); },80);
+  }
+}
+function toggleQuizPause(){
+  if(driveOn){ togglePause(); return; }
+  if(paused){
+    paused=false;
+    resumeQuizPausedWork();
+  }else{
+    paused=true;
+    try{synth.pause();}catch(e){}
+    setQuizPauseButtonPaused();
+    setSt('⏸ 문제풀이 TTS 일시정지 중입니다. 이어서재생을 누르세요.');
+  }
+}
+
 function mRead(t){
   if(driveOn) return;
   if(!Qs.length){setSt('이 단계에 문제가 없습니다');return;}
+  if(paused){paused=false; resetQuizPauseButton(); try{synth.cancel();}catch(e){}}
   const q=Qs[cur], L=NL[ns]; clrB();
   if(t!=='all') normalFullAuto=false;
   if(t==='q'){
@@ -3024,7 +3071,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.20-ttsfix01')
+    navigator.serviceWorker.register('sw.js?v=30.20-ttsfix02')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
@@ -3099,6 +3146,12 @@ function scheduleAutoNextAfterExplain(reason){
   if(nxTimer){clearTimeout(nxTimer); nxTimer=null;}
   nxTimer=setTimeout(()=>{
     autoNextLock=false;
+    if(paused){
+      resumeTask=()=>scheduleAutoNextAfterExplain('resume-autonext');
+      setQuizPauseButtonPaused();
+      setSt('⏸ 자동 다음 문제 이동이 일시정지되었습니다. 이어서재생을 누르세요.');
+      return;
+    }
     nextQ();
     if(normalFullAuto && !driveOn && cur<Qs.length){
       setTimeout(()=>mRead('all'),650);

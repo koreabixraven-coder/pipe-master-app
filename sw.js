@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-20-tts-fix-01';
+const CACHE_NAME = 'pipe-master-v30-20-tts-fix-02';
 const ASSETS = [
   './',
   './index.html',
