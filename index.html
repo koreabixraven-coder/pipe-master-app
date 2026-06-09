@@ -413,7 +413,7 @@
   .theory-nav-5 .tnav.replay{border-color:#1D9E75;color:#9FE1CB;background:#0A2E22;}
   .theory-autoplay-status{font-size:11px;color:#9FE1CB;background:#0A2E22;border:0.5px solid #1D9E75;border-radius:12px;padding:8px 10px;margin:8px 0 10px;text-align:center;}
   .theory-autoplay-status.off{display:none;}
-  /* ── v30.20_TTS_FIX_04 이론 전체듣기 모바일 반복 이동 보정 ── */
+  /* ── v30.20_TTS_FIX_05 암기문장 낭독 복구 ── */
   .theory-edit-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:-2px 0 10px;background:#111;border:0.5px solid #242424;border-radius:12px;padding:8px;}
   .theory-edit-bar .teb{border:0.5px solid #333;background:#1A1A1A;color:#DDD;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:600;cursor:pointer;}
   .theory-edit-bar .teb.primary{border-color:#1D9E75;background:#0A2E22;color:#9FE1CB;}
@@ -535,12 +535,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.20 TTS FIX 04</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.20 TTS FIX 05</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.20 TTS FIX 04. 기존 1720문항과 이론 데이터는 그대로 보존하고 이론 전체듣기 모바일 반복 이동 버그를 보정했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.20 TTS FIX 05. 기존 1720문항과 이론 데이터는 그대로 보존하고 이론 암기문장 낭독을 복구했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
     
     <div class="s-title">
@@ -1433,7 +1433,7 @@ function annotateTheoryCards(){
 
 let theoryAutoMode='once';
 let theoryNextRemain=0;
-/* v30.20_TTS_FIX_04
+/* v30.20_TTS_FIX_05
    모바일 브라우저에서 speechSynthesis onend/onerror가 중복 호출되거나
    화면 전환 중 cancel 이벤트가 늦게 들어오면 같은 이론 챕터 완료 처리가
    반복될 수 있다. 이론 TTS 전용 세션 번호로 오래된 콜백을 무효화한다. */
@@ -1845,10 +1845,11 @@ function isTheoryDuplicateMemory(body,memory){
 function filterTheoryMemoryForSpeech(body,memory){
   const mem=String(memory||'').replace(/^암기문장\.\s*/,'').trim();
   if(!mem) return '';
-  /* 공업경영 일부 챕터처럼 암기문장이 본문 앞부분을 그대로 다시 담고 있으면
-     모바일 TTS에서는 같은 챕터를 반복하는 것처럼 들린다. 화면 원문과 theory.js는
-     유지하고 음성에서만 중복 암기문장 낭독을 생략한다. */
-  if(isTheoryDuplicateMemory(body,mem)) return '';
+  /* v30.20_TTS_FIX_05
+     FIX_04의 중복 암기문장 생략 조건이 16페이지와 공업경영 138페이지처럼
+     반드시 읽어야 할 암기문장까지 건너뛰는 문제가 있었다.
+     화면 원문과 theory.js는 그대로 두고, TTS에서도 암기문장은 항상 읽도록 복구한다.
+     같은 챕터 반복 이동 방지는 세션 가드와 자동이동 타이머 단일관리 로직만으로 처리한다. */
   return mem;
 }
 function getTheoryCardPartsForSpeech(el, idx){
@@ -2942,7 +2943,7 @@ function ttsStop(){ tStop(); }
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
 function setSt(m){document.getElementById('status').innerHTML=m;}
 
-/* ── v30.20 TTS FIX 04. 문제풀이 일시정지/이어서재생 버튼 ── */
+/* ── v30.20 TTS FIX 05. 문제풀이 일시정지/이어서재생 버튼 ── */
 function resetQuizPauseButton(){
   const btn=document.getElementById('quizPauseBtn');
   const ico=document.getElementById('quizPauseIco');
