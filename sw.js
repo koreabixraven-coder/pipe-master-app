@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-41-landscape-2007-41-replace';
+const CACHE_NAME = 'pipe-master-v30-42-route-2007-41-display-fix';
 const ASSETS = [
   './',
   './index.html',
