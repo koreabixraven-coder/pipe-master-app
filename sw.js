@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-37-ch5-industrial-management-final-157';
+const CACHE_NAME = 'pipe-master-v30-39-landscape-fix';
 const ASSETS = [
   './',
   './index.html',

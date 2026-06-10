@@ -23,6 +23,24 @@
     document.documentElement.classList.add('tablet-wide-on');
   }
 })();
+/* ── v30.39 가로모드 즉시 선적용 (FOUC 방지) ── */
+(function(){
+  try{
+    const raw=localStorage.getItem('pipe_master_settings_v17');
+    const saved=raw?JSON.parse(raw):{};
+    const autoLand=(saved.autoLandscapeMode!==false); // 기본 true
+    if(!autoLand) return;
+    // 회전 감지
+    var land=false;
+    try{
+      var ot=window.screen&&window.screen.orientation&&window.screen.orientation.type;
+      if(ot){ land=ot.includes('landscape'); }
+      else if(typeof window.orientation==='number'){ land=(window.orientation===90||window.orientation===-90); }
+      else { land=window.innerWidth>window.innerHeight; }
+    }catch(e){ land=window.innerWidth>window.innerHeight; }
+    if(land) document.documentElement.classList.add('landscape-mode');
+  }catch(e){}
+})();
 </script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -566,7 +584,7 @@
 
   /* ── v30.23 패드 확장 시 문제 보기 1열 유지 ── */
   @media (min-width:760px){
-    html.tablet-wide-on .opts{display:flex!important;flex-direction:column!important;gap:9px!important;}
+    html.tablet-wide-on:not(.landscape-mode) .opts{display:flex!important;flex-direction:column!important;gap:9px!important;}
     html.tablet-wide-on .opt{width:100%!important;min-height:60px;font-size:14px;line-height:1.65;padding:12px 14px;}
     html.tablet-wide-on .q-text{font-size:16px;line-height:1.75;}
     html.tablet-wide-on .ex-box{font-size:14px;line-height:1.75;}
@@ -594,7 +612,9 @@
     min-width: 0;
   }
   /* 보기(opts)를 가로모드에서 2열로 */
-  html.landscape-mode .opts {
+  html.landscape-mode .opts,
+  html.landscape-mode.tablet-wide-on .opts,
+  html.landscape-mode.tablet-wide-off .opts {
     display: grid !important;
     grid-template-columns: 1fr 1fr !important;
     gap: 8px !important;
@@ -3019,9 +3039,19 @@ function isLandscape(){
 }
 
 function applyLandscapeMode(){
-  const s = appSettings || loadSettings();
+  // appSettings 미초기화 시에도 안전하게 localStorage 직접 확인
+  var autoLand = true;
+  try{
+    if(appSettings){
+      autoLand = (appSettings.autoLandscapeMode !== false);
+    } else {
+      var raw = localStorage.getItem('pipe_master_settings_v17');
+      if(raw){ var s=JSON.parse(raw); autoLand=(s.autoLandscapeMode!==false); }
+    }
+  }catch(e){ autoLand=true; }
+
   const html = document.documentElement;
-  if(!s.autoLandscapeMode){
+  if(!autoLand){
     html.classList.remove('landscape-mode');
     return;
   }
@@ -3043,14 +3073,15 @@ function onOrientationChange(){
   try{
     if(window.screen && window.screen.orientation){
       window.screen.orientation.addEventListener('change', function(){
-        setTimeout(applyLandscapeMode, 300);
+        [100, 300, 600].forEach(function(t){ setTimeout(applyLandscapeMode, t); });
       });
     }
   }catch(e){}
 
   // orientationchange (구형 Android / iOS fallback)
   window.addEventListener('orientationchange', function(){
-    setTimeout(applyLandscapeMode, 300);
+    // 단계적 재시도: 일부 기기에서 첫 타이머에 innerWidth가 아직 구버전일 수 있음
+    [100, 300, 600].forEach(function(t){ setTimeout(applyLandscapeMode, t); });
   });
 
   // resize fallback — 크기 변화 감지 (일부 Chromebook/탭)
@@ -3523,7 +3554,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.23-tablet-vertical-options')
+    navigator.serviceWorker.register('sw.js?v=30.39-landscape-fix')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
