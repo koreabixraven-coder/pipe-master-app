@@ -6,21 +6,27 @@
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>RavenBix · 배관기능장 1479문제</title>
+<title>RavenBix · 배관기능장 2389문제</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
 <script src="questions.js"></script>
 <script>
-/* ── v30.22 패드 화면 확장 설정 선적용 ── */
+/* ── v30.34 패드 회전 화면 모드 선적용 ── */
 (function(){
   try{
     const raw=localStorage.getItem('pipe_master_settings_v17');
     const saved=raw?JSON.parse(raw):{};
-    const enabled=(saved.padWideMode!==false);
-    document.documentElement.classList.add(enabled?'tablet-wide-on':'tablet-wide-off');
+    let mode=saved.layoutMode || (saved.padWideMode===false ? 'portrait' : 'auto');
+    if(!['auto','portrait','landscape'].includes(mode)) mode='auto';
+    const wide=(mode!=='portrait');
+    const root=document.documentElement;
+    root.classList.add(wide?'tablet-wide-on':'tablet-wide-off');
+    root.classList.add('tablet-layout-'+mode);
+    root.setAttribute('data-layout-mode',mode);
   }catch(e){
-    document.documentElement.classList.add('tablet-wide-on');
+    document.documentElement.classList.add('tablet-wide-on','tablet-layout-auto');
+    document.documentElement.setAttribute('data-layout-mode','auto');
   }
 })();
 </script>
@@ -576,6 +582,55 @@
     html.tablet-wide-on .q-text{font-size:16.5px;}
   }
 
+  /* ── v30.34 패드 회전 선택옵션: 자동 / 세로 고정형 / 가로 최적형 ── */
+  .layout-mode-row{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 6px;}
+  .layout-mode-row .sb{padding:8px 5px;line-height:1.3;}
+  .layout-status{font-size:10.5px;color:#9FE1CB;margin:4px 0 10px;min-height:16px;}
+  html.tablet-layout-portrait body{overflow-x:hidden;}
+  @media (min-width:760px){
+    html.tablet-layout-portrait .app,
+    html.tablet-layout-portrait .home-wrap,
+    html.tablet-layout-portrait .theory-wrap,
+    html.tablet-layout-portrait .theory-content-wrap,
+    html.tablet-layout-portrait .topbar,
+    html.tablet-layout-portrait .quiz-shell,
+    html.tablet-layout-portrait .theory-content,
+    html.tablet-layout-portrait .theory-topline{width:auto!important;max-width:520px!important;margin-left:auto!important;margin-right:auto!important;}
+    html.tablet-layout-portrait .app{padding:0 14px 24px!important;}
+    html.tablet-layout-portrait .home-wrap{padding:24px 16px!important;}
+    html.tablet-layout-portrait .settings-panel.global-settings{max-width:520px!important;}
+    html.tablet-layout-portrait .quiz-toc-list,
+    html.tablet-layout-portrait .theory-subject-list,
+    html.tablet-layout-portrait .chapter-list{display:flex!important;flex-direction:column!important;gap:8px!important;}
+    html.tablet-layout-portrait .opts{display:block!important;}
+    html.tablet-layout-portrait .opt{width:100%!important;}
+    html.tablet-layout-portrait .ctrl-row{display:flex!important;}
+    html.tablet-layout-portrait .desktop-quiz-grid,
+    html.tablet-layout-portrait .desktop-two-col{display:block!important;}
+    html.tablet-layout-portrait .desktop-side-panel{display:none!important;}
+  }
+  @media (min-width:760px){
+    html.tablet-layout-landscape .app,
+    html.tablet-layout-landscape .topbar,
+    html.tablet-layout-landscape .quiz-shell,
+    html.tablet-layout-landscape .theory-topline{width:min(calc(100vw - 56px), 1240px)!important;max-width:1240px!important;}
+    html.tablet-layout-landscape .home-wrap{width:min(calc(100vw - 56px), 900px)!important;max-width:900px!important;}
+    html.tablet-layout-landscape .theory-wrap,
+    html.tablet-layout-landscape .theory-content-wrap{width:min(calc(100vw - 56px), 1040px)!important;max-width:1040px!important;}
+    html.tablet-layout-landscape .settings-panel.global-settings{max-width:720px!important;}
+    html.tablet-layout-landscape .theory-subject-list,
+    html.tablet-layout-landscape .chapter-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;}
+    html.tablet-layout-landscape .q-card{padding:28px 32px!important;}
+    html.tablet-layout-landscape .opts{display:flex!important;flex-direction:column!important;gap:9px!important;}
+    html.tablet-layout-landscape .opt{width:100%!important;min-height:60px;}
+  }
+  @media (min-width:900px) and (orientation:landscape){
+    html.tablet-layout-auto .app,
+    html.tablet-layout-auto .topbar,
+    html.tablet-layout-auto .quiz-shell,
+    html.tablet-layout-auto .theory-topline{width:min(calc(100vw - 56px), 1240px)!important;max-width:1240px!important;}
+  }
+
 </style>
 </head>
 <body>
@@ -603,23 +658,27 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.32 CH4 PIPE CONSTRUCTION 137</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.34 ROTATION MODE</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.33 CH5 INDUSTRIAL MANAGEMENT 116. 기출문제 / 챕터5-01 공업경영 116문항을 추가 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.34 TABLET ROTATION MODE. 현재 안전본(v30.33)은 보관하고, 패드 가로·세로 회전 선택옵션만 추가했습니다. 문제·이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
       <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 19v2"/></svg>
       화면 표시
     </div>
-    <div class="tog-row" style="margin-bottom:8px;">
-      <label>패드·가로 화면 자동 확장</label>
-      <label class="tog"><input type="checkbox" id="padWideMode" checked><span class="tog-sl"></span></label>
+    <div class="s-sub">패드 화면 모드</div>
+    <div class="layout-mode-row" id="layoutModeRow">
+      <button class="sb on" data-layout-mode="auto" onclick="setLayoutModeUI('auto',this)">자동<br><span style="font-size:9px;color:inherit;opacity:.8;">회전반응</span></button>
+      <button class="sb" data-layout-mode="portrait" onclick="setLayoutModeUI('portrait',this)">세로 고정형<br><span style="font-size:9px;color:inherit;opacity:.8;">1열 보기</span></button>
+      <button class="sb" data-layout-mode="landscape" onclick="setLayoutModeUI('landscape',this)">가로 최적형<br><span style="font-size:9px;color:inherit;opacity:.8;">넓은 보기</span></button>
     </div>
-    <p class="s-hint">모바일은 세로 화면 기준을 유지합니다. 패드나 넓은 화면에서는 켜짐 상태일 때 가로 폭과 2열 보기 구성이 자동으로 확장됩니다.</p>
+    <div class="layout-status" id="layoutModeStatus">현재 화면 모드 확인 중...</div>
+    <input type="checkbox" id="padWideMode" checked style="display:none;" aria-hidden="true">
+    <p class="s-hint">모바일은 기존 세로 최적화를 유지합니다. 패드에서는 자동 회전, 세로 고정형, 가로 최적형 중 선택할 수 있습니다.</p>
     <div class="s-sep"></div>
     
     <div class="s-title">
@@ -1066,7 +1125,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.33 기준 챕터5-01 공업경영 116문항을 추가 반영했습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.34는 패드 회전 화면 모드만 추가하고 문제 데이터는 v30.33과 동일합니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
@@ -2308,7 +2367,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 챕터1-01~03 + 챕터2-01~05 + 챕터3-01~02 + 챕터4-01~13 + 챕터5-01 공업경영 116문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.33</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 챕터1-01~03 + 챕터2-01~05 + 챕터3-01~02 + 챕터4-01~13 + 챕터5-01 공업경영 116문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.34 회전모드</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
@@ -2461,7 +2520,8 @@ function loadV(){
   if(an) an.onchange=()=>{ if(appSettings) appSettings.autoNext=an.checked; markSettingsDirty(); };
   if(qfa) qfa.onchange=()=>{ if(appSettings) appSettings.quizFullAuto=qfa.checked; markSettingsDirty(); };
   if(qtr) qtr.onchange=()=>{ if(appSettings) appSettings.quizTrack=qtr.checked; markSettingsDirty(); };
-  if(pwm) pwm.onchange=()=>{ if(appSettings) appSettings.padWideMode=pwm.checked; applyLayoutMode(pwm.checked); markSettingsDirty(); };
+  if(pwm) pwm.onchange=()=>{ if(appSettings){ appSettings.padWideMode=pwm.checked; appSettings.layoutMode=pwm.checked?'auto':'portrait'; } applyLayoutMode(appSettings?appSettings.layoutMode:(pwm.checked?'auto':'portrait')); markSettingsDirty(); };
+  updateLayoutModeButtons();
   updateDirtyNote();
 }
 
@@ -2668,7 +2728,8 @@ const DEFAULT_SETTINGS={
   quizTrack:true,
   theoryExamTTS:false,
   theoryAutoMode:'subject',
-  padWideMode:true
+  padWideMode:true,
+  layoutMode:'auto'
 };
 let appSettings=null;
 let settingsDirty=false;
@@ -2686,7 +2747,8 @@ function normalizeSettings(obj){
   s.quizTrack=(s.quizTrack===undefined)?true:!!s.quizTrack;
   s.theoryExamTTS=!!s.theoryExamTTS;
   s.theoryAutoMode=['once','next','subject','all'].includes(s.theoryAutoMode)?s.theoryAutoMode:DEFAULT_SETTINGS.theoryAutoMode;
-  s.padWideMode=(s.padWideMode===undefined)?true:!!s.padWideMode;
+  s.layoutMode=['auto','portrait','landscape'].includes(s.layoutMode)?s.layoutMode:(s.padWideMode===false?'portrait':DEFAULT_SETTINGS.layoutMode);
+  s.padWideMode=(s.layoutMode!=='portrait');
   s.voiceName=String(s.voiceName||'');
   return s;
 }
@@ -2711,6 +2773,7 @@ function mirrorLegacySettings(s){
     localStorage.setItem('theoryExamTTS',String(s.theoryExamTTS));
     localStorage.setItem('pipe_theory_auto_mode',s.theoryAutoMode);
     localStorage.setItem('padWideMode',String(s.padWideMode));
+    localStorage.setItem('layoutMode',String(s.layoutMode||'auto'));
     if(s.voiceName) localStorage.setItem('voiceName',s.voiceName);
     else localStorage.removeItem('voiceName');
   }catch(e){}
@@ -2740,20 +2803,57 @@ function preferredKoreanVoice(){
 function setRowActive(rowSel,predicate){
   document.querySelectorAll(rowSel+' .sb').forEach(b=>b.classList.toggle('on',!!predicate(b)));
 }
-function applyLayoutMode(enabled){
-  const on=(enabled!==false);
-  document.documentElement.classList.toggle('tablet-wide-on',on);
-  document.documentElement.classList.toggle('tablet-wide-off',!on);
+function currentOrientationLabel(){
+  try{
+    if(window.matchMedia && window.matchMedia('(orientation: landscape)').matches) return '가로';
+  }catch(e){}
+  return (window.innerWidth>window.innerHeight)?'가로':'세로';
+}
+function applyLayoutMode(mode){
+  if(typeof mode==='boolean') mode=mode?'auto':'portrait';
+  mode=['auto','portrait','landscape'].includes(mode)?mode:'auto';
+  const on=(mode!=='portrait');
+  const root=document.documentElement;
+  root.classList.toggle('tablet-wide-on',on);
+  root.classList.toggle('tablet-wide-off',!on);
+  ['auto','portrait','landscape'].forEach(m=>root.classList.toggle('tablet-layout-'+m,mode===m));
+  root.setAttribute('data-layout-mode',mode);
   if(document.body){
     document.body.classList.toggle('tablet-wide-on',on);
     document.body.classList.toggle('tablet-wide-off',!on);
+    ['auto','portrait','landscape'].forEach(m=>document.body.classList.toggle('tablet-layout-'+m,mode===m));
   }
   const cb=document.getElementById('padWideMode');
   if(cb) cb.checked=on;
+  updateLayoutModeButtons(mode);
+  updateLayoutModeStatus(mode);
+}
+function updateLayoutModeButtons(mode){
+  const m=mode || (appSettings&&appSettings.layoutMode) || 'auto';
+  document.querySelectorAll('#layoutModeRow .sb').forEach(b=>{
+    b.classList.toggle('on',b.getAttribute('data-layout-mode')===m);
+  });
+}
+function updateLayoutModeStatus(mode){
+  const el=document.getElementById('layoutModeStatus');
+  if(!el) return;
+  const m=mode || (appSettings&&appSettings.layoutMode) || 'auto';
+  const now=currentOrientationLabel();
+  const label=m==='auto'?'자동 회전반응':(m==='portrait'?'세로 고정형':'가로 최적형');
+  el.textContent='현재 선택: '+label+' · 감지 방향: '+now+' · 모바일은 세로 최적화 유지';
+}
+function setLayoutModeUI(mode,btn){
+  mode=['auto','portrait','landscape'].includes(mode)?mode:'auto';
+  if(appSettings){
+    appSettings.layoutMode=mode;
+    appSettings.padWideMode=(mode!=='portrait');
+  }
+  applyLayoutMode(mode);
+  markSettingsDirty();
 }
 function applySettings(settings, rebuildVoiceCards=false){
   appSettings=normalizeSettings(settings);
-  applyLayoutMode(appSettings.padWideMode);
+  applyLayoutMode(appSettings.layoutMode);
   rate=appSettings.rate;
   pitch=appSettings.pitch;
   ns=appSettings.numberStyle;
@@ -2780,6 +2880,8 @@ function applySettings(settings, rebuildVoiceCards=false){
   const qfa=document.getElementById('quizFullAuto');
   const qtr=document.getElementById('quizTrack');
   const pwm=document.getElementById('padWideMode');
+  updateLayoutModeButtons(appSettings.layoutMode);
+  updateLayoutModeStatus(appSettings.layoutMode);
   if(ae) ae.checked=appSettings.autoExplain;
   if(an) an.checked=appSettings.autoNext;
   if(qfa) qfa.checked=appSettings.quizFullAuto;
@@ -2800,6 +2902,8 @@ function collectSettingsFromUI(){
   const activePb=document.querySelector('#pbRow .sb.on');
   const activeTh=document.querySelector('#thRow .sb.on');
   const activeTheory=document.querySelector('#theoryAutoRow .sb.on, #theoryAutoRowTop .sb.on');
+  const activeLayout=document.querySelector('#layoutModeRow .sb.on');
+  const layoutMode=activeLayout ? activeLayout.getAttribute('data-layout-mode') : ((appSettings&&appSettings.layoutMode)||'auto');
   return normalizeSettings({
     voiceName: selV ? selV.name : '',
     rate: sliders[0] ? Number(sliders[0].value) : rate,
@@ -2812,7 +2916,8 @@ function collectSettingsFromUI(){
     quizFullAuto: !!(document.getElementById('quizFullAuto') && document.getElementById('quizFullAuto').checked),
     quizTrack: !(document.getElementById('quizTrack') && !document.getElementById('quizTrack').checked),
     theoryExamTTS: !!(document.getElementById('theoryExamTTS') && document.getElementById('theoryExamTTS').checked),
-    padWideMode: !(document.getElementById('padWideMode') && !document.getElementById('padWideMode').checked),
+    layoutMode: layoutMode,
+    padWideMode: layoutMode!=='portrait',
     theoryAutoMode: activeTheory ? activeTheory.getAttribute('data-theory-auto') : theoryAutoMode
   });
 }
@@ -3283,11 +3388,13 @@ applyTheoryUserEdits();
 initSettingsOnce();
 tryLoadV();
 setTimeout(updateHomeCounts,200);
+window.addEventListener('resize',()=>updateLayoutModeStatus());
+window.addEventListener('orientationchange',()=>setTimeout(()=>updateLayoutModeStatus(),250));
 
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.23-tablet-vertical-options')
+    navigator.serviceWorker.register('sw.js?v=30.34-tablet-rotation-mode')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
