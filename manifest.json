@@ -1,12 +1,12 @@
 {
   "name": "RavenBix · 배관기능장 예상기출문제",
   "short_name": "배관기능장",
-  "description": "배관기능장 예상기출문제 TTS 수험앱",
+  "description": "배관기능장 예상기출문제 TTS 수험앱 · 패드 화면회전모드 지원",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#121212",
   "theme_color": "#1D9E75",
-  "orientation": "portrait",
+  "orientation": "any",
   "lang": "ko",
   "icons": [
     {
