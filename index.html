@@ -621,6 +621,131 @@
     .act-row { display: flex !important; gap: 8px !important; }
     .ab { flex: 1 !important; }
     .dots { max-width: 100% !important; }
+
+    /* v30.44 패드 가로모드 문제풀이 전체 풀사이즈 보강
+       - 가로모드에서 문제/보기/해설/전체읽기 영역이 좌측 제한폭으로 보이지 않도록 함
+       - 모바일 세로모드, 이론, TTS 핵심 로직에는 영향 없음
+    */
+    #screenQuiz .desktop-quiz-grid,
+    #screenQuiz .desktop-main-panel {
+      display: block !important;
+      width: 100% !important;
+      max-width: none !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+    }
+    #screenQuiz .drive-start-btn,
+    #screenQuiz .score-bar,
+    #screenQuiz .dots,
+    #screenQuiz .status,
+    #screenQuiz .q-card,
+    #screenQuiz .opts,
+    #screenQuiz .ex-box,
+    #screenQuiz .tts-bar,
+    #screenQuiz .act-row,
+    #screenQuiz .footer {
+      width: 100% !important;
+      max-width: none !important;
+      box-sizing: border-box !important;
+    }
+    #screenQuiz .dots,
+    #screenQuiz .status {
+      justify-content: center !important;
+      text-align: center !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+    #screenQuiz .drive-start-btn {
+      min-height: 56px !important;
+      padding: 16px 18px !important;
+      font-size: 15.5px !important;
+      border-radius: 16px !important;
+    }
+    #screenQuiz .score-bar {
+      gap: 12px !important;
+      margin-bottom: 16px !important;
+    }
+    #screenQuiz .sc {
+      padding: 13px 14px !important;
+      border-radius: 14px !important;
+    }
+    #screenQuiz .sc .sn { font-size: 25px !important; }
+    #screenQuiz .sc .sl { font-size: 12px !important; }
+
+    #screenQuiz .q-card {
+      padding: 30px 34px !important;
+      margin-bottom: 14px !important;
+      border-radius: 18px !important;
+    }
+    #screenQuiz .q-meta {
+      margin-bottom: 14px !important;
+      gap: 10px !important;
+    }
+    #screenQuiz .q-num { font-size: 13px !important; }
+    #screenQuiz .q-cat { font-size: 12px !important; padding: 4px 10px !important; }
+    #screenQuiz .q-text {
+      font-size: 18.5px !important;
+      line-height: 1.82 !important;
+      letter-spacing: -0.2px !important;
+    }
+
+    #screenQuiz .opts {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 12px !important;
+      margin-bottom: 14px !important;
+    }
+    #screenQuiz .opt {
+      width: 100% !important;
+      min-height: 70px !important;
+      padding: 18px 20px !important;
+      font-size: 17px !important;
+      line-height: 1.72 !important;
+      border-radius: 15px !important;
+    }
+    #screenQuiz .oc {
+      width: 28px !important;
+      height: 28px !important;
+      font-size: 13px !important;
+      margin-top: 0 !important;
+    }
+
+    #screenQuiz .ex-box {
+      padding: 18px 22px !important;
+      font-size: 16.5px !important;
+      line-height: 1.82 !important;
+      margin-bottom: 16px !important;
+      border-radius: 0 16px 16px 0 !important;
+    }
+
+    #screenQuiz .tts-bar {
+      gap: 9px !important;
+      margin-bottom: 12px !important;
+    }
+    #screenQuiz .tb {
+      min-height: 50px !important;
+      padding: 12px 10px !important;
+      font-size: 14px !important;
+      border-radius: 14px !important;
+    }
+    #screenQuiz .tb svg { width: 18px !important; height: 18px !important; }
+    #screenQuiz .act-row {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 10px !important;
+      margin-bottom: 22px !important;
+    }
+    #screenQuiz .ab {
+      width: 100% !important;
+      min-height: 54px !important;
+      padding: 14px 16px !important;
+      font-size: 16px !important;
+      border-radius: 15px !important;
+    }
+    #screenQuiz .ab.p {
+      width: 100% !important;
+    }
+
   }
   @media (min-width:760px){
     html.tablet-wide-off .app,
@@ -643,6 +768,20 @@
     html.tablet-wide-off .desktop-quiz-grid,
     html.tablet-wide-off .desktop-two-col{display:block!important;}
     html.tablet-wide-off .desktop-side-panel{display:none!important;}
+  }
+
+  /* v30.44: 패드 확장 설정이 꺼져 있어도, 가로모드 문제풀이 화면은 전체 폭 유지 */
+  @media (min-width:760px) and (orientation:landscape){
+    html.tablet-wide-off #screenQuiz .app,
+    html.tablet-wide-off #screenQuiz .topbar {
+      width: min(calc(100vw - 32px), 1180px) !important;
+      max-width: 1180px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+    html.tablet-wide-off #screenQuiz .app {
+      padding: 24px 28px 36px !important;
+    }
   }
 
 
@@ -1148,7 +1287,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.43 기준 가로모드 성공버전 + 기존 기출41회 원본 대조 수정본을 유지하고, 회차 표시 명칭을 기출회차2007-41회로 바로잡았습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.44 기준 가로모드 성공버전 + 41회 교체본을 유지하고, 패드 가로모드 문제풀이 카드 풀사이즈 보강을 적용했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
