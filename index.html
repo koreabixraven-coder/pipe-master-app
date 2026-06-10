@@ -603,12 +603,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.30 CH2 SUPPORT INSULATION 99</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.31 CH3 DRAFTING SHEETMETAL 152</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.30 CH2 SUPPORT INSULATION 99. 기출문제 / 챕터2-04. 관의 지지 기구 31문항과 챕터2-05. 보온 단열재 68문항을 추가 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.31 CH3 DRAFTING SHEETMETAL 152. 기출문제 / 챕터3-01. 배관설비도면 146문항과 챕터3-02. 판금 6문항을 추가 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -1066,7 +1066,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.30 기준 챕터2-04 관의 지지 기구 31문항과 챕터2-05 보온 단열재 68문항을 추가 반영했습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.31 기준 챕터3-01 배관설비도면 146문항과 챕터3-02 판금 6문항을 추가 반영했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
@@ -2023,7 +2023,7 @@ function theoryReadAll(manualStart=true){
 let curQuizGroup='기출문제';
 let quizPrepared=false;
 const QUIZ_GROUPS=[
-  {key:'기출문제', icon:'①', desc:'챕터1 기존 단원과 챕터2 신규 단원을 훈련합니다.', levels:['배관공학의기초1','관의접합및성형3','용접의종류및특성4','챕터2_01_관의종류및특성','챕터2_02_관이음재료','챕터2_03_밸브및배관부속재료','챕터2_04_관의지지기구','챕터2_05_보온단열재'], labels:['챕터1-01. 배관공학의 기초','챕터1-02. 관의 접합 및 성형','챕터1-03. 용접의 종류 및 특성','챕터2-01. 관의 종류 및 특성','챕터2-02. 관 이음 재료','챕터2-03. 밸브 및 배관 부속재료','챕터2-04. 관의 지지 기구','챕터2-05. 보온 단열재']},
+  {key:'기출문제', icon:'①', desc:'챕터1·챕터2·챕터3 신규 단원을 훈련합니다.', levels:['배관공학의기초1','관의접합및성형3','용접의종류및특성4','챕터2_01_관의종류및특성','챕터2_02_관이음재료','챕터2_03_밸브및배관부속재료','챕터2_04_관의지지기구','챕터2_05_보온단열재','챕터3_01_배관설비도면','챕터3_02_판금'], labels:['챕터1-01. 배관공학의 기초','챕터1-02. 관의 접합 및 성형','챕터1-03. 용접의 종류 및 특성','챕터2-01. 관의 종류 및 특성','챕터2-02. 관 이음 재료','챕터2-03. 밸브 및 배관 부속재료','챕터2-04. 관의 지지 기구','챕터2-05. 보온 단열재','챕터3-01. 배관설비도면','챕터3-02. 판금']},
   {key:'기출회차 2007~2018', icon:'②', desc:'2007년부터 2018년까지의 실제 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출46회'], labels:['2007 제41회','2007 제42회','2009 제46회']},
   {key:'기출회차 2019~2026', icon:'③', desc:'2019년부터 2026년까지의 기출회차를 추가 입력할 예정입니다.', levels:[], labels:[]}
 ];
@@ -2268,7 +2268,9 @@ function buildLevelBar(){
         ['챕터2-02','관 이음 재료 · 56문제'],
         ['챕터2-03','밸브 및 배관 부속재료 · 83문제'],
         ['챕터2-04','관의 지지 기구 · 31문제'],
-        ['챕터2-05','보온 단열재 · 68문제']
+        ['챕터2-05','보온 단열재 · 68문제'],
+        ['챕터3-01','배관설비도면 · 146문제'],
+        ['챕터3-02','판금 · 6문제']
       ]
     },
     {
@@ -2292,7 +2294,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 챕터1-01~03 + 챕터2-01 관의 종류 및 특성 82문항 + 챕터2-02 관 이음 재료 56문항 + 챕터2-03 밸브 및 배관 부속재료 83문항 + 챕터2-04 관의 지지 기구 31문항 + 챕터2-05 보온 단열재 68문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.30</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 챕터1-01~03 + 챕터2-01~05 + 챕터3-01 배관설비도면 146문항 + 챕터3-02 판금 6문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.31</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
