@@ -852,6 +852,128 @@
     }
   }
 
+
+  /* ── v30.46 패드 가로모드 듣기 카드 1행 배치 ──
+     - 패드/태블릿 가로모드에서만 이동중청취모드 시작 + 전체읽기를 같은 행으로 배치
+     - 모바일 세로모드는 기존 상단 이동중청취모드 시작 버튼 유지
+     - 실제 TTS 동작 로직은 변경하지 않음
+  */
+  .drive-start-row-btn{display:none;}
+  @media (min-width:760px) and (orientation:landscape){
+    /* 기존 하단 단독 이동중청취모드 시작 버튼은 가로모드에서 숨김 */
+    #screenQuiz .app > #driveStartBtn{
+      display:none!important;
+    }
+    /* 문제 본문 영역 안의 1행 듣기 카드만 표시 */
+    #screenQuiz .drive-start-row-btn{
+      display:flex;
+      width:100%;
+      min-height:58px;
+      margin:0!important;
+      padding:15px 16px!important;
+      font-size:16px!important;
+      border-radius:15px!important;
+      box-sizing:border-box!important;
+    }
+    #screenQuiz .act-row{
+      display:grid!important;
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+      gap:12px!important;
+      align-items:stretch!important;
+      margin-bottom:22px!important;
+    }
+    #screenQuiz .act-row .ab{
+      min-height:58px!important;
+      margin:0!important;
+      text-align:center!important;
+    }
+    #screenQuiz .act-row .ab:not(#nxBtn){
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+    }
+    #screenQuiz #nxBtn{
+      grid-column:1 / -1!important;
+    }
+  }
+
+
+
+  /* ── v30.47 패드 가로모드 하단 조작바 정리 ──
+     - 문제카드와 4지선다 보기는 상단 우선 배치
+     - 문제풀이 돌아가기 + 전체읽기 + 이동중청취모드 + 현재 풀이 안내는 하단으로 이동
+     - 패드/태블릿 가로모드에서만 3열 하단 조작바를 사용
+  */
+  .quiz-bottom-control-zone{width:100%;box-sizing:border-box;margin-bottom:12px;}
+  .quiz-bottom-actions{width:100%;}
+  .quiz-return-action{background:#171717!important;border-color:#2A2A2A!important;color:#CCC!important;}
+  .quiz-read-all-action{background:#0C2D4A!important;border-color:#378ADD!important;color:#A8D2FF!important;}
+  @media (min-width:760px) and (orientation:landscape){
+    #screenQuiz .desktop-quiz-grid{order:2!important;}
+    #screenQuiz .quiz-bottom-control-zone{
+      order:20!important;
+      width:100%!important;
+      max-width:none!important;
+      margin-top:4px!important;
+      margin-bottom:12px!important;
+      padding-top:2px!important;
+      box-sizing:border-box!important;
+    }
+    #screenQuiz .quiz-current-title{
+      width:100%!important;
+      margin:0 0 10px!important;
+      padding:12px 14px!important;
+      border:0.5px solid #23384D!important;
+      border-radius:14px!important;
+      background:#0C1B2A!important;
+      color:#A8D2FF!important;
+      font-size:14px!important;
+      font-weight:700!important;
+      text-align:center!important;
+      box-sizing:border-box!important;
+    }
+    #screenQuiz .quiz-bottom-actions{
+      display:grid!important;
+      grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)!important;
+      gap:12px!important;
+      align-items:stretch!important;
+      margin:0!important;
+      width:100%!important;
+      max-width:none!important;
+    }
+    #screenQuiz .quiz-bottom-actions .ab,
+    #screenQuiz .quiz-bottom-actions .drive-start-row-btn{
+      min-height:60px!important;
+      height:auto!important;
+      margin:0!important;
+      padding:15px 16px!important;
+      font-size:16px!important;
+      line-height:1.35!important;
+      border-radius:15px!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      gap:8px!important;
+      text-align:center!important;
+      width:100%!important;
+      box-sizing:border-box!important;
+    }
+    #screenQuiz .quiz-bottom-actions .drive-start-row-btn svg{width:20px!important;height:20px!important;}
+    #screenQuiz #nxBtn{grid-column:1 / -1!important;}
+    #screenQuiz .quiz-track-status{
+      margin:10px 0 0!important;
+      min-height:18px!important;
+      font-size:12px!important;
+      text-align:center!important;
+    }
+    #screenQuiz .drive-bar{order:21!important;margin-top:0!important;margin-bottom:10px!important;}
+    #screenQuiz .think-wrap{order:22!important;margin-top:0!important;margin-bottom:10px!important;}
+    #screenQuiz .score-bar{order:23!important;margin-top:0!important;margin-bottom:12px!important;}
+    #screenQuiz .dots{order:24!important;margin-top:0!important;margin-bottom:8px!important;}
+    #screenQuiz .status{order:25!important;margin-top:0!important;margin-bottom:12px!important;}
+    #screenQuiz .footer{order:30!important;}
+  }
+
 </style>
 </head>
 <body>
@@ -879,12 +1001,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.45 LANDSCAPE QUIZ CONTROLS BOTTOM</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.47 LANDSCAPE BOTTOM ACTION BAR</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.45 LANDSCAPE QUIZ CONTROLS BOTTOM. 패드 가로모드에서 문제와 보기가 먼저 보이도록 이동중청취모드·정답/오답/정답률·네비게이션을 하단으로 이동했습니다. 모바일 세로모드와 이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.47 LANDSCAPE BOTTOM ACTION BAR. 패드 가로모드에서 문제와 보기를 상단에 유지하고, 이동중청취모드 시작 카드와 전체읽기 카드를 같은 1행에 배치했습니다. 모바일 세로모드와 이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -1300,38 +1422,52 @@
   <div class="status" id="status"></div>
 
   <!-- 문제 카드 -->
-  <div class="desktop-quiz-grid"><div class="desktop-main-panel">
-  <div class="q-card">
-    <div class="q-meta">
-      <span class="q-num" id="qNum">문제 1 / -</span>
-      <span class="q-cat" id="qCat">-</span>
-    </div>
-    <div class="q-text" id="qText">문제를 로딩 중입니다...</div>
-  </div>
-  <div class="opts" id="opts"></div>
-  <div class="ex-box" id="exBox"></div>
+  <div class="desktop-quiz-grid">
+    <div class="desktop-main-panel">
+      <div class="q-card">
+        <div class="q-meta">
+          <span class="q-num" id="qNum">문제 1 / -</span>
+          <span class="q-cat" id="qCat">-</span>
+        </div>
+        <div class="q-text" id="qText">문제를 로딩 중입니다...</div>
+      </div>
+      <div class="opts" id="opts"></div>
+      <div class="ex-box" id="exBox"></div>
 
-  <!-- TTS 바 -->
-  <div class="tts-bar">
-    <button class="tb" id="bQ" onclick="mRead('q')">
-      <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>문제
-    </button>
-    <button class="tb" id="bO" onclick="mRead('opts')">
-      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>보기
-    </button>
-    <button class="tb" id="bA" onclick="mRead('ans')">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>해설
-    </button>
-    <button class="tb pause" id="quizPauseBtn" onclick="toggleQuizPause()" title="문제풀이 TTS 일시정지/이어서재생">
-      <svg id="quizPauseIco" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span id="quizPauseLbl">일시정지</span>
-    </button>
-    <button class="tb stop" onclick="stopQuizTts()">
-      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>정지
-    </button>
+      <!-- TTS 바 -->
+      <div class="tts-bar">
+        <button class="tb" id="bQ" onclick="mRead('q')">
+          <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>문제
+        </button>
+        <button class="tb" id="bO" onclick="mRead('opts')">
+          <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>보기
+        </button>
+        <button class="tb" id="bA" onclick="mRead('ans')">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>해설
+        </button>
+        <button class="tb pause" id="quizPauseBtn" onclick="toggleQuizPause()" title="문제풀이 TTS 일시정지/이어서재생">
+          <svg id="quizPauseIco" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg><span id="quizPauseLbl">일시정지</span>
+        </button>
+        <button class="tb stop" onclick="stopQuizTts()">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>정지
+        </button>
+      </div>
+    </div>
   </div>
-  <div class="act-row">
-    <button class="ab" onclick="mRead('all')">▶ 전체읽기</button>
-    <button class="ab p" id="nxBtn" onclick="nextQ()" style="display:none;">다음 문제 →</button>
+
+  <!-- 가로모드 하단 조작 영역 -->
+  <div class="quiz-bottom-control-zone" id="quizBottomControlZone">
+    <div class="quiz-current-title" id="quizCurrentTitle">현재 풀이 안내</div>
+    <div class="act-row quiz-bottom-actions">
+      <button class="ab quiz-return-action" onclick="returnToQuizStage()">← 문제풀이 돌아가기</button>
+      <button class="ab quiz-read-all-action" onclick="mRead('all')">▶ 전체읽기</button>
+      <button class="drive-start-btn drive-start-row-btn" id="landscapeDriveStartBtn" onclick="toggleDrive()">
+        <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z"/></svg>
+        이동중청취모드
+      </button>
+      <button class="ab p" id="nxBtn" onclick="nextQ()" style="display:none;">다음 문제 →</button>
+    </div>
+    <div class="quiz-track-status" id="quizTrackStatus"></div>
   </div>
 
   <!-- 저작권 -->
@@ -1342,7 +1478,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.45 기준 가로모드 성공버전 + 41회 교체본을 유지하고, 패드 가로모드 문제풀이 본문 우선 배치를 적용했습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.47 기준 가로모드 성공버전 + 41회 교체본을 유지하고, 패드 가로모드에서 문제카드와 4지선다 보기를 상단에 배치하고 문제풀이 돌아가기, 전체읽기, 이동중청취모드, 현재 풀이 안내를 하단으로 정리했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
@@ -2868,7 +3004,10 @@ function unlockScreen(){
 function toggleDrive(){
   driveOn=!driveOn; paused=false;
   document.getElementById('driveBar').classList.toggle('show',driveOn);
-  document.getElementById('driveStartBtn').style.display=driveOn?'none':'flex';
+  const driveStart=document.getElementById('driveStartBtn');
+  if(driveStart) driveStart.style.display=driveOn?'none':'flex';
+  const landscapeDriveStart=document.getElementById('landscapeDriveStartBtn');
+  if(landscapeDriveStart) landscapeDriveStart.style.display=driveOn?'none':'';
   document.getElementById('driveToggleBtn').classList.toggle('active',driveOn);
   if(driveOn){reqWake('문제 이동 중 청취'); resetAuto(); setTimeout(()=>lockScreen(),1500);}
   else{tStop(); if(!theoryDriveOn) relWake(); if(locked) unlockScreen();}
@@ -3563,7 +3702,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.45-landscape-quiz-controls-bottom')
+    navigator.serviceWorker.register('sw.js?v=30.47-landscape-bottom-action-bar')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
@@ -3687,7 +3826,3 @@ function importProgress(){
 </script>
 </body>
 </html>
-  <button class="theory-back-mini quiz-return-btn" onclick="returnToQuizStage()">← 문제풀이 돌아가기</button>
-  <div class="quiz-current-title" id="quizCurrentTitle">문제 단계</div>
-  <div class="quiz-track-status" id="quizTrackStatus"></div>
-
