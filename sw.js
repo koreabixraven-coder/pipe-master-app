@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-25-joint-forming-111';
+const CACHE_NAME = 'pipe-master-v30-26-welding-74';
 const ASSETS = [
   './',
   './index.html',
