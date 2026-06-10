@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-34-tablet-rotation-mode';
+const CACHE_NAME = 'pipe-master-v30-35-tablet-rotation-fix-01';
 const ASSETS = [
   './',
   './index.html',

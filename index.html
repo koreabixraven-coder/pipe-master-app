@@ -21,9 +21,15 @@
     if(!['auto','portrait','landscape'].includes(mode)) mode='auto';
     const wide=(mode!=='portrait');
     const root=document.documentElement;
+    const vv=window.visualViewport;
+    const w=Math.round((vv&&vv.width)||window.innerWidth||document.documentElement.clientWidth||0);
+    const h=Math.round((vv&&vv.height)||window.innerHeight||document.documentElement.clientHeight||0);
+    const orient=(w>=h)?'landscape':'portrait';
     root.classList.add(wide?'tablet-wide-on':'tablet-wide-off');
     root.classList.add('tablet-layout-'+mode);
+    root.classList.add('tablet-orient-'+orient);
     root.setAttribute('data-layout-mode',mode);
+    root.setAttribute('data-orientation',orient);
   }catch(e){
     document.documentElement.classList.add('tablet-wide-on','tablet-layout-auto');
     document.documentElement.setAttribute('data-layout-mode','auto');
@@ -631,6 +637,66 @@
     html.tablet-layout-auto .theory-topline{width:min(calc(100vw - 56px), 1240px)!important;max-width:1240px!important;}
   }
 
+
+  /* ── v30.35 패드 회전 적용 보정: CSS orientation 의존 제거, JS 감지 클래스 기준 ── */
+  @media (min-width:600px){
+    html.tablet-layout-auto.tablet-orient-portrait .app,
+    html.tablet-layout-auto.tablet-orient-portrait .home-wrap,
+    html.tablet-layout-auto.tablet-orient-portrait .theory-wrap,
+    html.tablet-layout-auto.tablet-orient-portrait .theory-content-wrap,
+    html.tablet-layout-auto.tablet-orient-portrait .topbar,
+    html.tablet-layout-auto.tablet-orient-portrait .quiz-shell,
+    html.tablet-layout-auto.tablet-orient-portrait .theory-content,
+    html.tablet-layout-auto.tablet-orient-portrait .theory-topline{width:auto!important;max-width:540px!important;margin-left:auto!important;margin-right:auto!important;}
+    html.tablet-layout-auto.tablet-orient-portrait .quiz-toc-list,
+    html.tablet-layout-auto.tablet-orient-portrait .theory-subject-list,
+    html.tablet-layout-auto.tablet-orient-portrait .chapter-list{display:flex!important;flex-direction:column!important;gap:8px!important;}
+    html.tablet-layout-auto.tablet-orient-portrait .desktop-quiz-grid,
+    html.tablet-layout-auto.tablet-orient-portrait .desktop-two-col{display:block!important;}
+    html.tablet-layout-auto.tablet-orient-portrait .desktop-side-panel{display:none!important;}
+
+    html.tablet-layout-landscape .app,
+    html.tablet-layout-auto.tablet-orient-landscape .app,
+    html.tablet-layout-landscape .topbar,
+    html.tablet-layout-auto.tablet-orient-landscape .topbar,
+    html.tablet-layout-landscape .quiz-shell,
+    html.tablet-layout-auto.tablet-orient-landscape .quiz-shell,
+    html.tablet-layout-landscape .theory-topline,
+    html.tablet-layout-auto.tablet-orient-landscape .theory-topline{width:min(calc(100vw - 32px),1240px)!important;max-width:1240px!important;margin-left:auto!important;margin-right:auto!important;}
+    html.tablet-layout-landscape .app,
+    html.tablet-layout-auto.tablet-orient-landscape .app{padding:18px 20px 34px!important;}
+    html.tablet-layout-landscape .home-wrap,
+    html.tablet-layout-auto.tablet-orient-landscape .home-wrap{width:min(calc(100vw - 32px),920px)!important;max-width:920px!important;margin-left:auto!important;margin-right:auto!important;}
+    html.tablet-layout-landscape .theory-wrap,
+    html.tablet-layout-auto.tablet-orient-landscape .theory-wrap,
+    html.tablet-layout-landscape .theory-content-wrap,
+    html.tablet-layout-auto.tablet-orient-landscape .theory-content-wrap,
+    html.tablet-layout-landscape .theory-content,
+    html.tablet-layout-auto.tablet-orient-landscape .theory-content{width:min(calc(100vw - 32px),1100px)!important;max-width:1100px!important;margin-left:auto!important;margin-right:auto!important;}
+    html.tablet-layout-landscape .settings-panel.global-settings,
+    html.tablet-layout-auto.tablet-orient-landscape .settings-panel.global-settings{max-width:760px!important;}
+    html.tablet-layout-landscape .theory-subject-list,
+    html.tablet-layout-auto.tablet-orient-landscape .theory-subject-list,
+    html.tablet-layout-landscape .chapter-list,
+    html.tablet-layout-auto.tablet-orient-landscape .chapter-list{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;}
+    html.tablet-layout-landscape .opts,
+    html.tablet-layout-auto.tablet-orient-landscape .opts{display:flex!important;flex-direction:column!important;gap:9px!important;}
+    html.tablet-layout-landscape .opt,
+    html.tablet-layout-auto.tablet-orient-landscape .opt{width:100%!important;min-height:60px!important;font-size:14px!important;line-height:1.65!important;}
+    html.tablet-layout-landscape .q-text,
+    html.tablet-layout-auto.tablet-orient-landscape .q-text{font-size:16px!important;line-height:1.75!important;}
+    html.tablet-layout-landscape .q-card,
+    html.tablet-layout-auto.tablet-orient-landscape .q-card{padding:28px 32px!important;}
+  }
+  @media (min-width:820px){
+    html.tablet-layout-landscape .desktop-quiz-grid,
+    html.tablet-layout-auto.tablet-orient-landscape .desktop-quiz-grid{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(220px,280px)!important;gap:14px!important;align-items:start!important;}
+    html.tablet-layout-landscape .desktop-side-panel,
+    html.tablet-layout-auto.tablet-orient-landscape .desktop-side-panel{display:block!important;}
+    html.tablet-layout-landscape .desktop-two-col,
+    html.tablet-layout-auto.tablet-orient-landscape .desktop-two-col{display:grid!important;grid-template-columns:minmax(0,1fr) 280px!important;gap:14px!important;align-items:start!important;}
+  }
+
 </style>
 </head>
 <body>
@@ -663,7 +729,7 @@
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.34 TABLET ROTATION MODE. 현재 안전본(v30.33)은 보관하고, 패드 가로·세로 회전 선택옵션만 추가했습니다. 문제·이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.35 TABLET ROTATION FIX 01. 패드 회전 감지 클래스를 추가하여 자동/가로 최적형이 실제 화면폭에 즉시 반영되도록 보정했습니다. 문제·이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -1125,7 +1191,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.34는 패드 회전 화면 모드만 추가하고 문제 데이터는 v30.33과 동일합니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.35는 패드 회전 감지/레이아웃 적용만 보정하고 문제 데이터는 v30.33과 동일합니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
@@ -2803,17 +2869,36 @@ function preferredKoreanVoice(){
 function setRowActive(rowSel,predicate){
   document.querySelectorAll(rowSel+' .sb').forEach(b=>b.classList.toggle('on',!!predicate(b)));
 }
+function detectLayoutOrientation(){
+  const vv=window.visualViewport;
+  const w=Math.round((vv&&vv.width)||window.innerWidth||document.documentElement.clientWidth||0);
+  const h=Math.round((vv&&vv.height)||window.innerHeight||document.documentElement.clientHeight||0);
+  return (w>=h)?'landscape':'portrait';
+}
+function updateTabletOrientationClasses(){
+  const orient=detectLayoutOrientation();
+  const root=document.documentElement;
+  root.classList.toggle('tablet-orient-landscape',orient==='landscape');
+  root.classList.toggle('tablet-orient-portrait',orient==='portrait');
+  root.setAttribute('data-orientation',orient);
+  if(document.body){
+    document.body.classList.toggle('tablet-orient-landscape',orient==='landscape');
+    document.body.classList.toggle('tablet-orient-portrait',orient==='portrait');
+  }
+  updateLayoutModeStatus(appSettings&&appSettings.layoutMode ? appSettings.layoutMode : root.getAttribute('data-layout-mode') || 'auto');
+}
 function currentOrientationLabel(){
-  try{
-    if(window.matchMedia && window.matchMedia('(orientation: landscape)').matches) return '가로';
-  }catch(e){}
-  return (window.innerWidth>window.innerHeight)?'가로':'세로';
+  return detectLayoutOrientation()==='landscape'?'가로':'세로';
 }
 function applyLayoutMode(mode){
   if(typeof mode==='boolean') mode=mode?'auto':'portrait';
   mode=['auto','portrait','landscape'].includes(mode)?mode:'auto';
   const on=(mode!=='portrait');
   const root=document.documentElement;
+  const orient=detectLayoutOrientation();
+  root.classList.toggle('tablet-orient-landscape',orient==='landscape');
+  root.classList.toggle('tablet-orient-portrait',orient==='portrait');
+  root.setAttribute('data-orientation',orient);
   root.classList.toggle('tablet-wide-on',on);
   root.classList.toggle('tablet-wide-off',!on);
   ['auto','portrait','landscape'].forEach(m=>root.classList.toggle('tablet-layout-'+m,mode===m));
@@ -2822,6 +2907,8 @@ function applyLayoutMode(mode){
     document.body.classList.toggle('tablet-wide-on',on);
     document.body.classList.toggle('tablet-wide-off',!on);
     ['auto','portrait','landscape'].forEach(m=>document.body.classList.toggle('tablet-layout-'+m,mode===m));
+    document.body.classList.toggle('tablet-orient-landscape',orient==='landscape');
+    document.body.classList.toggle('tablet-orient-portrait',orient==='portrait');
   }
   const cb=document.getElementById('padWideMode');
   if(cb) cb.checked=on;
@@ -3388,13 +3475,17 @@ applyTheoryUserEdits();
 initSettingsOnce();
 tryLoadV();
 setTimeout(updateHomeCounts,200);
-window.addEventListener('resize',()=>updateLayoutModeStatus());
-window.addEventListener('orientationchange',()=>setTimeout(()=>updateLayoutModeStatus(),250));
+window.addEventListener('resize',()=>{updateTabletOrientationClasses(); applyLayoutMode(appSettings&&appSettings.layoutMode?appSettings.layoutMode:'auto');});
+window.addEventListener('orientationchange',()=>setTimeout(()=>{updateTabletOrientationClasses(); applyLayoutMode(appSettings&&appSettings.layoutMode?appSettings.layoutMode:'auto');},250));
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize',()=>{updateTabletOrientationClasses(); applyLayoutMode(appSettings&&appSettings.layoutMode?appSettings.layoutMode:'auto');});
+}
+setTimeout(()=>{updateTabletOrientationClasses(); applyLayoutMode(appSettings&&appSettings.layoutMode?appSettings.layoutMode:'auto');},350);
 
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.34-tablet-rotation-mode')
+    navigator.serviceWorker.register('sw.js?v=30.35-tablet-rotation-fix-01')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
