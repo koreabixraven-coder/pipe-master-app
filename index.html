@@ -23,24 +23,6 @@
     document.documentElement.classList.add('tablet-wide-on');
   }
 })();
-/* ── v30.39 가로모드 즉시 선적용 (FOUC 방지) ── */
-(function(){
-  try{
-    const raw=localStorage.getItem('pipe_master_settings_v17');
-    const saved=raw?JSON.parse(raw):{};
-    const autoLand=(saved.autoLandscapeMode!==false); // 기본 true
-    if(!autoLand) return;
-    // 회전 감지
-    var land=false;
-    try{
-      var ot=window.screen&&window.screen.orientation&&window.screen.orientation.type;
-      if(ot){ land=ot.includes('landscape'); }
-      else if(typeof window.orientation==='number'){ land=(window.orientation===90||window.orientation===-90); }
-      else { land=window.innerWidth>window.innerHeight; }
-    }catch(e){ land=window.innerWidth>window.innerHeight; }
-    if(land) document.documentElement.classList.add('landscape-mode');
-  }catch(e){}
-})();
 </script>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;}
@@ -552,11 +534,93 @@
     html.tablet-wide-on .theory-content-wrap{width:min(calc(100vw - 48px), 960px);max-width:960px;}
     html.tablet-wide-on .settings-panel.global-settings{max-width:680px;}
   }
+  /* ══ v30.40 가로모드 자동 레이아웃 ══
+     @media orientation:landscape 는 갤럭시탭에서 정상 작동 확인됨
+     tablet-wide-on 클래스와 함께 명시도 충돌 해결:
+     html.tablet-wide-on 보다 더 구체적인 선택자 사용
+  ════════════════════════════════════════ */
   @media (min-width:760px) and (orientation:landscape){
+
+    /* 전체 폭 확장 */
+    .app, .topbar, .quiz-shell,
+    .home-wrap, .theory-wrap, .theory-content-wrap,
     html.tablet-wide-on .app,
     html.tablet-wide-on .topbar,
-    html.tablet-wide-on .quiz-shell{width:min(calc(100vw - 56px), 1180px);}
-    html.tablet-wide-on .q-card{padding:28px 32px;}
+    html.tablet-wide-on .quiz-shell {
+      width: min(calc(100vw - 32px), 1180px) !important;
+      max-width: 1180px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+    .settings-panel.global-settings,
+    html.tablet-wide-on .settings-panel.global-settings { max-width: 700px !important; }
+
+    /* 문제카드 */
+    .q-card,
+    html.tablet-wide-on .q-card { padding: 20px 24px !important; }
+
+    /* ★ 핵심: opts 2열 — html.tablet-wide-on .opts 보다 명시도 높게 */
+    html.tablet-wide-on .opts,
+    html.tablet-wide-off .opts,
+    .opts {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 8px !important;
+      flex-direction: unset !important;
+    }
+    html.tablet-wide-on .opt,
+    html.tablet-wide-off .opt,
+    .opt {
+      width: 100% !important;
+      min-height: 54px !important;
+      font-size: 14px !important;
+      line-height: 1.6 !important;
+    }
+
+    /* 텍스트 크기 */
+    .q-text,
+    html.tablet-wide-on .q-text { font-size: 15.5px !important; line-height: 1.72 !important; }
+    .ex-box,
+    html.tablet-wide-on .ex-box { font-size: 13.5px !important; }
+
+    /* 컨트롤 버튼 4열 */
+    .ctrl-row,
+    html.tablet-wide-on .ctrl-row,
+    html.tablet-wide-off .ctrl-row {
+      display: grid !important;
+      grid-template-columns: repeat(4,1fr) !important;
+      gap: 8px !important;
+    }
+
+    /* 홈·이론 목록 2열 */
+    .quiz-toc-list,
+    .theory-subject-list,
+    .chapter-list {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10px !important;
+    }
+
+    /* 이론 사이드패널 */
+    .desktop-two-col {
+      display: grid !important;
+      grid-template-columns: minmax(0,1fr) 260px !important;
+      gap: 14px !important;
+      align-items: start !important;
+    }
+    .desktop-side-panel { display: block !important; }
+
+    /* TTS 버튼 */
+    .tts-bar { flex-wrap: nowrap !important; gap: 5px !important; }
+    .tb {
+      font-size: 11px !important;
+      padding: 7px 7px !important;
+      min-width: 0 !important;
+      flex: 1 !important;
+    }
+    .act-row { display: flex !important; gap: 8px !important; }
+    .ab { flex: 1 !important; }
+    .dots { max-width: 100% !important; }
   }
   @media (min-width:760px){
     html.tablet-wide-off .app,
@@ -582,143 +646,16 @@
   }
 
 
-  /* ── v30.23 패드 확장 시 문제 보기 1열 유지 ── */
-  @media (min-width:760px){
-    html.tablet-wide-on:not(.landscape-mode) .opts{display:flex!important;flex-direction:column!important;gap:9px!important;}
+  /* ── v30.23 패드 확장 시 문제 보기 1열 유지 (세로모드만) ── */
+  @media (min-width:760px) and (orientation:portrait){
+    html.tablet-wide-on .opts{display:flex!important;flex-direction:column!important;gap:9px!important;}
     html.tablet-wide-on .opt{width:100%!important;min-height:60px;font-size:14px;line-height:1.65;padding:12px 14px;}
     html.tablet-wide-on .q-text{font-size:16px;line-height:1.75;}
     html.tablet-wide-on .ex-box{font-size:14px;line-height:1.75;}
   }
-  @media (min-width:980px){
+  @media (min-width:980px) and (orientation:portrait){
     html.tablet-wide-on .opt{font-size:14.5px;}
     html.tablet-wide-on .q-text{font-size:16.5px;}
-  }
-
-  /* ══════════════════════════════════════════════
-     v30.38 자동 가로모드 레이아웃 (갤럭시탭 대응)
-     html.landscape-mode 클래스가 붙을 때 활성화
-  ══════════════════════════════════════════════ */
-  html.landscape-mode body {
-    overflow-x: hidden;
-  }
-  /* 퀴즈 화면: 문제+보기 / 해설+TTS 를 좌우 2열로 */
-  html.landscape-mode #screenQuiz .desktop-quiz-grid {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 320px !important;
-    gap: 14px !important;
-    align-items: start !important;
-  }
-  html.landscape-mode #screenQuiz .desktop-main-panel {
-    min-width: 0;
-  }
-  /* 보기(opts)를 가로모드에서 2열로 */
-  html.landscape-mode .opts,
-  html.landscape-mode.tablet-wide-on .opts,
-  html.landscape-mode.tablet-wide-off .opts {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 8px !important;
-  }
-  html.landscape-mode .opt {
-    width: 100% !important;
-    min-height: 54px !important;
-    font-size: 14px !important;
-  }
-  /* 문제 텍스트 */
-  html.landscape-mode .q-text {
-    font-size: 15.5px !important;
-    line-height: 1.7 !important;
-  }
-  html.landscape-mode .q-card {
-    padding: 18px 22px !important;
-    margin-bottom: 8px !important;
-  }
-  /* TTS 바: 가로 정렬 유지 */
-  html.landscape-mode .tts-bar {
-    flex-wrap: nowrap !important;
-    gap: 6px !important;
-  }
-  html.landscape-mode .tb {
-    font-size: 11px !important;
-    padding: 7px 8px !important;
-    min-width: 0 !important;
-    flex: 1 !important;
-  }
-  /* 컨트롤 버튼 4열 */
-  html.landscape-mode .ctrl-row {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 8px !important;
-  }
-  /* 이론 화면: 목록을 2열로 */
-  html.landscape-mode .theory-subject-list,
-  html.landscape-mode .chapter-list {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-  }
-  /* 이론 내용: 2열 (내용 + 사이드) */
-  html.landscape-mode .desktop-two-col {
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 260px !important;
-    gap: 14px !important;
-    align-items: start !important;
-  }
-  html.landscape-mode .desktop-side-panel {
-    display: block !important;
-  }
-  /* 홈 화면: 카드 2열 */
-  html.landscape-mode .quiz-toc-list {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    gap: 10px !important;
-  }
-  /* 앱 전체 너비 확장 */
-  html.landscape-mode .app,
-  html.landscape-mode .topbar,
-  html.landscape-mode .quiz-shell,
-  html.landscape-mode .home-wrap,
-  html.landscape-mode .theory-wrap,
-  html.landscape-mode .theory-content-wrap {
-    width: min(calc(100vw - 32px), 1180px) !important;
-    max-width: 1180px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-  }
-  html.landscape-mode .settings-panel.global-settings {
-    max-width: 700px !important;
-  }
-  /* ex-box 해설 가로모드 폰트 */
-  html.landscape-mode .ex-box {
-    font-size: 13.5px !important;
-    line-height: 1.72 !important;
-  }
-  /* dots 진행 바 */
-  html.landscape-mode .dots {
-    max-width: 100% !important;
-  }
-  /* act-row 버튼 */
-  html.landscape-mode .act-row {
-    display: flex !important;
-    gap: 8px !important;
-  }
-  html.landscape-mode .ab {
-    flex: 1 !important;
-  }
-  /* 설정 가로모드 배지 */
-  .landscape-badge {
-    display: none;
-    background: #0A3D2E;
-    color: #9FE1CB;
-    border: 0.5px solid #1D9E75;
-    border-radius: 6px;
-    font-size: 10px;
-    padding: 2px 7px;
-    margin-left: 6px;
-    vertical-align: middle;
-  }
-  html.landscape-mode .landscape-badge {
-    display: inline;
   }
 
 </style>
@@ -748,7 +685,7 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.32 CH4 PIPE CONSTRUCTION 137</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.40 LANDSCAPE AUTO</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
@@ -765,15 +702,6 @@
       <label class="tog"><input type="checkbox" id="padWideMode" checked><span class="tog-sl"></span></label>
     </div>
     <p class="s-hint">모바일은 세로 화면 기준을 유지합니다. 패드나 넓은 화면에서는 켜짐 상태일 때 가로 폭과 2열 보기 구성이 자동으로 확장됩니다.</p>
-    <div class="s-row" style="margin-top:10px;">
-      <label>📱 탭 가로 회전 시 자동 최적화<span class="landscape-badge">가로모드 중</span></label>
-      <label class="tog"><input type="checkbox" id="autoLandscapeMode" checked><span class="tog-sl"></span></label>
-    </div>
-    <p class="s-hint">갤럭시탭 등에서 화면을 가로로 뉘이면 퀴즈·이론 화면이 자동으로 2열 가로 레이아웃으로 전환됩니다. 세로로 세우면 다시 세로 최적화 레이아웃으로 복귀합니다.</p>
-    <div class="s-row" style="margin-top:6px;">
-      <label style="font-size:11px;color:#888;">🔍 회전 감지 디버그 표시</label>
-      <label class="tog" style="transform:scale(0.85);transform-origin:right center;"><input type="checkbox" id="showOrientDbg" onchange="toggleOrientDbg(this.checked)"><span class="tog-sl"></span></label>
-    </div>
     <div class="s-sep"></div>
     
     <div class="s-title">
@@ -2822,8 +2750,7 @@ const DEFAULT_SETTINGS={
   quizTrack:true,
   theoryExamTTS:false,
   theoryAutoMode:'subject',
-  padWideMode:true,
-  autoLandscapeMode:true
+  padWideMode:true
 };
 let appSettings=null;
 let settingsDirty=false;
@@ -2842,7 +2769,6 @@ function normalizeSettings(obj){
   s.theoryExamTTS=!!s.theoryExamTTS;
   s.theoryAutoMode=['once','next','subject','all'].includes(s.theoryAutoMode)?s.theoryAutoMode:DEFAULT_SETTINGS.theoryAutoMode;
   s.padWideMode=(s.padWideMode===undefined)?true:!!s.padWideMode;
-  s.autoLandscapeMode=(s.autoLandscapeMode===undefined)?true:!!s.autoLandscapeMode;
   s.voiceName=String(s.voiceName||'');
   return s;
 }
@@ -2867,7 +2793,6 @@ function mirrorLegacySettings(s){
     localStorage.setItem('theoryExamTTS',String(s.theoryExamTTS));
     localStorage.setItem('pipe_theory_auto_mode',s.theoryAutoMode);
     localStorage.setItem('padWideMode',String(s.padWideMode));
-    localStorage.setItem('autoLandscapeMode',String(s.autoLandscapeMode));
     if(s.voiceName) localStorage.setItem('voiceName',s.voiceName);
     else localStorage.removeItem('voiceName');
   }catch(e){}
@@ -2942,9 +2867,6 @@ function applySettings(settings, rebuildVoiceCards=false){
   if(qfa) qfa.checked=appSettings.quizFullAuto;
   if(qtr) qtr.checked=appSettings.quizTrack;
   if(pwm) pwm.checked=appSettings.padWideMode;
-  const alm=document.getElementById('autoLandscapeMode');
-  if(alm) alm.checked=appSettings.autoLandscapeMode;
-  applyLandscapeMode();
 
   if(voices && voices.length){
     selV = voices.find(v=>v.name===appSettings.voiceName) || preferredKoreanVoice();
@@ -2973,7 +2895,6 @@ function collectSettingsFromUI(){
     quizTrack: !(document.getElementById('quizTrack') && !document.getElementById('quizTrack').checked),
     theoryExamTTS: !!(document.getElementById('theoryExamTTS') && document.getElementById('theoryExamTTS').checked),
     padWideMode: !(document.getElementById('padWideMode') && !document.getElementById('padWideMode').checked),
-    autoLandscapeMode: !(document.getElementById('autoLandscapeMode') && !document.getElementById('autoLandscapeMode').checked),
     theoryAutoMode: activeTheory ? activeTheory.getAttribute('data-theory-auto') : theoryAutoMode
   });
 }
@@ -2993,113 +2914,7 @@ function resetSettingsToDefault(){
 function initSettingsOnce(){
   appSettings=loadSettings();
   applySettings(appSettings);
-  applyLandscapeMode();
 }
-/* ══════════════════════════════════════════════
-   v30.39 자동 가로모드 감지 & 레이아웃 전환
-   갤럭시탭 자동회전 완전 대응 (버그픽스)
-   - manifest orientation:any 로 PWA lock 해제
-   - screen.orientation.angle 직접 판별
-   - 딜레이 300ms로 확대 (브라우저 레이아웃 완료 보장)
-   - resize 이벤트도 강화
-══════════════════════════════════════════════ */
-
-function toggleOrientDbg(on){
-  const el = document.getElementById('orientDbg');
-  if(!el) return;
-  el.style.display = on ? 'block' : 'none';
-  if(on) updateOrientDbg();
-}
-function isLandscape(){
-  // 방법1: screen.orientation.type (가장 신뢰도 높음)
-  try {
-    if(window.screen && window.screen.orientation && window.screen.orientation.type){
-      const t = window.screen.orientation.type;
-      if(t.includes('landscape')) return true;
-      if(t.includes('portrait')) return false;
-    }
-  } catch(e){}
-
-  // 방법2: screen.orientation.angle (0,180=세로 / 90,270=가로)
-  try {
-    if(window.screen && window.screen.orientation && typeof window.screen.orientation.angle === 'number'){
-      const a = window.screen.orientation.angle;
-      if(a === 90 || a === 270) return true;
-      if(a === 0 || a === 180) return false;
-    }
-  } catch(e){}
-
-  // 방법3: window.orientation (구형 API, deprecated but works on Android)
-  if(typeof window.orientation === 'number'){
-    return (window.orientation === 90 || window.orientation === -90);
-  }
-
-  // 방법4: innerWidth vs innerHeight (최후 fallback)
-  return window.innerWidth > window.innerHeight;
-}
-
-function applyLandscapeMode(){
-  // appSettings 미초기화 시에도 안전하게 localStorage 직접 확인
-  var autoLand = true;
-  try{
-    if(appSettings){
-      autoLand = (appSettings.autoLandscapeMode !== false);
-    } else {
-      var raw = localStorage.getItem('pipe_master_settings_v17');
-      if(raw){ var s=JSON.parse(raw); autoLand=(s.autoLandscapeMode!==false); }
-    }
-  }catch(e){ autoLand=true; }
-
-  const html = document.documentElement;
-  if(!autoLand){
-    html.classList.remove('landscape-mode');
-    return;
-  }
-  const land = isLandscape();
-  html.classList.toggle('landscape-mode', land);
-}
-
-function onOrientationChange(){
-  // 300ms 딜레이: 갤럭시탭 브라우저가 innerWidth/Height 업데이트 완료 후 적용
-  setTimeout(applyLandscapeMode, 300);
-}
-
-// 이벤트 등록 (중복 방지)
-(function initOrientationWatcher(){
-  if(window.__orientationWatcherInit) return;
-  window.__orientationWatcherInit = true;
-
-  // screen.orientation API (Android Chrome 최신)
-  try{
-    if(window.screen && window.screen.orientation){
-      window.screen.orientation.addEventListener('change', function(){
-        [100, 300, 600].forEach(function(t){ setTimeout(applyLandscapeMode, t); });
-      });
-    }
-  }catch(e){}
-
-  // orientationchange (구형 Android / iOS fallback)
-  window.addEventListener('orientationchange', function(){
-    // 단계적 재시도: 일부 기기에서 첫 타이머에 innerWidth가 아직 구버전일 수 있음
-    [100, 300, 600].forEach(function(t){ setTimeout(applyLandscapeMode, t); });
-  });
-
-  // resize fallback — 크기 변화 감지 (일부 Chromebook/탭)
-  let resizeTimer;
-  window.addEventListener('resize', function(){
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(applyLandscapeMode, 250);
-  });
-
-  // 초기 실행 — DOM 완성 후 즉시
-  if(document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', applyLandscapeMode);
-  } else {
-    applyLandscapeMode();
-  }
-})();
-
-
 
 /* ── v13 STS 계열 TTS 발음 보정 ── */
 function fixStsPronunciation(s){
@@ -3554,7 +3369,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.39-landscape-fix')
+    navigator.serviceWorker.register('sw.js?v=30.40-landscape-final')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
@@ -3677,47 +3492,6 @@ function importProgress(){
 }
 </script>
 </body>
-
-<!-- v30.39 가로모드 디버그 오버레이 (설정에서 숨기기 가능) -->
-<div id="orientDbg" style="
-  display:none;
-  position:fixed;bottom:60px;right:12px;z-index:9999;
-  background:rgba(0,0,0,0.85);color:#9FE1CB;
-  font-size:11px;padding:8px 12px;border-radius:10px;
-  border:0.5px solid #1D9E75;line-height:1.7;
-  pointer-events:none;
-" id="orientDbg"></div>
-
-<script>
-// 디버그 오버레이 업데이트 (개발 확인용)
-function updateOrientDbg(){
-  const el = document.getElementById('orientDbg');
-  if(!el || el.style.display==='none') return;
-  try{
-    const ot = (window.screen&&window.screen.orientation) ? window.screen.orientation.type : 'N/A';
-    const oa = (window.screen&&window.screen.orientation&&typeof window.screen.orientation.angle==='number') ? window.screen.orientation.angle : 'N/A';
-    const wo = typeof window.orientation!=='undefined' ? window.orientation : 'N/A';
-    const iw = window.innerWidth, ih = window.innerHeight;
-    const land = isLandscape ? isLandscape() : '?';
-    const cls = document.documentElement.classList.contains('landscape-mode') ? '✅가로' : '📱세로';
-    el.innerHTML =
-      cls + '<br>' +
-      'type: ' + ot + '<br>' +
-      'angle: ' + oa + '<br>' +
-      'window.orientation: ' + wo + '<br>' +
-      'innerW×H: ' + iw + '×' + ih;
-  }catch(e){ el.textContent = '오류:'+e.message; }
-}
-// 회전마다 디버그 갱신
-window.addEventListener('orientationchange', function(){ setTimeout(updateOrientDbg, 350); });
-window.addEventListener('resize', function(){ setTimeout(updateOrientDbg, 300); });
-try{
-  if(window.screen&&window.screen.orientation){
-    window.screen.orientation.addEventListener('change', function(){ setTimeout(updateOrientDbg, 350); });
-  }
-}catch(e){}
-</script>
-
 </html>
   <button class="theory-back-mini quiz-return-btn" onclick="returnToQuizStage()">← 문제풀이 돌아가기</button>
   <div class="quiz-current-title" id="quizCurrentTitle">문제 단계</div>
