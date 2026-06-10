@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-24-basic-pipe-100-replace-beginner';
+const CACHE_NAME = 'pipe-master-v30-25-joint-forming-111';
 const ASSETS = [
   './',
   './index.html',

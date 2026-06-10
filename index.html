@@ -608,7 +608,7 @@
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.24 BASIC PIPE 100. 기존 초급 400문항은 삭제 처리하고 PDF 100문항을 기출문제 / 1. 배관공학의 기초에 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.25 JOINT FORMING 111. 기출문제 / 3. 관의 접합 및 성형 111문항을 추가 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -2025,7 +2025,7 @@ function theoryReadAll(manualStart=true){
 let curQuizGroup='기출문제';
 let quizPrepared=false;
 const QUIZ_GROUPS=[
-  {key:'기출문제', icon:'①', desc:'PDF 문제집 단원별 문제를 훈련합니다.', levels:['배관공학의기초1'], labels:['1. 배관공학의 기초']},
+  {key:'기출문제', icon:'①', desc:'PDF 문제집 단원별 문제를 훈련합니다.', levels:['배관공학의기초1','관의접합및성형3'], labels:['1. 배관공학의 기초','3. 관의 접합 및 성형']},
   {key:'중급', icon:'②', desc:'원인과 결과를 연결합니다.', levels:['중급1','중급2','중급3','중급심화'], labels:['1단계','2단계','3단계','4단계']},
   {key:'고급', icon:'③', desc:'현장 상황과 대책을 판단합니다.', levels:['고급1','고급2','고급3','고급심화'], labels:['1단계','2단계','3단계','4단계']},
   {key:'심화', icon:'④', desc:'고난도와 종합 판단을 훈련합니다.', levels:['심화1','심화2','심화3','심화심화'], labels:['1단계','2단계','3단계','4단계']},
@@ -2252,9 +2252,10 @@ function buildLevelBar(){
     {
       title:'기출문제',
       desc:'PDF 문제집 단원별 문제',
-      keys:['배관공학의기초1'],
+      keys:['배관공학의기초1','관의접합및성형3'],
       labels:[
-        ['1. 배관공학의 기초','100문제']
+        ['1. 배관공학의 기초','100문제'],
+        ['3. 관의 접합 및 성형','111문제']
       ]
     },
     {
@@ -2305,7 +2306,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 1. 배관공학의 기초 100문항을 초급 자리에서 시작합니다.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.24</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 1. 배관공학의 기초 100문항 + 3. 관의 접합 및 성형 111문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.25</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
