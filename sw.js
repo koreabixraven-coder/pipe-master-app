@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-47-landscape-bottom-action-bar';
+const CACHE_NAME = 'pipe-master-v30-48-landscape-top-icon-actions';
 const ASSETS = [
   './',
   './index.html',
