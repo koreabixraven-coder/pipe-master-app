@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-48-landscape-top-icon-actions';
+const CACHE_NAME = 'pipe-master-v30-49-logo-row-icon-controls';
 const ASSETS = [
   './',
   './index.html',
