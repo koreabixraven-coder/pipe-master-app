@@ -576,6 +576,131 @@
     html.tablet-wide-on .q-text{font-size:16.5px;}
   }
 
+  /* ══════════════════════════════════════════════
+     v30.38 자동 가로모드 레이아웃 (갤럭시탭 대응)
+     html.landscape-mode 클래스가 붙을 때 활성화
+  ══════════════════════════════════════════════ */
+  html.landscape-mode body {
+    overflow-x: hidden;
+  }
+  /* 퀴즈 화면: 문제+보기 / 해설+TTS 를 좌우 2열로 */
+  html.landscape-mode #screenQuiz .desktop-quiz-grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 320px !important;
+    gap: 14px !important;
+    align-items: start !important;
+  }
+  html.landscape-mode #screenQuiz .desktop-main-panel {
+    min-width: 0;
+  }
+  /* 보기(opts)를 가로모드에서 2열로 */
+  html.landscape-mode .opts {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+  html.landscape-mode .opt {
+    width: 100% !important;
+    min-height: 54px !important;
+    font-size: 14px !important;
+  }
+  /* 문제 텍스트 */
+  html.landscape-mode .q-text {
+    font-size: 15.5px !important;
+    line-height: 1.7 !important;
+  }
+  html.landscape-mode .q-card {
+    padding: 18px 22px !important;
+    margin-bottom: 8px !important;
+  }
+  /* TTS 바: 가로 정렬 유지 */
+  html.landscape-mode .tts-bar {
+    flex-wrap: nowrap !important;
+    gap: 6px !important;
+  }
+  html.landscape-mode .tb {
+    font-size: 11px !important;
+    padding: 7px 8px !important;
+    min-width: 0 !important;
+    flex: 1 !important;
+  }
+  /* 컨트롤 버튼 4열 */
+  html.landscape-mode .ctrl-row {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+  }
+  /* 이론 화면: 목록을 2열로 */
+  html.landscape-mode .theory-subject-list,
+  html.landscape-mode .chapter-list {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  /* 이론 내용: 2열 (내용 + 사이드) */
+  html.landscape-mode .desktop-two-col {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 260px !important;
+    gap: 14px !important;
+    align-items: start !important;
+  }
+  html.landscape-mode .desktop-side-panel {
+    display: block !important;
+  }
+  /* 홈 화면: 카드 2열 */
+  html.landscape-mode .quiz-toc-list {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  /* 앱 전체 너비 확장 */
+  html.landscape-mode .app,
+  html.landscape-mode .topbar,
+  html.landscape-mode .quiz-shell,
+  html.landscape-mode .home-wrap,
+  html.landscape-mode .theory-wrap,
+  html.landscape-mode .theory-content-wrap {
+    width: min(calc(100vw - 32px), 1180px) !important;
+    max-width: 1180px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  html.landscape-mode .settings-panel.global-settings {
+    max-width: 700px !important;
+  }
+  /* ex-box 해설 가로모드 폰트 */
+  html.landscape-mode .ex-box {
+    font-size: 13.5px !important;
+    line-height: 1.72 !important;
+  }
+  /* dots 진행 바 */
+  html.landscape-mode .dots {
+    max-width: 100% !important;
+  }
+  /* act-row 버튼 */
+  html.landscape-mode .act-row {
+    display: flex !important;
+    gap: 8px !important;
+  }
+  html.landscape-mode .ab {
+    flex: 1 !important;
+  }
+  /* 설정 가로모드 배지 */
+  .landscape-badge {
+    display: none;
+    background: #0A3D2E;
+    color: #9FE1CB;
+    border: 0.5px solid #1D9E75;
+    border-radius: 6px;
+    font-size: 10px;
+    padding: 2px 7px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  html.landscape-mode .landscape-badge {
+    display: inline;
+  }
+
 </style>
 </head>
 <body>
@@ -620,6 +745,11 @@
       <label class="tog"><input type="checkbox" id="padWideMode" checked><span class="tog-sl"></span></label>
     </div>
     <p class="s-hint">모바일은 세로 화면 기준을 유지합니다. 패드나 넓은 화면에서는 켜짐 상태일 때 가로 폭과 2열 보기 구성이 자동으로 확장됩니다.</p>
+    <div class="s-row" style="margin-top:10px;">
+      <label>📱 탭 가로 회전 시 자동 최적화<span class="landscape-badge">가로모드 중</span></label>
+      <label class="tog"><input type="checkbox" id="autoLandscapeMode" checked><span class="tog-sl"></span></label>
+    </div>
+    <p class="s-hint">갤럭시탭 등에서 화면을 가로로 뉘이면 퀴즈·이론 화면이 자동으로 2열 가로 레이아웃으로 전환됩니다. 세로로 세우면 다시 세로 최적화 레이아웃으로 복귀합니다.</p>
     <div class="s-sep"></div>
     
     <div class="s-title">
@@ -2668,7 +2798,8 @@ const DEFAULT_SETTINGS={
   quizTrack:true,
   theoryExamTTS:false,
   theoryAutoMode:'subject',
-  padWideMode:true
+  padWideMode:true,
+  autoLandscapeMode:true
 };
 let appSettings=null;
 let settingsDirty=false;
@@ -2687,6 +2818,7 @@ function normalizeSettings(obj){
   s.theoryExamTTS=!!s.theoryExamTTS;
   s.theoryAutoMode=['once','next','subject','all'].includes(s.theoryAutoMode)?s.theoryAutoMode:DEFAULT_SETTINGS.theoryAutoMode;
   s.padWideMode=(s.padWideMode===undefined)?true:!!s.padWideMode;
+  s.autoLandscapeMode=(s.autoLandscapeMode===undefined)?true:!!s.autoLandscapeMode;
   s.voiceName=String(s.voiceName||'');
   return s;
 }
@@ -2711,6 +2843,7 @@ function mirrorLegacySettings(s){
     localStorage.setItem('theoryExamTTS',String(s.theoryExamTTS));
     localStorage.setItem('pipe_theory_auto_mode',s.theoryAutoMode);
     localStorage.setItem('padWideMode',String(s.padWideMode));
+    localStorage.setItem('autoLandscapeMode',String(s.autoLandscapeMode));
     if(s.voiceName) localStorage.setItem('voiceName',s.voiceName);
     else localStorage.removeItem('voiceName');
   }catch(e){}
@@ -2785,6 +2918,9 @@ function applySettings(settings, rebuildVoiceCards=false){
   if(qfa) qfa.checked=appSettings.quizFullAuto;
   if(qtr) qtr.checked=appSettings.quizTrack;
   if(pwm) pwm.checked=appSettings.padWideMode;
+  const alm=document.getElementById('autoLandscapeMode');
+  if(alm) alm.checked=appSettings.autoLandscapeMode;
+  applyLandscapeMode();
 
   if(voices && voices.length){
     selV = voices.find(v=>v.name===appSettings.voiceName) || preferredKoreanVoice();
@@ -2813,6 +2949,7 @@ function collectSettingsFromUI(){
     quizTrack: !(document.getElementById('quizTrack') && !document.getElementById('quizTrack').checked),
     theoryExamTTS: !!(document.getElementById('theoryExamTTS') && document.getElementById('theoryExamTTS').checked),
     padWideMode: !(document.getElementById('padWideMode') && !document.getElementById('padWideMode').checked),
+    autoLandscapeMode: !(document.getElementById('autoLandscapeMode') && !document.getElementById('autoLandscapeMode').checked),
     theoryAutoMode: activeTheory ? activeTheory.getAttribute('data-theory-auto') : theoryAutoMode
   });
 }
@@ -2832,7 +2969,58 @@ function resetSettingsToDefault(){
 function initSettingsOnce(){
   appSettings=loadSettings();
   applySettings(appSettings);
+  applyLandscapeMode();
 }
+/* ══════════════════════════════════════════════
+   v30.38 자동 가로모드 감지 & 레이아웃 전환
+   갤럭시탭 자동회전 대응
+══════════════════════════════════════════════ */
+function isLandscape(){
+  // screen.orientation API 우선, 없으면 innerWidth/Height 비교
+  if(window.screen && window.screen.orientation && window.screen.orientation.type){
+    return window.screen.orientation.type.includes('landscape');
+  }
+  return window.innerWidth > window.innerHeight;
+}
+
+function applyLandscapeMode(){
+  const s = appSettings || loadSettings();
+  if(!s.autoLandscapeMode){
+    document.documentElement.classList.remove('landscape-mode');
+    return;
+  }
+  if(isLandscape()){
+    document.documentElement.classList.add('landscape-mode');
+  } else {
+    document.documentElement.classList.remove('landscape-mode');
+  }
+}
+
+function onOrientationChange(){
+  // 100ms 딜레이: 브라우저가 레이아웃 재계산 완료 후 적용
+  setTimeout(applyLandscapeMode, 100);
+}
+
+// 이벤트 등록 (중복 방지)
+(function initOrientationWatcher(){
+  if(window.__orientationWatcherInit) return;
+  window.__orientationWatcherInit = true;
+
+  // screen.orientation API (최신 Android Chrome)
+  if(window.screen && window.screen.orientation){
+    window.screen.orientation.addEventListener('change', onOrientationChange);
+  }
+  // 구형 방식 fallback
+  window.addEventListener('orientationchange', onOrientationChange);
+  // resize fallback (일부 기기)
+  let resizeTimer;
+  window.addEventListener('resize', function(){
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(applyLandscapeMode, 150);
+  });
+})();
+
+
 
 /* ── v13 STS 계열 TTS 발음 보정 ── */
 function fixStsPronunciation(s){
