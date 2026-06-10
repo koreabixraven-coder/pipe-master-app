@@ -603,12 +603,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.27 CH2 PIPE TYPE 82</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.28 CH2 JOINT MATERIAL 56</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.27 CH2 PIPE TYPE 82. 기출문제 / 챕터2-01. 관의 종류 및 특성 82문항을 추가 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.28 CH2 JOINT MATERIAL 56. 기출문제 / 챕터2-02. 관 이음 재료 56문항을 추가 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -779,15 +779,13 @@
             <div class="hc-title">문제 풀이</div>
           </div>
         </div>
-        <div class="hc-sub">기출문제. 중급. 고급. 심화. 기출회차 문제를 TTS와 함께 풀어봅니다.</div>
+        <div class="hc-sub">기출문제와 기출회차 문제를 TTS와 함께 풀어봅니다.</div>
         <div class="hc-tags">
           <span class="hc-tag qz">기출문제</span>
-          <span class="hc-tag qz">중급</span>
-          <span class="hc-tag qz">고급</span>
-          <span class="hc-tag qz">심화</span>
-          <span class="hc-tag qz">기출41회</span>
-          <span class="hc-tag qz">기출42회</span>
-          <span class="hc-tag qz">기출46회</span>
+          <span class="hc-tag qz">챕터2</span>
+          <span class="hc-tag qz">관 이음 재료</span>
+          <span class="hc-tag qz">기출회차 2007~2018</span>
+          <span class="hc-tag qz">기출회차 2019~2026</span>
         </div>
       </div>
     </div>
@@ -905,7 +903,7 @@
     </div>
     <div class="quiz-stage-head">
       <div class="quiz-stage-title">문제 풀이 목차</div>
-      <div class="quiz-stage-sub">기출문제. 중급. 고급. 심화. 기출회차 중 먼저 풀 목차를 선택합니다.</div>
+      <div class="quiz-stage-sub">기출문제와 기출회차 중 먼저 풀 목차를 선택합니다.</div>
     </div>
     <div class="quiz-toc-list" id="quizTocList"></div>
   </div>
@@ -1068,7 +1066,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.27 기준 챕터2-01 관의 종류 및 특성 82문항을 추가 반영했습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.28 기준 챕터2-02 관 이음 재료 56문항을 추가 반영했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
@@ -2025,11 +2023,9 @@ function theoryReadAll(manualStart=true){
 let curQuizGroup='기출문제';
 let quizPrepared=false;
 const QUIZ_GROUPS=[
-  {key:'기출문제', icon:'①', desc:'챕터1 기존 단원과 챕터2 신규 단원을 훈련합니다.', levels:['배관공학의기초1','관의접합및성형3','용접의종류및특성4','챕터2_01_관의종류및특성'], labels:['챕터1-01. 배관공학의 기초','챕터1-02. 관의 접합 및 성형','챕터1-03. 용접의 종류 및 특성','챕터2-01. 관의 종류 및 특성']},
-  {key:'중급', icon:'②', desc:'원인과 결과를 연결합니다.', levels:['중급1','중급2','중급3','중급심화'], labels:['1단계','2단계','3단계','4단계']},
-  {key:'고급', icon:'③', desc:'현장 상황과 대책을 판단합니다.', levels:['고급1','고급2','고급3','고급심화'], labels:['1단계','2단계','3단계','4단계']},
-  {key:'심화', icon:'④', desc:'고난도와 종합 판단을 훈련합니다.', levels:['심화1','심화2','심화3','심화심화'], labels:['1단계','2단계','3단계','4단계']},
-  {key:'기출회차', icon:'⑤', desc:'실제 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출46회'], labels:['41회','42회','46회']}
+  {key:'기출문제', icon:'①', desc:'챕터1 기존 단원과 챕터2 신규 단원을 훈련합니다.', levels:['배관공학의기초1','관의접합및성형3','용접의종류및특성4','챕터2_01_관의종류및특성','챕터2_02_관이음재료'], labels:['챕터1-01. 배관공학의 기초','챕터1-02. 관의 접합 및 성형','챕터1-03. 용접의 종류 및 특성','챕터2-01. 관의 종류 및 특성','챕터2-02. 관 이음 재료']},
+  {key:'기출회차 2007~2018', icon:'②', desc:'2007년부터 2018년까지의 실제 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출46회'], labels:['2007 제41회','2007 제42회','2009 제46회']},
+  {key:'기출회차 2019~2026', icon:'③', desc:'2019년부터 2026년까지의 기출회차를 추가 입력할 예정입니다.', levels:[], labels:[]}
 ];
 function getQuizLevelLabel(lv){
   for(const g of QUIZ_GROUPS){
@@ -2086,6 +2082,17 @@ function buildQuizStage(){
   if(sub) sub.textContent=g.key+' 목차를 선택합니다.';
   if(!list) return;
   list.innerHTML='';
+  if(!g.levels.length){
+    const div=document.createElement('div');
+    div.className='quiz-toc-card';
+    div.innerHTML='<span class="quiz-toc-icon">!</span>'
+      +'<div class="quiz-toc-info">'
+      +'<div class="quiz-toc-title">자료 입력 대기</div>'
+      +'<div class="quiz-toc-desc">이 구간은 아직 문제 데이터가 없습니다. 새 기출 PDF가 올라오면 이 메뉴에 추가합니다.</div>'
+      +'</div>';
+    list.appendChild(div);
+    return;
+  }
   g.levels.forEach((lv,i)=>{
     const count=(DB[lv]&&DB[lv].length)||0;
     const stats=calcQuizStats([lv]);
@@ -2252,63 +2259,37 @@ function buildLevelBar(){
     {
       title:'기출문제',
       desc:'챕터1 기존 단원 + 챕터2 신규 단원',
-      keys:['배관공학의기초1','관의접합및성형3','용접의종류및특성4','챕터2_01_관의종류및특성'],
+      keys:['배관공학의기초1','관의접합및성형3','용접의종류및특성4','챕터2_01_관의종류및특성','챕터2_02_관이음재료'],
       labels:[
         ['챕터1-01','배관공학의 기초 · 100문제'],
         ['챕터1-02','관의 접합 및 성형 · 111문제'],
         ['챕터1-03','용접의 종류 및 특성 · 74문제'],
-        ['챕터2-01','관의 종류 및 특성 · 82문제']
+        ['챕터2-01','관의 종류 및 특성 · 82문제'],
+        ['챕터2-02','관 이음 재료 · 56문제']
       ]
     },
     {
-      title:'중급',
-      desc:'원인과 결과를 연결하는 단계',
-      keys:['중급1','중급2','중급3','중급심화'],
-      labels:[
-        ['1단계','원리'],
-        ['2단계','비교'],
-        ['3단계','응용'],
-        ['심화','마스터']
-      ]
-    },
-    {
-      title:'고급',
-      desc:'현장 상황과 대책을 고르는 단계',
-      keys:['고급1','고급2','고급3','고급심화'],
-      labels:[
-        ['1단계','현장'],
-        ['2단계','대책'],
-        ['3단계','종합'],
-        ['심화','마스터']
-      ]
-    },
-    {
-      title:'심화',
-      desc:'시험식 문장과 고난도 판단 훈련',
-      keys:['심화1','심화2','심화3','심화심화'],
-      labels:[
-        ['기본','100문제'],
-        ['응용','100문제'],
-        ['고난도','100문제'],
-        ['마스터','100문제']
-      ]
-    },
-    {
-      title:'기출회차',
-      desc:'실제 회차형 문제 훈련',
+      title:'기출회차 2007~2018',
+      desc:'2007년부터 2018년까지 실제 회차형 문제 훈련',
       keys:['기출41회','기출42회','기출46회'],
       labels:[
-        ['41회','60문제'],
-        ['42회','60문제'],
-        ['46회','59문제']
+        ['2007 제41회','60문제'],
+        ['2007 제42회','60문제'],
+        ['2009 제46회','59문제']
       ]
+    },
+    {
+      title:'기출회차 2019~2026',
+      desc:'2019년부터 2026년까지 기출회차 추가 예정',
+      keys:[],
+      labels:[]
     }
   ];
 
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 챕터1-01~03 기존 단원 + 챕터2-01 관의 종류 및 특성 82문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.27</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 챕터1-01~03 + 챕터2-01 관의 종류 및 특성 82문항 + 챕터2-02 관 이음 재료 56문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.28</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
