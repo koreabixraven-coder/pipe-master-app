@@ -608,7 +608,7 @@
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.33 CH5 INDUSTRIAL MANAGEMENT 116. 기출문제 / 챕터5-01 공업경영 116문항을 추가 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.37 CH5 INDUSTRIAL MANAGEMENT FINAL 157. 기출문제 / 챕터5-01 공업경영 117~157번 41문항을 추가하여 공업경영 157문항 최종 묶음을 완성했습니다. 이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -1066,7 +1066,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.33 기준 챕터5-01 공업경영 116문항을 추가 반영했습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.37 기준 챕터5-01 공업경영 1~157번 최종 묶음을 반영했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
@@ -2284,7 +2284,7 @@ function buildLevelBar(){
         ["챕터4-11", "배관설비 검사 및 계측 · 8문제"],
         ["챕터4-12", "설비자동화 · 11문제"],
         ["챕터4-13", "안전관리 · 6문제"],
-        ["챕터5-01", "공업경영 · 116문제"]
+        ["챕터5-01", "공업경영 · 157문제"]
       ]
     },
     {
@@ -2308,7 +2308,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 챕터1-01~03 + 챕터2-01~05 + 챕터3-01~02 + 챕터4-01~13 + 챕터5-01 공업경영 116문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.33</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 챕터1-01~03 + 챕터2-01~05 + 챕터3-01~02 + 챕터4-01~13 + 챕터5-01 공업경영 157문항.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.37</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
