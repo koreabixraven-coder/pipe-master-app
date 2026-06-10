@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>RavenBix · 배관기능장 1779문제</title>
+<title>RavenBix · 배관기능장 1479문제</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
@@ -603,12 +603,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.23 TABLET VERTICAL OPTIONS</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.24 BASIC PIPE 100</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.23 TABLET VERTICAL OPTIONS. 기존 1779문항과 이론·TTS 데이터는 보존하고 패드 폭 확장 시에도 문제 보기 ①②③④는 모바일처럼 세로 1열로 유지합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.24 BASIC PIPE 100. 기존 초급 400문항은 삭제 처리하고 PDF 100문항을 기출문제 / 1. 배관공학의 기초에 반영했습니다. 이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -779,14 +779,15 @@
             <div class="hc-title">문제 풀이</div>
           </div>
         </div>
-        <div class="hc-sub">초급. 중급. 고급. 심화. 기출 단계별 문제를 TTS와 함께 풀어봅니다.</div>
+        <div class="hc-sub">기출문제. 중급. 고급. 심화. 기출회차 문제를 TTS와 함께 풀어봅니다.</div>
         <div class="hc-tags">
-          <span class="hc-tag qz">초급</span>
+          <span class="hc-tag qz">기출문제</span>
           <span class="hc-tag qz">중급</span>
           <span class="hc-tag qz">고급</span>
           <span class="hc-tag qz">심화</span>
           <span class="hc-tag qz">기출41회</span>
           <span class="hc-tag qz">기출42회</span>
+          <span class="hc-tag qz">기출46회</span>
         </div>
       </div>
     </div>
@@ -904,7 +905,7 @@
     </div>
     <div class="quiz-stage-head">
       <div class="quiz-stage-title">문제 풀이 목차</div>
-      <div class="quiz-stage-sub">초급. 중급. 고급. 심화 중 먼저 풀 단계를 선택합니다.</div>
+      <div class="quiz-stage-sub">기출문제. 중급. 고급. 심화. 기출회차 중 먼저 풀 목차를 선택합니다.</div>
     </div>
     <div class="quiz-toc-list" id="quizTocList"></div>
   </div>
@@ -1069,7 +1070,7 @@
 <script>
 /* 문제 데이터 DB는 questions.js에서 로드합니다. 기존 16개 목차 1600문제에 2007년 기능장 제41회 60문항과 제42회 60문항을 기출41회. 기출42회로 누적했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
-let curLevel = '초급1';
+let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
 let cur=0, answered=false, driveOn=false, theoryDriveOn=false, paused=false, locked=false;
 let synth=window.speechSynthesis, voices=[], selV=null;
@@ -2021,14 +2022,14 @@ function theoryReadAll(manualStart=true){
 
 
 /* ── v24 문제풀이 목차/서브메뉴. DB와 풀이 로직은 기존 그대로 사용 ── */
-let curQuizGroup='초급';
+let curQuizGroup='기출문제';
 let quizPrepared=false;
 const QUIZ_GROUPS=[
-  {key:'초급', icon:'①', desc:'용어와 기본 기능을 확인합니다.', levels:['초급1','초급2','초급3','초급심화'], labels:['1단계','2단계','3단계','4단계']},
+  {key:'기출문제', icon:'①', desc:'PDF 문제집 단원별 문제를 훈련합니다.', levels:['배관공학의기초1'], labels:['1. 배관공학의 기초']},
   {key:'중급', icon:'②', desc:'원인과 결과를 연결합니다.', levels:['중급1','중급2','중급3','중급심화'], labels:['1단계','2단계','3단계','4단계']},
   {key:'고급', icon:'③', desc:'현장 상황과 대책을 판단합니다.', levels:['고급1','고급2','고급3','고급심화'], labels:['1단계','2단계','3단계','4단계']},
   {key:'심화', icon:'④', desc:'고난도와 종합 판단을 훈련합니다.', levels:['심화1','심화2','심화3','심화심화'], labels:['1단계','2단계','3단계','4단계']},
-  {key:'기출', icon:'⑤', desc:'실제 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회'], labels:['41회','42회']}
+  {key:'기출회차', icon:'⑤', desc:'실제 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출46회'], labels:['41회','42회','46회']}
 ];
 function getQuizLevelLabel(lv){
   for(const g of QUIZ_GROUPS){
@@ -2082,7 +2083,7 @@ function buildQuizStage(){
   const sub=document.getElementById('quizStageSub');
   const list=document.getElementById('quizStageList');
   if(title) title.textContent=g.key+' 문제풀이';
-  if(sub) sub.textContent=g.key+' 1단계부터 4단계까지 선택합니다.';
+  if(sub) sub.textContent=g.key+' 목차를 선택합니다.';
   if(!list) return;
   list.innerHTML='';
   g.levels.forEach((lv,i)=>{
@@ -2249,14 +2250,11 @@ function buildLevelBar(){
 
   const groups=[
     {
-      title:'초급',
-      desc:'용어 이해 → 기능 구분 → 기본 판단',
-      keys:['초급1','초급2','초급3','초급심화'],
+      title:'기출문제',
+      desc:'PDF 문제집 단원별 문제',
+      keys:['배관공학의기초1'],
       labels:[
-        ['1단계','용어'],
-        ['2단계','기능'],
-        ['3단계','판단'],
-        ['심화','마스터']
+        ['1. 배관공학의 기초','100문제']
       ]
     },
     {
@@ -2293,12 +2291,13 @@ function buildLevelBar(){
       ]
     },
     {
-      title:'기출',
+      title:'기출회차',
       desc:'실제 회차형 문제 훈련',
-      keys:['기출41회','기출42회'],
+      keys:['기출41회','기출42회','기출46회'],
       labels:[
         ['41회','60문제'],
-        ['42회','60문제']
+        ['42회','60문제'],
+        ['46회','59문제']
       ]
     }
   ];
@@ -2306,7 +2305,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기존 16개 목차와 기출41회. 기출42회 목차를 학습 흐름대로 정리했습니다.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · 기존 로직 유지</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 1. 배관공학의 기초 100문항을 초급 자리에서 시작합니다.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.24</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
@@ -3268,7 +3267,7 @@ function buildDots(){
 
 /* ── 초기화 ── */
 function init(){
-  prepareQuizLevel(curLevel || '초급1');
+  prepareQuizLevel(curLevel || '배관공학의기초1');
 }
 
 /* 음성 로드 - Android는 늦게 로드되므로 여러번 시도 */
