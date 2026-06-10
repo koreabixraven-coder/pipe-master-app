@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-44-tablet-landscape-fullwidth-quiz-fix';
+const CACHE_NAME = 'pipe-master-v30-45-landscape-quiz-controls-bottom';
 const ASSETS = [
   './',
   './index.html',

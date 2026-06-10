@@ -797,6 +797,61 @@
     html.tablet-wide-on .q-text{font-size:16.5px;}
   }
 
+
+  /* ── v30.45 패드 가로모드 문제풀이 본문 우선 배치 ──
+     요청 구조:
+     - 문제/보기/해설/전체읽기 영역을 상단에 먼저 표시
+     - 이동중청취모드, 정답·오답·정답률, 네비게이션은 하단으로 이동
+     - 패드/태블릿 가로모드에서만 적용, 모바일 세로모드는 기존 유지
+  */
+  @media (min-width:760px) and (orientation:landscape){
+    #screenQuiz .app {
+      display: flex !important;
+      flex-direction: column !important;
+    }
+    #screenQuiz .topbar { order: 0 !important; }
+    #screenQuiz .divider { order: 1 !important; }
+
+    /* 문제와 답변 본문을 최상단 배치 */
+    #screenQuiz .desktop-quiz-grid {
+      order: 2 !important;
+    }
+
+    /* 하단 제어 영역: 이동중청취모드 → 점수카드 → 네비게이션 */
+    #screenQuiz .drive-start-btn,
+    #screenQuiz .drive-bar {
+      order: 20 !important;
+      margin-top: 8px !important;
+      margin-bottom: 10px !important;
+    }
+    #screenQuiz .think-wrap {
+      order: 21 !important;
+      margin-top: 0 !important;
+      margin-bottom: 10px !important;
+    }
+    #screenQuiz .score-bar {
+      order: 22 !important;
+      margin-top: 0 !important;
+      margin-bottom: 12px !important;
+    }
+    #screenQuiz .dots {
+      order: 23 !important;
+      margin-top: 0 !important;
+      margin-bottom: 8px !important;
+    }
+    #screenQuiz .status {
+      order: 24 !important;
+      margin-top: 0 !important;
+      margin-bottom: 12px !important;
+    }
+    #screenQuiz .level-bar {
+      order: 23 !important;
+    }
+    #screenQuiz .result-screen {
+      order: 25 !important;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -824,12 +879,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.43 ROUTE LABEL 2007-41 FIX</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.45 LANDSCAPE QUIZ CONTROLS BOTTOM</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.43 ROUTE LABEL 2007-41 FIX. 가로모드 성공버전과 41회 교체 데이터를 유지하면서 문제풀이 루트를 문제풀이 / 기출회차2007~2018 / 기출회차2007-41회 형식으로 정리했습니다. 이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.45 LANDSCAPE QUIZ CONTROLS BOTTOM. 패드 가로모드에서 문제와 보기가 먼저 보이도록 이동중청취모드·정답/오답/정답률·네비게이션을 하단으로 이동했습니다. 모바일 세로모드와 이론·TTS 로직은 보존합니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -1287,7 +1342,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.44 기준 가로모드 성공버전 + 41회 교체본을 유지하고, 패드 가로모드 문제풀이 카드 풀사이즈 보강을 적용했습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.45 기준 가로모드 성공버전 + 41회 교체본을 유지하고, 패드 가로모드 문제풀이 본문 우선 배치를 적용했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
@@ -3508,7 +3563,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.43-route-label-2007-41-fix')
+    navigator.serviceWorker.register('sw.js?v=30.45-landscape-quiz-controls-bottom')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
