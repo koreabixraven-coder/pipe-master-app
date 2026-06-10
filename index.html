@@ -750,6 +750,10 @@
       <label class="tog"><input type="checkbox" id="autoLandscapeMode" checked><span class="tog-sl"></span></label>
     </div>
     <p class="s-hint">갤럭시탭 등에서 화면을 가로로 뉘이면 퀴즈·이론 화면이 자동으로 2열 가로 레이아웃으로 전환됩니다. 세로로 세우면 다시 세로 최적화 레이아웃으로 복귀합니다.</p>
+    <div class="s-row" style="margin-top:6px;">
+      <label style="font-size:11px;color:#888;">🔍 회전 감지 디버그 표시</label>
+      <label class="tog" style="transform:scale(0.85);transform-origin:right center;"><input type="checkbox" id="showOrientDbg" onchange="toggleOrientDbg(this.checked)"><span class="tog-sl"></span></label>
+    </div>
     <div class="s-sep"></div>
     
     <div class="s-title">
@@ -2972,33 +2976,62 @@ function initSettingsOnce(){
   applyLandscapeMode();
 }
 /* ══════════════════════════════════════════════
-   v30.38 자동 가로모드 감지 & 레이아웃 전환
-   갤럭시탭 자동회전 대응
+   v30.39 자동 가로모드 감지 & 레이아웃 전환
+   갤럭시탭 자동회전 완전 대응 (버그픽스)
+   - manifest orientation:any 로 PWA lock 해제
+   - screen.orientation.angle 직접 판별
+   - 딜레이 300ms로 확대 (브라우저 레이아웃 완료 보장)
+   - resize 이벤트도 강화
 ══════════════════════════════════════════════ */
+
+function toggleOrientDbg(on){
+  const el = document.getElementById('orientDbg');
+  if(!el) return;
+  el.style.display = on ? 'block' : 'none';
+  if(on) updateOrientDbg();
+}
 function isLandscape(){
-  // screen.orientation API 우선, 없으면 innerWidth/Height 비교
-  if(window.screen && window.screen.orientation && window.screen.orientation.type){
-    return window.screen.orientation.type.includes('landscape');
+  // 방법1: screen.orientation.type (가장 신뢰도 높음)
+  try {
+    if(window.screen && window.screen.orientation && window.screen.orientation.type){
+      const t = window.screen.orientation.type;
+      if(t.includes('landscape')) return true;
+      if(t.includes('portrait')) return false;
+    }
+  } catch(e){}
+
+  // 방법2: screen.orientation.angle (0,180=세로 / 90,270=가로)
+  try {
+    if(window.screen && window.screen.orientation && typeof window.screen.orientation.angle === 'number'){
+      const a = window.screen.orientation.angle;
+      if(a === 90 || a === 270) return true;
+      if(a === 0 || a === 180) return false;
+    }
+  } catch(e){}
+
+  // 방법3: window.orientation (구형 API, deprecated but works on Android)
+  if(typeof window.orientation === 'number'){
+    return (window.orientation === 90 || window.orientation === -90);
   }
+
+  // 방법4: innerWidth vs innerHeight (최후 fallback)
   return window.innerWidth > window.innerHeight;
 }
 
 function applyLandscapeMode(){
   const s = appSettings || loadSettings();
+  const html = document.documentElement;
   if(!s.autoLandscapeMode){
-    document.documentElement.classList.remove('landscape-mode');
+    html.classList.remove('landscape-mode');
     return;
   }
-  if(isLandscape()){
-    document.documentElement.classList.add('landscape-mode');
-  } else {
-    document.documentElement.classList.remove('landscape-mode');
-  }
+  const land = isLandscape();
+  html.classList.toggle('landscape-mode', land);
 }
 
 function onOrientationChange(){
-  // 100ms 딜레이: 브라우저가 레이아웃 재계산 완료 후 적용
-  setTimeout(applyLandscapeMode, 100);
+  // 300ms 딜레이: 갤럭시탭 브라우저가 innerWidth/Height 업데이트 완료 후 적용
+  setTimeout(applyLandscapeMode, 300);
 }
 
 // 이벤트 등록 (중복 방지)
@@ -3006,18 +3039,33 @@ function onOrientationChange(){
   if(window.__orientationWatcherInit) return;
   window.__orientationWatcherInit = true;
 
-  // screen.orientation API (최신 Android Chrome)
-  if(window.screen && window.screen.orientation){
-    window.screen.orientation.addEventListener('change', onOrientationChange);
-  }
-  // 구형 방식 fallback
-  window.addEventListener('orientationchange', onOrientationChange);
-  // resize fallback (일부 기기)
+  // screen.orientation API (Android Chrome 최신)
+  try{
+    if(window.screen && window.screen.orientation){
+      window.screen.orientation.addEventListener('change', function(){
+        setTimeout(applyLandscapeMode, 300);
+      });
+    }
+  }catch(e){}
+
+  // orientationchange (구형 Android / iOS fallback)
+  window.addEventListener('orientationchange', function(){
+    setTimeout(applyLandscapeMode, 300);
+  });
+
+  // resize fallback — 크기 변화 감지 (일부 Chromebook/탭)
   let resizeTimer;
   window.addEventListener('resize', function(){
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(applyLandscapeMode, 150);
+    resizeTimer = setTimeout(applyLandscapeMode, 250);
   });
+
+  // 초기 실행 — DOM 완성 후 즉시
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', applyLandscapeMode);
+  } else {
+    applyLandscapeMode();
+  }
 })();
 
 
@@ -3598,6 +3646,47 @@ function importProgress(){
 }
 </script>
 </body>
+
+<!-- v30.39 가로모드 디버그 오버레이 (설정에서 숨기기 가능) -->
+<div id="orientDbg" style="
+  display:none;
+  position:fixed;bottom:60px;right:12px;z-index:9999;
+  background:rgba(0,0,0,0.85);color:#9FE1CB;
+  font-size:11px;padding:8px 12px;border-radius:10px;
+  border:0.5px solid #1D9E75;line-height:1.7;
+  pointer-events:none;
+" id="orientDbg"></div>
+
+<script>
+// 디버그 오버레이 업데이트 (개발 확인용)
+function updateOrientDbg(){
+  const el = document.getElementById('orientDbg');
+  if(!el || el.style.display==='none') return;
+  try{
+    const ot = (window.screen&&window.screen.orientation) ? window.screen.orientation.type : 'N/A';
+    const oa = (window.screen&&window.screen.orientation&&typeof window.screen.orientation.angle==='number') ? window.screen.orientation.angle : 'N/A';
+    const wo = typeof window.orientation!=='undefined' ? window.orientation : 'N/A';
+    const iw = window.innerWidth, ih = window.innerHeight;
+    const land = isLandscape ? isLandscape() : '?';
+    const cls = document.documentElement.classList.contains('landscape-mode') ? '✅가로' : '📱세로';
+    el.innerHTML =
+      cls + '<br>' +
+      'type: ' + ot + '<br>' +
+      'angle: ' + oa + '<br>' +
+      'window.orientation: ' + wo + '<br>' +
+      'innerW×H: ' + iw + '×' + ih;
+  }catch(e){ el.textContent = '오류:'+e.message; }
+}
+// 회전마다 디버그 갱신
+window.addEventListener('orientationchange', function(){ setTimeout(updateOrientDbg, 350); });
+window.addEventListener('resize', function(){ setTimeout(updateOrientDbg, 300); });
+try{
+  if(window.screen&&window.screen.orientation){
+    window.screen.orientation.addEventListener('change', function(){ setTimeout(updateOrientDbg, 350); });
+  }
+}catch(e){}
+</script>
+
 </html>
   <button class="theory-back-mini quiz-return-btn" onclick="returnToQuizStage()">← 문제풀이 돌아가기</button>
   <div class="quiz-current-title" id="quizCurrentTitle">문제 단계</div>
