@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-56-2009-46-verified-replace';
+const CACHE_NAME = 'pipe-master-v30-57-2010-47-verified-add';
 const ASSETS = [
   './',
   './index.html',
