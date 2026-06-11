@@ -2765,12 +2765,14 @@ function buildLevelBar(){
     {
       title:'기출회차41회~63회',
       desc:'2007-41회부터 2018-63회까지 실제 과년도 회차형 문제 훈련',
-      keys:['기출41회','기출42회','기출43회','기출46회'],
+      keys:['기출41회','기출42회','기출43회','기출44회','기출45회','기출46회'],
       labels:[
         ['2007-41회','60문제'],
         ['2007-42회','60문제'],
         ['2008-43회','60문제'],
-        ['2009-46회','59문제']
+        ['2008-44회','60문제'],
+        ['2009-45회','60문제'],
+        ['2009-46회','60문제']
       ]
     },
     {
@@ -2784,7 +2786,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.53</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.56</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
