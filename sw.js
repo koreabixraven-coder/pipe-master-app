@@ -1,5 +1,4 @@
-// v30.71: 2015-58 verified add cache refresh
-const CACHE_NAME = 'pipe-master-v30-71-2015-57-round-label-fix';
+const CACHE_NAME = 'pipe-master-v30-69-2014-55-verified-add';
 const ASSETS = [
   './',
   './index.html',
@@ -69,5 +68,3 @@ self.addEventListener('fetch', e => {
 });
 
 // v30.69: 2014-55 verified add cache refresh
-
-// v30.71: 2015.07.19 자료 회차 표기를 57회로 정정, 56회 미반영 확인
