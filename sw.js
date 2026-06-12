@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-63-tts-arrow-symbol-skip';
+const CACHE_NAME = 'pipe-master-v30-67-2013-53-verified-add';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.63: TTS arrow symbol skip cache refresh
+// v30.67: 2013-53 verified add cache refresh
