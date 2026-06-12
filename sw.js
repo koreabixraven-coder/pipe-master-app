@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-69-2014-55-rebuild-verified';
+const CACHE_NAME = 'pipe-master-v30-70-2015-56-rebuild-verified';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.69: 2014-55 rebuild verified cache refresh
+// v30.70: 2015-56 rebuild verified cache refresh
