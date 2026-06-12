@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-62-private-notice-subtitle';
+const CACHE_NAME = 'pipe-master-v30-63-tts-arrow-symbol-skip';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.62: private notice subtitle cache refresh
+// v30.63: TTS arrow symbol skip cache refresh
