@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-57-2010-47-verified-add';
+const CACHE_NAME = 'pipe-master-v30-58-home-card-db-alias-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -66,3 +66,5 @@ self.addEventListener('fetch', e => {
     }).catch(() => caches.match('./index.html'))
   );
 });
+
+// v30.58: DB alias recovery cache refresh

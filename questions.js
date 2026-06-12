@@ -1,10 +1,10 @@
 /**
- * RavenBix 배관기능장 문제 데이터 v30.57_2010_47_VERIFIED_ADD
- * 기준: v30.56_2009_46_VERIFIED_REPLACE.
- * 작업: 2010.03.29 제47회 60문항을 클로드 추출본과 원본 PDF 기준으로 교차검수해 신규 기출47회로 추가.
+ * RavenBix 배관기능장 문제 데이터 v30.58_HOME_CARD_DB_ALIAS_FIX
+ * 기준: v30.57_2010_47_VERIFIED_ADD.
+ * 작업: questions.js 전역 데이터 선언명을 DB로 복구하고 QUESTION_BANK 호환 별칭을 추가하여 홈 카드/문제풀이 진입 오류를 복구.
  * 표시 루트: 문제풀이 / 기출회차41회~63회 / 2010-47회.
  */
-const QUESTION_BANK = {
+const DB = {
   "배관공학의기초1": [
     {
       "cat": "챕터1-01. 배관공학의 기초",
@@ -50398,3 +50398,6 @@ const QUESTION_BANK = {
     }
   ]
 };
+
+// v30.58 compatibility alias: 기존 로직은 DB를 사용하고, 신규 검수 도구는 QUESTION_BANK 이름도 참조할 수 있게 유지합니다.
+const QUESTION_BANK = DB;

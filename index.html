@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>RavenBix · 배관기능장 2490문제</title>
+<title>RavenBix · 배관기능장 2671문제</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
@@ -1044,12 +1044,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.47 LANDSCAPE BOTTOM ACTION BAR</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.58 HOME CARD DB ALIAS FIX</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.48 LANDSCAPE TOP ICON ACTIONS. 패드 가로모드에서 문제풀이 돌아가기, 전체읽기, 다음문제를 상단 아이콘으로 배치했습니다. 모바일 세로모드와 이론·TTS 로직은 보존합니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.58 HOME CARD DB ALIAS FIX. v30.57 데이터와 로고행 아이콘 UI를 유지하고, 홈 카드·이론·문제풀이 진입 오류를 복구했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -1538,7 +1538,7 @@
 </div><!-- screenQuiz -->
 
 <script>
-/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.48 기준 가로모드 성공버전 + 41회 교체본을 유지하고, 패드 가로모드에서 문제카드와 4지선다 보기를 상단에 배치하며 문제풀이 돌아가기, 전체읽기, 다음문제는 상단 아이콘으로 정리했습니다. */
+/* 문제 데이터 DB는 questions.js에서 로드합니다. v30.58은 v30.57의 2010-47회 데이터와 UI를 유지하고, questions.js의 전역 데이터 선언명(DB) 복구로 홈 카드/이론/문제풀이 진입 오류를 수정했습니다. */
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
