@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-60-2011-49-verified-add';
+const CACHE_NAME = 'pipe-master-v30-62-private-notice-subtitle';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.60: 2011-49 verified add cache refresh
+// v30.62: private notice subtitle cache refresh
