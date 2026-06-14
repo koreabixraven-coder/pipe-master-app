@@ -1154,8 +1154,7 @@ function showResult(){
         <div class="wi-q">${q.q}</div>
         <div class="wi-ans">✅ 정답: ${NL[ns][q.ans]} ${q.opts[q.ans]}</div>`;
       div.onclick=()=>{
-        const wx=cleanExplainForRead(q);
-        if(wx) div.innerHTML+=`<div style="font-size:11px;color:#5DCAA5;margin-top:6px;line-height:1.6;">💡 ${wx}</div>`;
+        div.innerHTML+=`<div style="font-size:11px;color:#5DCAA5;margin-top:6px;line-height:1.6;">💡 ${q.ex}</div>`;
         div.onclick=null;
       };
       wl.appendChild(div);
@@ -1925,30 +1924,16 @@ function spkQ(txt,cb){ spk(txt,cb,'quiz'); }
    기존 문제: L[q.ans]가 '4번'인데 뒤에 '번'을 또 붙여 '4번번'으로 낭독됨.
    수정: 정답 안내는 항상 '정답은 4번입니다.' 형식으로 고정한다. */
 function ansNo(q){ return (Number(q.ans)+1)+'번'; }
-function cleanExplainForRead(q){
-  let ex=(q&&q.ex!=null)?String(q.ex).trim():'';
-  if(!ex) return '';
-  ex=ex.replace(/사용자 제공 원본 교재 사진(?: 하단 정답표)? 기준으로 확인했습니다\.\s*/g,'');
-  ex=ex.replace(/(?:붙여넣은 )?(?:2017년7월 |2018년3월 )?HTML 정리본은 문항 불일치가 있어 기준자료로 사용하지 않았습니다\.\s*/g,'');
-  ex=ex.replace(/^정답은\s*[1-4]번입니다\.\s*$/,'');
-  return ex.trim();
-}
-function explainForDisplay(q){
-  const ex=cleanExplainForRead(q);
-  return ex ? '\n\n💡 해설: '+ex : '';
-}
 function spkAns(L,q,cb){
   const correctEl=document.querySelectorAll('#opts .opt')[Number(q.ans)];
   quizTtsFocus(correctEl,'정답 '+ansNo(q)+' 읽는 중');
   spkQ('정답은 '+ansNo(q)+'입니다.',()=>{
     setTimeout(()=>{
-      const exRead=cleanExplainForRead(q);
-      if(!exRead){ if(cb) cb(); return; }
-      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spkQ('해설. '+exRead, cb);}; return; }
+      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spkQ('해설. '+q.ex, cb);}; return; }
       let done=false;
       const finish=()=>{ if(done) return; done=true; if(cb) cb(); };
       quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중');
-      spkQ('해설. '+exRead, finish);
+      spkQ('해설. '+q.ex, finish);
       /* v30.20 TTS FIX 01
          기존 안전 타이머가 긴 해설을 아직 읽는 중에도 finish()를 호출하여
          자동 다음 문제로 넘어가는 문제가 있었다.
@@ -2146,7 +2131,7 @@ function manualAutoReveal(){
   const q=Qs[cur], L=NL[ns];
   document.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('ar');});
   const ex=document.getElementById('exBox');
-  ex.textContent='⏰ 정답: '+ansNo(q)+'. '+q.opts[q.ans]+explainForDisplay(q);
+  ex.textContent='⏰ 정답: '+ansNo(q)+'. '+q.opts[q.ans]+'\n\n💡 해설: '+q.ex;
   ex.className='ex-box ar show';
   const isLast=cur>=Qs.length-1;
   document.getElementById('nxBtn').style.display=isLast?'none':'block';
@@ -2199,7 +2184,7 @@ function autoReveal(){
   const q=Qs[cur], L=NL[ns];
   document.querySelectorAll('.opt').forEach((b,i)=>{b.disabled=true;if(i===q.ans)b.classList.add('ar');});
   const ex=document.getElementById('exBox');
-  ex.textContent='⏰ 정답: '+ansNo(q)+'. '+q.opts[q.ans]+explainForDisplay(q);
+  ex.textContent='⏰ 정답: '+ansNo(q)+'. '+q.opts[q.ans]+'\n\n💡 해설: '+q.ex;
   ex.className='ex-box ar show';
   const ds=document.querySelectorAll('.dot');
   if(ds[cur]){ds[cur].classList.remove('active');ds[cur].classList.add('sk');}
@@ -2229,7 +2214,7 @@ function answer(idx){
   const isOk=idx===q.ans;
   recordAnswer(isOk, q);
   const ex=document.getElementById('exBox');
-  ex.textContent=(isOk?'✅ 정답!\n\n':'❌ 오답\n\n')+'정답: '+ansNo(q)+'. '+q.opts[q.ans]+explainForDisplay(q);
+  ex.textContent=(isOk?'✅ 정답!\n\n':'❌ 오답\n\n')+'정답: '+ansNo(q)+'. '+q.opts[q.ans]+'\n\n💡 해설: '+q.ex;
   ex.className='ex-box show';
   const isLast=cur>=Qs.length-1;
   document.getElementById('nxBtn').style.display=isLast?'none':'block';

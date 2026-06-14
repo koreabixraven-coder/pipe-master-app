@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-76b-tts-explanation-fix';
+const CACHE_NAME = 'pipe-master-v30-76-2018-62-rebuild-verified';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.76B: TTS explanation duplicate fix cache refresh
+// v30.76: 2018-62 rebuild verified cache refresh
