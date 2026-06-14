@@ -1044,12 +1044,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.76 2018-62 REBUILD VERIFIED</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.77 55 EX INPUT VERIFIED</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.76 2018-62 REBUILD VERIFIED. 2013.07.22 제54회 60문항을 추가했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.77 55 EX INPUT VERIFIED. 2013.07.22 제54회 60문항을 추가했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -2786,7 +2786,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.76</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.77</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
@@ -3357,7 +3357,7 @@ function toKorean(txt){
   };
   let result = String(txt||'');
 
-  /* v30.76 2018-62 REBUILD VERIFIED
+  /* v30.77 55 EX INPUT VERIFIED
      화면의 화살표 기호는 유지하되 TTS에서 '오른쪽 화살표'를 반복 낭독하지 않도록
      음성 변환 텍스트에서만 화살표 기호와 ASCII 화살표 표기를 공백으로 정리한다. */
   result = result
