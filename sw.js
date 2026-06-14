@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-76a-60-62-explanation-clean';
+const CACHE_NAME = 'pipe-master-v30-76b-tts-explanation-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.76A: 60-62 explanation clean cache refresh
+// v30.76B: TTS explanation duplicate fix cache refresh
