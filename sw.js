@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-77-55-original-explanation-input-verified';
+const CACHE_NAME = 'pipe-master-v30-77-2019-1-restore-verified-add';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.77: 55회 원문 해설 확인분 입력; 56~62는 기존 메모 제거 상태 유지
+// v30.77: 2019-1 restore verified add cache refresh
