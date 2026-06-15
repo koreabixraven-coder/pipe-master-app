@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-82-cache-force-56-verify';
+const CACHE_NAME = 'pipe-master-v30-83-2016-58-original-rebuild-verified-star-mark';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.82: cache force refresh for verified 56 data
+// v30.83: 2016-58 original rebuild verified cache refresh
