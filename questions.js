@@ -1,5 +1,5 @@
 /**
- * RavenBix 배관기능장 문제 데이터 v30.78_2014_55_ORIGINAL_REBUILD_VERIFIED
+ * RavenBix 배관기능장 문제 데이터 v30.79_55_ORIGINAL_VERIFIED_STAR_MARK
  * 기준: v30.76_2018_62_REBUILD_VERIFIED.
  * 작업: 2019년 배관기능장 CBT 필기시험 복원문제(1) 60문항을 복원문제 메뉴에 추가.
  * 표시 루트: 문제풀이 / 기출복원문제 / 2019-1회.
