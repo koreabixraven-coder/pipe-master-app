@@ -1250,7 +1250,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.81</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v30.82</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
