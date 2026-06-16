@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=30.93"></script>
+<script src="questions.js?v=30.94"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -3468,21 +3468,84 @@ function spkQ(txt,cb){ spk(txt,cb,'quiz'); }
    기존 문제: L[q.ans]가 '4번'인데 뒤에 '번'을 또 붙여 '4번번'으로 낭독됨.
    수정: 정답 안내는 항상 '정답은 4번입니다.' 형식으로 고정한다. */
 function ansNo(q){ return (Number(q.ans)+1)+'번'; }
+const QUIZ_EXPLAIN_SEGMENT_GAP_MS=850;
+const QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT=115;
+function splitQuizExplainForTts(txt){
+  let t=String(txt||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
+  if(!t) return [];
+
+  /* 원본 해설 문장은 바꾸지 않고, TTS 낭독용으로만 쉬어갈 지점을 만든다. */
+  const circled='①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮';
+  const smallCircled='㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷';
+  const alphaCircled='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ';
+  const markers=circled+smallCircled+alphaCircled;
+  t=t.replace(new RegExp('\\s*(['+markers+'])\\s*','g'),'\n$1 ');
+  t=t.replace(/\s*(\([0-9]+\)|\([가-힣]\))\s*/g,'\n$1 ');
+  t=t.replace(/([.!?]|다\.|니다\.|이다\.|합니다\.|됩니다\.|한다\.|된다\.|것이다\.)\s+(?=[가-힣A-Za-z0-9①②③④⑤⑥⑦⑧⑨⑩㉮㉯ⓐⓑ\[])/g,'$1\n');
+  t=t.replace(/\n{2,}/g,'\n');
+
+  const raw=t.split(/\n+/).map(v=>v.replace(/\s+/g,' ').trim()).filter(Boolean);
+  const out=[];
+  raw.forEach(part=>{
+    if(part.length<=QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT){ out.push(part); return; }
+    let rest=part;
+    while(rest.length>QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT){
+      const cut=Math.max(rest.lastIndexOf('.',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT),rest.lastIndexOf(',',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT),rest.lastIndexOf(' ',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT));
+      if(cut<45) break;
+      out.push(rest.slice(0,cut+1).trim());
+      rest=rest.slice(cut+1).trim();
+    }
+    if(rest) out.push(rest);
+  });
+  return out;
+}
+function speakQuizExplanation(exText,cb){
+  const parts=splitQuizExplainForTts(exText);
+  const total=parts.length;
+  let i=0, done=false;
+  const exEl=document.getElementById('exBox');
+  const finish=()=>{
+    if(done) return;
+    done=true;
+    if(pbTimer){clearTimeout(pbTimer);pbTimer=null;}
+    if(cb) cb();
+  };
+  const go=()=>{
+    if(done) return;
+    if(paused){ quizResumeTask=go; resumeTask=go; return; }
+    if(i>=total){ finish(); return; }
+    const n=i+1;
+    const text=(i===0?'해설. ':'')+parts[i];
+    i++;
+    quizTtsFocus(exEl,total>1?('해설 '+n+'/'+total+' 읽는 중'):'해설 읽는 중');
+    spkQ(text,()=>{
+      if(done) return;
+      if(paused){ quizResumeTask=go; resumeTask=go; return; }
+      if(i>=total){ finish(); return; }
+      if(pbTimer){clearTimeout(pbTimer);}
+      pbTimer=setTimeout(()=>{
+        pbTimer=null;
+        go();
+      },QUIZ_EXPLAIN_SEGMENT_GAP_MS);
+    });
+  };
+  if(!total){ finish(); return; }
+  go();
+}
 function spkAns(L,q,cb){
   const correctEl=document.querySelectorAll('#opts .opt')[Number(q.ans)];
   quizTtsFocus(correctEl,'정답 '+ansNo(q)+' 읽는 중');
   spkQ('정답은 '+ansNo(q)+'입니다.',()=>{
     setTimeout(()=>{
-      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spkQ('해설. '+q.ex, cb);}; return; }
+      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); speakQuizExplanation(q.ex, cb);}; return; }
       let done=false;
       const finish=()=>{ if(done) return; done=true; if(cb) cb(); };
       quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중');
-      spkQ('해설. '+q.ex, finish);
-      /* v30.20 TTS FIX 01
-         기존 안전 타이머가 긴 해설을 아직 읽는 중에도 finish()를 호출하여
-         자동 다음 문제로 넘어가는 문제가 있었다.
-         이제는 speechSynthesis가 실제로 말하는 중이면 절대 완료 처리하지 않고,
-         일부 브라우저에서 onend가 누락된 경우에만 말하기 종료 상태를 확인한 뒤 보조 완료 처리한다. */
+      speakQuizExplanation(q.ex, finish);
+      /* v30.94 TTS EXPLANATION PARAGRAPH PAUSE
+         긴 해설을 한 번에 모두 읽지 않고, 문장·문단·①②③ 항목 단위로 나누어
+         짧게 쉬어가며 읽는다. speechSynthesis onend 누락 시에도 실제 말하기
+         종료 상태를 확인한 뒤에만 완료 처리한다. */
       const explainWatchdog=()=>{
         if(done || paused) return;
         try{
@@ -3490,10 +3553,14 @@ function spkAns(L,q,cb){
             setTimeout(explainWatchdog,1500);
             return;
           }
+          if(pbTimer){
+            setTimeout(explainWatchdog,1500);
+            return;
+          }
         }catch(e){}
         finish();
       };
-      setTimeout(explainWatchdog,8000);
+      setTimeout(explainWatchdog,10000);
     },500);
   });
 }

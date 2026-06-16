@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-93-2022-1-cbt-restore-original-verified-star-mark';
+const CACHE_NAME = 'pipe-master-v30-94-tts-explanation-paragraph-pause';
 const ASSETS = [
   './',
   './index.html',
