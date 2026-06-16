@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-90-2020-2-cbt-restore-original-verified-star-mark';
+const CACHE_NAME = 'pipe-master-v30-92-2021-2-cbt-restore-original-verified-star-mark';
 const ASSETS = [
   './',
   './index.html',
