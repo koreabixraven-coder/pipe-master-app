@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-94-tts-explanation-paragraph-pause';
+const CACHE_NAME = 'pipe-master-v30-95-phone-portrait-lock-tablet-auto';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.85: 2017-60 original rebuild verified cache refresh
+// v30.95: mobile phone portrait lock, tablet auto orientation policy

@@ -6,11 +6,11 @@
 <meta name="theme-color" content="#121212">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>RavenBix · 배관기능장 2671문제</title>
+<title>RavenBix · 배관기능장 3991문제</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=30.94"></script>
+<script src="questions.js?v=30.95"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -22,6 +22,61 @@
   }catch(e){
     document.documentElement.classList.add('tablet-wide-on');
   }
+})();
+</script>
+<script>
+/* ── v30.95 휴대폰 세로모드 고정 + 패드 자동회전 정책 ──
+   - 휴대폰: 짧은 화면변 기준 599px 이하. 세로모드 고정 시도 + 가로 회전시 차단 안내.
+   - 패드/태블릿: 방향 잠금 해제. 기존 가로/세로 자동 레이아웃 유지. */
+(function(){
+  const PHONE_SHORT_SIDE_MAX = 599;
+  function shortSide(){
+    const vw = Math.max(1, window.innerWidth || 0);
+    const vh = Math.max(1, window.innerHeight || 0);
+    const sw = (window.screen && screen.width) ? screen.width : vw;
+    const sh = (window.screen && screen.height) ? screen.height : vh;
+    return Math.min(vw, vh, sw, sh);
+  }
+  function isPhoneLike(){
+    return shortSide() <= PHONE_SHORT_SIDE_MAX;
+  }
+  function setDeviceClass(){
+    const phone = isPhoneLike();
+    const landscape = (window.innerWidth || 0) > (window.innerHeight || 0);
+    const root = document.documentElement;
+    root.classList.toggle('device-phone', phone);
+    root.classList.toggle('device-tablet', !phone);
+    root.classList.toggle('phone-landscape', phone && landscape);
+    return {phone, landscape};
+  }
+  async function applyPipeOrientationPolicy(){
+    const st = setDeviceClass();
+    try{
+      if(window.screen && screen.orientation && screen.orientation.lock){
+        if(st.phone){
+          await screen.orientation.lock('portrait-primary');
+        }else if(screen.orientation.unlock){
+          screen.orientation.unlock();
+        }
+      }
+    }catch(e){
+      /* 브라우저/일반 탭에서는 방향 잠금이 거부될 수 있으므로 CSS 안내화면으로 보완 */
+    }
+    const guard = document.getElementById('phonePortraitGuard');
+    if(guard){
+      guard.style.display = (st.phone && st.landscape) ? 'flex' : 'none';
+    }
+  }
+  window.applyPipeOrientationPolicy = applyPipeOrientationPolicy;
+  setDeviceClass();
+  window.addEventListener('load', applyPipeOrientationPolicy);
+  window.addEventListener('resize', applyPipeOrientationPolicy);
+  window.addEventListener('orientationchange', function(){ setTimeout(applyPipeOrientationPolicy, 250); });
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'visible') setTimeout(applyPipeOrientationPolicy, 150);
+  });
+  document.addEventListener('click', applyPipeOrientationPolicy, {passive:true});
+  document.addEventListener('touchstart', applyPipeOrientationPolicy, {passive:true});
 })();
 </script>
 <style>
@@ -254,6 +309,16 @@
   .unlock-hint{font-size:11px;color:#333;text-align:center;margin-bottom:14px;}
   .hold-btn{width:100%;padding:16px;border-radius:14px;border:1px solid #1D9E75;background:#0A2E22;color:#9FE1CB;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-tap-highlight-color:transparent;touch-action:none;}
   .hold-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+
+  /* ── v30.95 휴대폰 가로회전 차단 안내. 패드·태블릿 자동모드는 유지 ── */
+  .mobile-orientation-guard{display:none;position:fixed;inset:0;z-index:10050;background:#050505;color:#E0E0E0;align-items:center;justify-content:center;text-align:center;padding:28px;touch-action:none;}
+  .mobile-orientation-guard .mog-card{width:min(88vw,360px);border:1px solid #1D9E75;background:#0A2E22;border-radius:22px;padding:28px 22px;box-shadow:0 20px 60px rgba(0,0,0,.55);}
+  .mobile-orientation-guard .mog-icon{font-size:44px;margin-bottom:12px;}
+  .mobile-orientation-guard .mog-title{font-size:19px;font-weight:800;color:#9FE1CB;margin-bottom:8px;line-height:1.35;}
+  .mobile-orientation-guard .mog-text{font-size:13px;color:#BFEFDD;line-height:1.65;}
+  .mobile-orientation-guard .mog-sub{font-size:11px;color:#5DCAA5;margin-top:12px;line-height:1.55;}
+  html.device-phone.phone-landscape body{overflow:hidden!important;}
+  html.device-phone.phone-landscape .mobile-orientation-guard{display:flex!important;}
 
   /* ── 생각 타이머 ── */
   .think-wrap{margin-bottom:10px;display:none;}
@@ -1044,12 +1109,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.93 2022-1 CBT RESTORE VERIFIED STAR</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.95 PHONE PORTRAIT LOCK TABLET AUTO</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.93 2022-1 CBT RESTORE VERIFIED STAR. 2022 복원문제(1) 60문항을 추가했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.95 PHONE PORTRAIT LOCK TABLET AUTO. 2022 복원문제(1) 60문항을 추가했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -1060,7 +1125,7 @@
       <label>패드·가로 화면 자동 확장</label>
       <label class="tog"><input type="checkbox" id="padWideMode" checked><span class="tog-sl"></span></label>
     </div>
-    <p class="s-hint">모바일은 세로 화면 기준을 유지합니다. 패드나 넓은 화면에서는 켜짐 상태일 때 가로 폭과 2열 보기 구성이 자동으로 확장됩니다.</p>
+    <p class="s-hint">휴대폰은 세로모드 고정 기준입니다. 가로로 돌리면 세로 회전 안내화면을 표시하고, 패드·태블릿은 가로/세로 자동 전환과 가로 폭 확장을 유지합니다.</p>
     <div class="s-sep"></div>
     
     <div class="s-title">
@@ -3468,84 +3533,21 @@ function spkQ(txt,cb){ spk(txt,cb,'quiz'); }
    기존 문제: L[q.ans]가 '4번'인데 뒤에 '번'을 또 붙여 '4번번'으로 낭독됨.
    수정: 정답 안내는 항상 '정답은 4번입니다.' 형식으로 고정한다. */
 function ansNo(q){ return (Number(q.ans)+1)+'번'; }
-const QUIZ_EXPLAIN_SEGMENT_GAP_MS=850;
-const QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT=115;
-function splitQuizExplainForTts(txt){
-  let t=String(txt||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
-  if(!t) return [];
-
-  /* 원본 해설 문장은 바꾸지 않고, TTS 낭독용으로만 쉬어갈 지점을 만든다. */
-  const circled='①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮';
-  const smallCircled='㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷';
-  const alphaCircled='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ';
-  const markers=circled+smallCircled+alphaCircled;
-  t=t.replace(new RegExp('\\s*(['+markers+'])\\s*','g'),'\n$1 ');
-  t=t.replace(/\s*(\([0-9]+\)|\([가-힣]\))\s*/g,'\n$1 ');
-  t=t.replace(/([.!?]|다\.|니다\.|이다\.|합니다\.|됩니다\.|한다\.|된다\.|것이다\.)\s+(?=[가-힣A-Za-z0-9①②③④⑤⑥⑦⑧⑨⑩㉮㉯ⓐⓑ\[])/g,'$1\n');
-  t=t.replace(/\n{2,}/g,'\n');
-
-  const raw=t.split(/\n+/).map(v=>v.replace(/\s+/g,' ').trim()).filter(Boolean);
-  const out=[];
-  raw.forEach(part=>{
-    if(part.length<=QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT){ out.push(part); return; }
-    let rest=part;
-    while(rest.length>QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT){
-      const cut=Math.max(rest.lastIndexOf('.',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT),rest.lastIndexOf(',',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT),rest.lastIndexOf(' ',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT));
-      if(cut<45) break;
-      out.push(rest.slice(0,cut+1).trim());
-      rest=rest.slice(cut+1).trim();
-    }
-    if(rest) out.push(rest);
-  });
-  return out;
-}
-function speakQuizExplanation(exText,cb){
-  const parts=splitQuizExplainForTts(exText);
-  const total=parts.length;
-  let i=0, done=false;
-  const exEl=document.getElementById('exBox');
-  const finish=()=>{
-    if(done) return;
-    done=true;
-    if(pbTimer){clearTimeout(pbTimer);pbTimer=null;}
-    if(cb) cb();
-  };
-  const go=()=>{
-    if(done) return;
-    if(paused){ quizResumeTask=go; resumeTask=go; return; }
-    if(i>=total){ finish(); return; }
-    const n=i+1;
-    const text=(i===0?'해설. ':'')+parts[i];
-    i++;
-    quizTtsFocus(exEl,total>1?('해설 '+n+'/'+total+' 읽는 중'):'해설 읽는 중');
-    spkQ(text,()=>{
-      if(done) return;
-      if(paused){ quizResumeTask=go; resumeTask=go; return; }
-      if(i>=total){ finish(); return; }
-      if(pbTimer){clearTimeout(pbTimer);}
-      pbTimer=setTimeout(()=>{
-        pbTimer=null;
-        go();
-      },QUIZ_EXPLAIN_SEGMENT_GAP_MS);
-    });
-  };
-  if(!total){ finish(); return; }
-  go();
-}
 function spkAns(L,q,cb){
   const correctEl=document.querySelectorAll('#opts .opt')[Number(q.ans)];
   quizTtsFocus(correctEl,'정답 '+ansNo(q)+' 읽는 중');
   spkQ('정답은 '+ansNo(q)+'입니다.',()=>{
     setTimeout(()=>{
-      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); speakQuizExplanation(q.ex, cb);}; return; }
+      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spkQ('해설. '+q.ex, cb);}; return; }
       let done=false;
       const finish=()=>{ if(done) return; done=true; if(cb) cb(); };
       quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중');
-      speakQuizExplanation(q.ex, finish);
-      /* v30.94 TTS EXPLANATION PARAGRAPH PAUSE
-         긴 해설을 한 번에 모두 읽지 않고, 문장·문단·①②③ 항목 단위로 나누어
-         짧게 쉬어가며 읽는다. speechSynthesis onend 누락 시에도 실제 말하기
-         종료 상태를 확인한 뒤에만 완료 처리한다. */
+      spkQ('해설. '+q.ex, finish);
+      /* v30.20 TTS FIX 01
+         기존 안전 타이머가 긴 해설을 아직 읽는 중에도 finish()를 호출하여
+         자동 다음 문제로 넘어가는 문제가 있었다.
+         이제는 speechSynthesis가 실제로 말하는 중이면 절대 완료 처리하지 않고,
+         일부 브라우저에서 onend가 누락된 경우에만 말하기 종료 상태를 확인한 뒤 보조 완료 처리한다. */
       const explainWatchdog=()=>{
         if(done || paused) return;
         try{
@@ -3553,14 +3555,10 @@ function spkAns(L,q,cb){
             setTimeout(explainWatchdog,1500);
             return;
           }
-          if(pbTimer){
-            setTimeout(explainWatchdog,1500);
-            return;
-          }
         }catch(e){}
         finish();
       };
-      setTimeout(explainWatchdog,10000);
+      setTimeout(explainWatchdog,8000);
     },500);
   });
 }
@@ -3899,7 +3897,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.47-landscape-bottom-action-bar')
+    navigator.serviceWorker.register('sw.js?v=30.95-phone-portrait-tablet-auto')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
