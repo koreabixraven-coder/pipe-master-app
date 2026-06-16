@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-97-phone-drive-no-touch-fullscreen-restore';
+const CACHE_NAME = 'pipe-master-v30-98-2022-2-cbt-restore-original-verified-star-mark';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.97: phone moving-listening no-touch fullscreen restore; skip circled hangul consonant markers retained
+// v30.98: 2022-2 CBT restore original verified star mark; v30.97 phone moving-listening no-touch fullscreen restore retained
