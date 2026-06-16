@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-95-phone-portrait-lock-tablet-auto';
+const CACHE_NAME = 'pipe-master-v30-96-tts-skip-circled-hangul-marks';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.95: mobile phone portrait lock, tablet auto orientation policy
+// v30.96: skip circled hangul consonant markers in quiz explanation TTS
