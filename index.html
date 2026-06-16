@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#121212">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <title>RavenBix · 배관기능장 3991문제</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=30.96"></script>
+<script src="questions.js?v=30.97"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -25,9 +26,10 @@
 })();
 </script>
 <script>
-/* ── v30.95 휴대폰 세로모드 고정 + 패드 자동회전 정책 ──
+/* ── v30.97 휴대폰 세로모드 고정 + 이동중청취 노터치/전체화면 보강 ──
    - 휴대폰: 짧은 화면변 기준 599px 이하. 세로모드 고정 시도 + 가로 회전시 차단 안내.
-   - 패드/태블릿: 방향 잠금 해제. 기존 가로/세로 자동 레이아웃 유지. */
+   - 패드/태블릿: 방향 잠금 해제. 기존 가로/세로 자동 레이아웃 유지.
+   - 이동중청취: 사용자 조작 순간 전체화면/navigationUI hide 시도 + 노터치 잠금 오버레이. */
 (function(){
   const PHONE_SHORT_SIDE_MAX = 599;
   function shortSide(){
@@ -40,6 +42,7 @@
   function isPhoneLike(){
     return shortSide() <= PHONE_SHORT_SIDE_MAX;
   }
+  window.pipeIsPhoneLike = isPhoneLike;
   function setDeviceClass(){
     const phone = isPhoneLike();
     const landscape = (window.innerWidth || 0) > (window.innerHeight || 0);
@@ -49,6 +52,7 @@
     root.classList.toggle('phone-landscape', phone && landscape);
     return {phone, landscape};
   }
+  window.pipeSetDeviceClass = setDeviceClass;
   async function applyPipeOrientationPolicy(){
     const st = setDeviceClass();
     try{
@@ -298,6 +302,10 @@
   /* ── 화면 잠금 오버레이 ── */
   .lock-overlay{display:none;position:fixed;inset:0;background:#000;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:24px;-webkit-user-select:none;user-select:none;touch-action:none;}
   .lock-overlay.show{display:flex;}
+  html.drive-locked, html.drive-locked body{overflow:hidden!important;overscroll-behavior:none;touch-action:none;}
+  html.drive-locked .lock-overlay.show{display:flex!important;z-index:25000!important;}
+  .lock-overlay.show{pointer-events:auto;}
+  .lock-overlay.show *{-webkit-user-select:none;user-select:none;}
   .lock-icon{width:80px;height:80px;border-radius:50%;background:#0A2E22;border:1.5px solid #1D9E75;display:flex;align-items:center;justify-content:center;}
   .lock-icon svg{width:36px;height:36px;stroke:#1D9E75;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
   .lock-title{font-size:18px;font-weight:600;color:#9FE1CB;text-align:center;}
@@ -1109,12 +1117,12 @@
 <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings(event)"></div>
   <!-- 설정 패널 -->
   <div class="settings-panel global-settings" id="settingsPanel" onclick="event.stopPropagation()">
-    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.96 TTS SKIP CIRCLED HANGUL MARKS</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
+    <div class="settings-head"><div class="settings-head-title">⚙ 음성·자동진행 설정 <span style="font-size:10px;color:#BA7517;">v30.97 PHONE DRIVE NO TOUCH FULLSCREEN RESTORE</span></div><button class="settings-close" onclick="closeSettings(event)">×</button></div>
     <div class="settings-save-row">
       <button class="test-btn save-main" onclick="saveSettingsFromUI()">💾 설정 저장</button>
       <button class="test-btn restore-main" onclick="resetSettingsToDefault()">↩ 기본값 복원</button>
     </div>
-    <p class="s-hint" style="color:#9FE1CB;">v30.96 TTS SKIP CIRCLED HANGUL MARKS. 2022 복원문제(1) 60문항을 추가했습니다.</p>
+    <p class="s-hint" style="color:#9FE1CB;">v30.97 PHONE DRIVE NO TOUCH FULLSCREEN RESTORE. 휴대폰 이동중청취 노터치/전체화면을 보강했습니다.</p>
 <div class="settings-dirty-note" id="settingsDirtyNote">변경사항이 있습니다. 저장 버튼을 눌러야 다음 실행에도 유지됩니다.</div>
 
     <div class="s-title">
@@ -1678,8 +1686,8 @@ function openQuizSettingsFromHome(e){
 function openDriveFromHome(e){
   if(e){e.stopPropagation(); e.preventDefault();}
   goScreen('screenQuiz');
+  if(!driveOn) toggleDrive();
   setTimeout(()=>{
-    if(!driveOn) toggleDrive();
     window.scrollTo(0,0);
     setSt('이동 중 청취 모드를 시작했습니다.');
   },120);
@@ -1696,6 +1704,7 @@ function startTheoryDriveMode(){
   theoryDriveOn=true;
   paused=false;
   closeSettings();
+  enterDriveImmersive('이론 이동 중 청취');
   reqWake('이론 이동 중 청취');
   setTheoryTrackText('이론 이동 중 청취 모드를 시작합니다.');
   setTimeout(()=>{
@@ -1704,13 +1713,14 @@ function startTheoryDriveMode(){
       const txt=document.getElementById('lockNow');
       if(txt) txt.textContent='이론 이동 중 청취 모드';
     }
-  },900);
+  },250);
 }
 function stopTheoryDriveMode(){
   if(!theoryDriveOn) return;
   theoryDriveOn=false;
   if(!driveOn) relWake();
   if(locked && !driveOn) unlockScreen();
+  if(!driveOn) exitDriveImmersive('이론 이동 중 청취 종료');
 }
 
 function startTheoryListenFromCurrent(e){
@@ -3105,10 +3115,55 @@ if(!wakeWatchTimer){
   },30000);
 }
 
+/* ── 이동중청취 노터치/전체화면 보강 ── */
+async function enterDriveImmersive(reason){
+  document.documentElement.classList.add('drive-locked');
+  try{ if(window.applyPipeOrientationPolicy) window.applyPipeOrientationPolicy(); }catch(e){}
+  try{
+    const root=document.documentElement;
+    if(root && root.requestFullscreen && !document.fullscreenElement){
+      const p=root.requestFullscreen({navigationUI:'hide'});
+      if(p && p.catch) p.catch(()=>{});
+    }
+  }catch(e){}
+  try{
+    if(window.pipeIsPhoneLike && window.pipeIsPhoneLike() && window.screen && screen.orientation && screen.orientation.lock){
+      const p=screen.orientation.lock('portrait-primary');
+      if(p && p.catch) p.catch(()=>{});
+    }
+  }catch(e){}
+}
+function exitDriveImmersive(reason){
+  document.documentElement.classList.remove('drive-locked');
+  try{
+    if(document.fullscreenElement && document.exitFullscreen){
+      const p=document.exitFullscreen();
+      if(p && p.catch) p.catch(()=>{});
+    }
+  }catch(e){}
+  try{
+    if(window.pipeIsPhoneLike && !window.pipeIsPhoneLike() && window.screen && screen.orientation && screen.orientation.unlock){
+      screen.orientation.unlock();
+    }
+  }catch(e){}
+  try{ if(window.applyPipeOrientationPolicy) window.applyPipeOrientationPolicy(); }catch(e){}
+}
+document.addEventListener('fullscreenchange',()=>{
+  if((driveOn || theoryDriveOn) && !document.fullscreenElement){
+    document.documentElement.classList.add('drive-locked');
+  }
+});
+
 /* ── 화면 잠금 ── */
 function lockScreen(){
   locked=true;
-  document.getElementById('lockOverlay').classList.add('show');
+  enterDriveImmersive('화면 잠금');
+  const overlay=document.getElementById('lockOverlay');
+  if(overlay){
+    overlay.classList.add('show');
+    overlay.ontouchmove=function(e){ if(e.target && e.target.closest && e.target.closest('#holdBtn')) return; e.preventDefault(); };
+    overlay.onwheel=function(e){ e.preventDefault(); };
+  }
   document.getElementById('lockStatusTxt').textContent='';
   const btn=document.getElementById('holdBtn');
   const fill=document.getElementById('unlockFill');
@@ -3127,8 +3182,14 @@ function lockScreen(){
 }
 function unlockScreen(){
   locked=false;
-  document.getElementById('lockOverlay').classList.remove('show');
+  const overlay=document.getElementById('lockOverlay');
+  if(overlay){
+    overlay.classList.remove('show');
+    overlay.ontouchmove=null;
+    overlay.onwheel=null;
+  }
   document.getElementById('unlockFill').style.width='0%';
+  if(!driveOn && !theoryDriveOn) exitDriveImmersive('화면 잠금 해제');
 }
 
 /* ── 이동모드 ── */
@@ -3140,8 +3201,8 @@ function toggleDrive(){
   const landscapeDriveStart=document.getElementById('landscapeDriveStartBtn');
   if(landscapeDriveStart) landscapeDriveStart.style.display=driveOn?'none':'';
   document.getElementById('driveToggleBtn').classList.toggle('active',driveOn);
-  if(driveOn){reqWake('문제 이동 중 청취'); resetAuto(); setTimeout(()=>lockScreen(),1500);}
-  else{tStop(); if(!theoryDriveOn) relWake(); if(locked) unlockScreen();}
+  if(driveOn){enterDriveImmersive('문제 이동 중 청취'); reqWake('문제 이동 중 청취'); resetAuto(); setTimeout(()=>lockScreen(),250);}
+  else{tStop(); if(!theoryDriveOn) relWake(); if(locked) unlockScreen(); exitDriveImmersive('문제 이동 모드 종료');}
 }
 function togglePause(){
   paused=!paused;
@@ -3422,14 +3483,6 @@ function toKorean(txt){
   };
   let result = String(txt||'');
 
-  /* v30.96 TTS SKIP CIRCLED HANGUL MARKS
-     화면 원문과 questions.js 데이터는 그대로 두고, 음성 낭독에서만
-     ㉠㉡㉢㉣ 같은 원형 한글 자모 표식을 제거한다.
-     예: ㉠ 연료비와 인건비를 줄일 수 있다 -> 연료비와 인건비를 줄일 수 있다. */
-  result = result
-    .replace(/[㉠-㉻]/g, ' ')
-    .replace(/[㈀-㈞]/g, ' ');
-
   /* v30.77 2019-1 RESTORE VERIFIED ADD
      화면의 화살표 기호는 유지하되 TTS에서 '오른쪽 화살표'를 반복 낭독하지 않도록
      음성 변환 텍스트에서만 화살표 기호와 ASCII 화살표 표기를 공백으로 정리한다. */
@@ -3541,86 +3594,21 @@ function spkQ(txt,cb){ spk(txt,cb,'quiz'); }
    기존 문제: L[q.ans]가 '4번'인데 뒤에 '번'을 또 붙여 '4번번'으로 낭독됨.
    수정: 정답 안내는 항상 '정답은 4번입니다.' 형식으로 고정한다. */
 function ansNo(q){ return (Number(q.ans)+1)+'번'; }
-const QUIZ_EXPLAIN_SEGMENT_GAP_MS=850;
-const QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT=115;
-function splitQuizExplainForTts(txt){
-  let t=String(txt||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
-  if(!t) return [];
-
-  /* 원본 해설 문장은 바꾸지 않고, TTS 낭독용으로만 쉬어갈 지점을 만든다.
-     v30.96: ㉠㉡㉢㉣ 같은 원형 한글 자모도 분리 지점으로 사용하되,
-     실제 음성에서는 toKorean()에서 표식만 제거하여 읽지 않는다. */
-  const circled='①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮';
-  const smallCircled='㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷';
-  const hangulCircled='㉠㉡㉢㉣㉤㉥㉦㉧㉨㉩㉪㉫㉬㉭㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷㉸㉹㉺㉻';
-  const alphaCircled='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ';
-  const markers=circled+smallCircled+hangulCircled+alphaCircled;
-  t=t.replace(new RegExp('\\s*(['+markers+'])\\s*','g'),'\n$1 ');
-  t=t.replace(/\s*(\([0-9]+\)|\([가-힣]\))\s*/g,'\n$1 ');
-  t=t.replace(/([.!?]|다\.|니다\.|이다\.|합니다\.|됩니다\.|한다\.|된다\.|것이다\.)\s+(?=[가-힣A-Za-z0-9①②③④⑤⑥⑦⑧⑨⑩㉠㉡㉢㉣㉮㉯ⓐⓑ\[])/g,'$1\n');
-  t=t.replace(/\n{2,}/g,'\n');
-
-  const raw=t.split(/\n+/).map(v=>v.replace(/\s+/g,' ').trim()).filter(Boolean);
-  const out=[];
-  raw.forEach(part=>{
-    if(part.length<=QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT){ out.push(part); return; }
-    let rest=part;
-    while(rest.length>QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT){
-      const cut=Math.max(rest.lastIndexOf('.',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT),rest.lastIndexOf(',',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT),rest.lastIndexOf(' ',QUIZ_EXPLAIN_LONG_SEGMENT_LIMIT));
-      if(cut<45) break;
-      out.push(rest.slice(0,cut+1).trim());
-      rest=rest.slice(cut+1).trim();
-    }
-    if(rest) out.push(rest);
-  });
-  return out;
-}
-function speakQuizExplanation(exText,cb){
-  const parts=splitQuizExplainForTts(exText);
-  const total=parts.length;
-  let i=0, done=false;
-  const exEl=document.getElementById('exBox');
-  const finish=()=>{
-    if(done) return;
-    done=true;
-    if(pbTimer){clearTimeout(pbTimer);pbTimer=null;}
-    if(cb) cb();
-  };
-  const go=()=>{
-    if(done) return;
-    if(paused){ quizResumeTask=go; resumeTask=go; return; }
-    if(i>=total){ finish(); return; }
-    const n=i+1;
-    const text=(i===0?'해설. ':'')+parts[i];
-    i++;
-    quizTtsFocus(exEl,total>1?('해설 '+n+'/'+total+' 읽는 중'):'해설 읽는 중');
-    spkQ(text,()=>{
-      if(done) return;
-      if(paused){ quizResumeTask=go; resumeTask=go; return; }
-      if(i>=total){ finish(); return; }
-      if(pbTimer){clearTimeout(pbTimer);}
-      pbTimer=setTimeout(()=>{
-        pbTimer=null;
-        go();
-      },QUIZ_EXPLAIN_SEGMENT_GAP_MS);
-    });
-  };
-  if(!total){ finish(); return; }
-  go();
-}
 function spkAns(L,q,cb){
   const correctEl=document.querySelectorAll('#opts .opt')[Number(q.ans)];
   quizTtsFocus(correctEl,'정답 '+ansNo(q)+' 읽는 중');
   spkQ('정답은 '+ansNo(q)+'입니다.',()=>{
     setTimeout(()=>{
-      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); speakQuizExplanation(q.ex, cb);}; return; }
+      if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spkQ('해설. '+q.ex, cb);}; return; }
       let done=false;
       const finish=()=>{ if(done) return; done=true; if(cb) cb(); };
       quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중');
-      speakQuizExplanation(q.ex, finish);
-      /* v30.94/v30.96 TTS EXPLANATION PARAGRAPH PAUSE
-         긴 해설을 한 번에 모두 읽지 않고, 문장·문단·①②③·㉠㉡㉢ 항목 단위로 나누어
-         짧게 쉬어가며 읽는다. 원형 한글 자모 표식은 음성에서만 제거한다. */
+      spkQ('해설. '+q.ex, finish);
+      /* v30.20 TTS FIX 01
+         기존 안전 타이머가 긴 해설을 아직 읽는 중에도 finish()를 호출하여
+         자동 다음 문제로 넘어가는 문제가 있었다.
+         이제는 speechSynthesis가 실제로 말하는 중이면 절대 완료 처리하지 않고,
+         일부 브라우저에서 onend가 누락된 경우에만 말하기 종료 상태를 확인한 뒤 보조 완료 처리한다. */
       const explainWatchdog=()=>{
         if(done || paused) return;
         try{
@@ -3628,14 +3616,10 @@ function spkAns(L,q,cb){
             setTimeout(explainWatchdog,1500);
             return;
           }
-          if(pbTimer){
-            setTimeout(explainWatchdog,1500);
-            return;
-          }
         }catch(e){}
         finish();
       };
-      setTimeout(explainWatchdog,10000);
+      setTimeout(explainWatchdog,8000);
     },500);
   });
 }
@@ -3974,7 +3958,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=30.96-tts-skip-circled-hangul-marks')
+    navigator.serviceWorker.register('sw.js?v=30.97-phone-drive-no-touch-fullscreen-restore')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });

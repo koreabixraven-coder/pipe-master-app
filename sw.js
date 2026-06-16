@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-96-tts-skip-circled-hangul-marks';
+const CACHE_NAME = 'pipe-master-v30-97-phone-drive-no-touch-fullscreen-restore';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.96: skip circled hangul consonant markers in quiz explanation TTS
+// v30.97: phone moving-listening no-touch fullscreen restore; skip circled hangul consonant markers retained
