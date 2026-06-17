@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v30-99-2023-1-cbt-restore-original-verified-star-mark';
+const CACHE_NAME = 'pipe-master-v31-01-2024-1-cbt-restore-original-verified-star-mark';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v30.99: 2023-1 CBT restore original verified star mark; v30.97 phone moving-listening no-touch fullscreen restore retained
+// v31.01: 2024-1 CBT restore original verified star mark; v30.97 phone moving-listening no-touch fullscreen restore retained
