@@ -1821,6 +1821,43 @@ function toKorean(txt){
   };
   let result = String(txt||'');
 
+  /* v31.03 TTS UNIT SYMBOL READ FIX
+     해설/문제 TTS에서 [m], (m), [W/m·K], [kJ/kg·K]처럼
+     숫자 뒤 단위기호가 대괄호·괄호에 들어간 경우를 먼저 한글 발음으로 변환한다.
+     기존 화면 표시는 그대로 유지하고, 음성 변환 텍스트에서만 적용한다. */
+  const unitNum='[-+]?\\d+(?:\\.\\d+)?(?:\\s*(?:~|∼|～|-)\\s*[-+]?\\d+(?:\\.\\d+)?)?';
+  const unitPairs=[
+    ['W/m²·K','와트 매 제곱미터 켈빈'], ['W/m2·K','와트 매 제곱미터 켈빈'], ['W/㎡·K','와트 매 제곱미터 켈빈'],
+    ['W/m·K','와트 매 미터 켈빈'], ['W/mK','와트 매 미터 켈빈'],
+    ['kJ/kg·K','킬로줄 매 킬로그램 켈빈'], ['J/kg·K','줄 매 킬로그램 켈빈'], ['kJ/kg','킬로줄 매 킬로그램'],
+    ['kgf/cm²','킬로그램힘 매 제곱센티미터'], ['kgf/cm2','킬로그램힘 매 제곱센티미터'],
+    ['kgf/mm²','킬로그램힘 매 제곱밀리미터'], ['kgf/mm2','킬로그램힘 매 제곱밀리미터'],
+    ['mmHgV','밀리미터 수은주 진공'], ['mmHg','밀리미터 수은주'], ['mmAq','밀리미터 수주'],
+    ['m²','제곱미터'], ['㎡','제곱미터'], ['m2','제곱미터'],
+    ['m³','세제곱미터'], ['㎥','세제곱미터'], ['m3','세제곱미터'],
+    ['cm²','제곱센티미터'], ['cm2','제곱센티미터'], ['mm²','제곱밀리미터'], ['mm2','제곱밀리미터'],
+    ['m/s','미터 매 초'], ['m/min','미터 매 분'], ['L/h','리터 매 시간'], ['ℓ/h','리터 매 시간'],
+    ['MPa','메가파스칼'], ['kPa','킬로파스칼'], ['Pa','파스칼'],
+    ['kWh','킬로와트시'], ['kW','킬로와트'], ['W','와트'], ['V','볼트'], ['A','에이'],
+    ['rpm','알피엠'], ['RPM','알피엠'], ['℃','도'], ['°C','도'], ['%','퍼센트'],
+    ['kg','킬로그램'], ['g','그램'], ['L','리터'], ['ℓ','리터'],
+    ['mm','밀리미터'], ['cm','센티미터'], ['m','미터'],
+    ['K','켈빈'], ['h','시간'], ['min','분'], ['sec','초'], ['s','초']
+  ];
+  function escUnitForRe(u){ return String(u).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+  unitPairs.slice().sort((a,b)=>String(b[0]).length-String(a[0]).length).forEach(([u,read])=>{
+    const eu=escUnitForRe(u);
+    result=result.replace(new RegExp('('+unitNum+')\\s*\\[\\s*'+eu+'\\s*\\]','gi'), '$1'+read);
+    result=result.replace(new RegExp('('+unitNum+')\\s*\\(\\s*'+eu+'\\s*\\)','gi'), '$1'+read);
+    result=result.replace(new RegExp('('+unitNum+')\\s*'+eu+'(?=$|[^A-Za-z0-9가-힣])','gi'), '$1'+read);
+  });
+  /* 손실열량[kW]처럼 숫자 없이 붙은 단위 대괄호도 낭독 가능하게 처리 */
+  unitPairs.slice().sort((a,b)=>String(b[0]).length-String(a[0]).length).forEach(([u,read])=>{
+    const eu=escUnitForRe(u);
+    result=result.replace(new RegExp('\\[\\s*'+eu+'\\s*\\]','gi'), ' 단위 '+read+' ');
+  });
+  result=result.replace(/×/g, ' 곱하기 ');
+
   /* v30.20 TTS FIX 01
      문제풀이 TTS에서 정(chisel), 액추에이터(actuator), ZD(Zero Defect)처럼
      한글 용어 뒤에 붙은 영문 괄호 설명을 함께 읽어 중복되는 문제를 방지한다.

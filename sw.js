@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-02-2024-2-cbt-restore-original-verified-star-mark';
+const CACHE_NAME = 'pipe-master-v31-03-tts-unit-symbol-read-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v31.02: 2024-2 CBT restore original verified star mark; v30.97 phone moving-listening no-touch fullscreen restore retained
+// v31.03: TTS unit symbol read fix; v31.02 2024-2 CBT restore original verified star mark retained
