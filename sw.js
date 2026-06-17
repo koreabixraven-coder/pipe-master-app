@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-03-tts-unit-symbol-read-fix';
+const CACHE_NAME = 'pipe-master-v31-05-question-number-jump-list';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,4 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v31.03: TTS unit symbol read fix; v31.02 2024-2 CBT restore original verified star mark retained
+// v31.05: Question number jump list added from v31.03 safety base; data and TTS unit symbol read fix retained

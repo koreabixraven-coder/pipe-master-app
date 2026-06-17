@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.03"></script>
+<script src="questions.js?v=31.05"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -591,6 +591,23 @@
   .quiz-logo-ico.qli-read svg,.quiz-logo-ico.qli-play svg{fill:currentColor;stroke:none;}
   .quiz-logo-ico.qli-stop{border-color:#5A2B2B;background:#2A1111;color:#FFB0B0;}
   .quiz-logo-ico.qli-drive.active{background:#0A2E22;border-color:#1D9E75;color:#9FE1CB;}
+  .quiz-logo-ico.qli-jump{border-color:#27445F;background:#0C1B2A;color:#A8D2FF;font-size:11px;font-weight:800;line-height:1.05;letter-spacing:-0.5px;}
+  .quiz-logo-ico.qli-jump span{display:block;text-align:center;}
+  .quiz-jump-action{background:#0C1B2A!important;border-color:#378ADD!important;color:#A8D2FF!important;}
+
+  /* ── v31.05 문제 번호 이동 패널 ── */
+  .qjump-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:2100;padding:14px;box-sizing:border-box;align-items:center;justify-content:center;}
+  .qjump-backdrop.show{display:flex;}
+  .qjump-sheet{width:min(100%,520px);max-height:calc(100vh - 28px);overflow:auto;background:#111;border:0.5px solid #2A2A2A;border-radius:18px;box-shadow:0 14px 44px rgba(0,0,0,.65);padding:14px;box-sizing:border-box;}
+  .qjump-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:10px;margin-bottom:10px;border-bottom:0.5px solid #242424;}
+  .qjump-title{font-size:15px;font-weight:800;color:#A8D2FF;margin-bottom:4px;}
+  .qjump-sub{font-size:11px;color:#888;line-height:1.45;}
+  .qjump-close{width:38px;height:38px;border-radius:11px;border:0.5px solid #3A1515;background:#1A1A1A;color:#E24B4A;font-size:18px;cursor:pointer;flex-shrink:0;}
+  .qjump-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;}
+  .qjump-num{min-height:42px;border-radius:11px;border:0.5px solid #2A2A2A;background:#181818;color:#D9D9D9;font-size:13px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .qjump-num:active{transform:scale(.97);}
+  .qjump-num.active{background:#0C2D4A;border-color:#378ADD;color:#A8D2FF;box-shadow:0 0 0 1px rgba(55,138,221,.25);}
+  @media(max-width:420px){.qjump-grid{grid-template-columns:repeat(5,1fr);gap:6px;}.qjump-num{min-height:40px;font-size:12px;}.qjump-sheet{padding:12px;border-radius:16px;}}
   .quiz-logo-ico.qli-play.paused{border-color:#BA7517;background:#1A1000;color:#FAC775;}
   .quiz-logo-ico:active{transform:translateY(1px);}
   .theory-topline{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:0.5px solid #222;margin-bottom:10px;}
@@ -1466,6 +1483,7 @@
         <button class="quiz-logo-ico qli-stop" onclick="stopQuizTts()" aria-label="정지" title="정지">
           <svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
         </button>
+        <button class="quiz-logo-ico qli-jump" onclick="openQuestionJump()" aria-label="번호 이동" title="번호 이동"><span>번호</span></button>
         <button class="quiz-logo-ico qli-next" onclick="nextQ()" aria-label="다음문제" title="다음문제">
           <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/><path d="M4 12h11"/></svg>
         </button>
@@ -1520,6 +1538,20 @@
     <div class="sc ok"><div class="sn" id="scOk">0</div><div class="sl">정답</div></div>
     <div class="sc ng"><div class="sn" id="scNg">0</div><div class="sl">오답</div></div>
     <div class="sc rt"><div class="sn" id="scRt">0%</div><div class="sl">정답률</div></div>
+  </div>
+
+  <!-- 문제 번호 이동 패널 -->
+  <div class="qjump-backdrop" id="qJumpPanel" onclick="closeQuestionJump(event)" aria-hidden="true">
+    <div class="qjump-sheet" onclick="event.stopPropagation()" role="dialog" aria-label="문제 번호 이동">
+      <div class="qjump-head">
+        <div>
+          <div class="qjump-title">문제 번호 이동</div>
+          <div class="qjump-sub" id="qJumpSub">원하는 번호를 누르면 해당 문제로 바로 이동합니다.</div>
+        </div>
+        <button class="qjump-close" onclick="closeQuestionJump()" aria-label="닫기">×</button>
+      </div>
+      <div class="qjump-grid" id="qJumpGrid"></div>
+    </div>
   </div>
 
   <!-- 결과 화면 -->
@@ -1591,6 +1623,7 @@
     <div class="act-row quiz-bottom-actions">
       <button class="ab quiz-return-action" onclick="returnToQuizStage()">← 문제풀이 돌아가기</button>
       <button class="ab quiz-read-all-action" onclick="mRead('all')">▶ 전체읽기</button>
+      <button class="ab quiz-jump-action" onclick="openQuestionJump()">문제 번호 이동</button>
       <button class="drive-start-btn drive-start-row-btn" id="landscapeDriveStartBtn" onclick="toggleDrive()">
         <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z"/></svg>
         이동중청취모드
@@ -3935,6 +3968,54 @@ function answer(idx){
     });
   }
 }
+function openQuestionJump(){
+  if(!Qs || !Qs.length){setSt('이동할 문제가 없습니다.');return;}
+  if(driveOn){setSt('이동 중 청취 모드에서는 번호 이동을 사용할 수 없습니다.');return;}
+  buildQuestionJumpGrid();
+  const p=document.getElementById('qJumpPanel');
+  if(p){p.classList.add('show');p.setAttribute('aria-hidden','false');}
+}
+function closeQuestionJump(e){
+  if(e && e.target && e.currentTarget && e.target!==e.currentTarget) return;
+  const p=document.getElementById('qJumpPanel');
+  if(p){p.classList.remove('show');p.setAttribute('aria-hidden','true');}
+}
+function buildQuestionJumpGrid(){
+  const g=document.getElementById('qJumpGrid');
+  const sub=document.getElementById('qJumpSub');
+  if(!g) return;
+  const total=(Qs && Qs.length) ? Qs.length : 0;
+  g.innerHTML='';
+  if(sub) sub.textContent=getQuizLevelLabel(curLevel)+' · '+total+'문제 중 원하는 번호를 누르면 바로 이동합니다.';
+  for(let i=0;i<total;i++){
+    const b=document.createElement('button');
+    b.className='qjump-num'+(i===cur?' active':'');
+    b.textContent=String(i+1);
+    b.onclick=()=>jumpToQuestion(i);
+    g.appendChild(b);
+  }
+}
+function jumpToQuestion(idx){
+  if(!Qs || !Qs.length) return;
+  idx=Math.max(0,Math.min(Qs.length-1,Number(idx)||0));
+  tStop();
+  stopTH();
+  normalFullAuto=false;
+  paused=false;
+  resetQuizPauseButton();
+  cur=idx;
+  answered=false;
+  const rs=document.getElementById('resultScreen');
+  if(rs) rs.classList.remove('show');
+  const qa=document.getElementById('quizArea');
+  if(qa) qa.style.display='block';
+  const sb=document.getElementById('scoreBar');
+  if(sb) sb.style.display='flex';
+  renderQ();
+  buildDots();
+  closeQuestionJump();
+  setSt('문제 '+(cur+1)+'번으로 이동했습니다.');
+}
 function nextQ(){
   cur++;
   if(cur>=Qs.length){showResult();return;}
@@ -3995,7 +4076,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.03-tts-unit-symbol-read-fix')
+    navigator.serviceWorker.register('sw.js?v=31.05-question-number-jump-list')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
