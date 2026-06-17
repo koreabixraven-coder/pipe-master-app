@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-08-2007-41-q53-2007-42-q4-fix';
+const CACHE_NAME = 'pipe-master-v31-09-2025-1-cbt-restore-original-verified-star-mark';
 const ASSETS = [
   './',
   './index.html',
@@ -72,3 +72,5 @@ self.addEventListener('fetch', e => {
 // v31.07: 2007-41회 10번 정답 ④ 및 해설 사용자 제공 원본 사진 기준 교정
 
 // v31.08: 2007-41회 53번 정답 ①, 2007-42회 4번 정답 ② 및 해설 교정
+
+// v31.09: 2025-1회 CBT 복원문제 60문항 원본 사진 및 HTML 대조 반영, ★ 표시
