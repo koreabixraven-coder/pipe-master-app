@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-05-question-number-jump-list';
+const CACHE_NAME = 'pipe-master-v31-08-2007-41-q53-2007-42-q4-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -67,4 +67,8 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// v31.05: Question number jump list added from v31.03 safety base; data and TTS unit symbol read fix retained
+// v31.06: Galaxy Tab TTS rate slider sync fix added on v31.05; data, TTS unit symbol read fix, and question jump list retained
+
+// v31.07: 2007-41회 10번 정답 ④ 및 해설 사용자 제공 원본 사진 기준 교정
+
+// v31.08: 2007-41회 53번 정답 ①, 2007-42회 4번 정답 ② 및 해설 교정

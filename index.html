@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.05"></script>
+<script src="questions.js?v=31.08"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -1162,12 +1162,12 @@
     </div>
     <div class="sl-row">
       <label>속도</label>
-      <input type="range" min="0.5" max="1.8" step="0.1" value="1.1" oninput="document.getElementById('rv').textContent=parseFloat(this.value).toFixed(1);rate=parseFloat(this.value);">
+      <input id="ttsRateSlider" type="range" min="0.5" max="1.8" step="0.1" value="1.1" oninput="setTtsRateFromControl(this.value,true)" onchange="setTtsRateFromControl(this.value,true)">
       <span id="rv">1.1</span>
     </div>
     <div class="sl-row">
       <label>음높이</label>
-      <input type="range" min="0.5" max="2.0" step="0.1" value="1.0" oninput="document.getElementById('pv').textContent=parseFloat(this.value).toFixed(1);pitch=parseFloat(this.value);">
+      <input id="ttsPitchSlider" type="range" min="0.5" max="2.0" step="0.1" value="1.0" oninput="setTtsPitchFromControl(this.value,true)" onchange="setTtsPitchFromControl(this.value,true)">
       <span id="pv">1.0</span>
     </div>
     <div class="s-sep"></div>
@@ -1623,7 +1623,7 @@
     <div class="act-row quiz-bottom-actions">
       <button class="ab quiz-return-action" onclick="returnToQuizStage()">← 문제풀이 돌아가기</button>
       <button class="ab quiz-read-all-action" onclick="mRead('all')">▶ 전체읽기</button>
-      <button class="ab quiz-jump-action" onclick="openQuestionJump()">문제 번호 이동</button>
+      <button class="ab quiz-jump-action" onclick="openQuestionJump()">1~60 번호 이동</button>
       <button class="drive-start-btn drive-start-row-btn" id="landscapeDriveStartBtn" onclick="toggleDrive()">
         <svg viewBox="0 0 24 24"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3v5z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3v5z"/></svg>
         이동중청취모드
@@ -3020,23 +3020,7 @@ function loadV(){
 
   applySettings(appSettings);
 
-  const sliders=document.querySelectorAll('.sl-row input[type="range"]');
-  if(sliders[0]){
-    sliders[0].oninput=function(){
-      rate=parseFloat(this.value);
-      if(appSettings) appSettings.rate=rate;
-      const rv=document.getElementById('rv'); if(rv) rv.textContent=rate.toFixed(1);
-      markSettingsDirty();
-    };
-  }
-  if(sliders[1]){
-    sliders[1].oninput=function(){
-      pitch=parseFloat(this.value);
-      if(appSettings) appSettings.pitch=pitch;
-      const pv=document.getElementById('pv'); if(pv) pv.textContent=pitch.toFixed(1);
-      markSettingsDirty();
-    };
-  }
+  attachTtsRangeSync();
 
   const ae=document.getElementById('autoEx');
   const an=document.getElementById('autoNx');
@@ -3315,6 +3299,73 @@ const DEFAULT_SETTINGS={
 let appSettings=null;
 let settingsDirty=false;
 
+
+/* ── v31.06 Galaxy Tab TTS speed sync fix ──
+   일부 갤럭시탭/삼성 브라우저/PWA 환경에서는 range oninput만으로는
+   TTS 속도값이 실제 SpeechSynthesisUtterance에 안정적으로 전달되지 않는 경우가 있다.
+   해결: 속도/음높이 슬라이더를 ID 기반으로 고정하고, input/change/touchend/pointerup을 모두 수신하며,
+   낭독 직전에 화면 슬라이더의 최신 값을 다시 읽어 utterance.rate/pitch에 적용한다. */
+function clampTtsNumber(value,min,max,fallback){
+  const n=Number(value);
+  if(!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+function getTtsRateSlider(){ return document.getElementById('ttsRateSlider'); }
+function getTtsPitchSlider(){ return document.getElementById('ttsPitchSlider'); }
+function setTtsRateFromControl(value,dirty){
+  const next=clampTtsNumber(value,0.5,1.8,DEFAULT_SETTINGS.rate);
+  rate=next;
+  if(appSettings) appSettings.rate=next;
+  const slider=getTtsRateSlider();
+  if(slider && Number(slider.value)!==next) slider.value=String(next);
+  const rv=document.getElementById('rv');
+  if(rv) rv.textContent=next.toFixed(1);
+  try{ localStorage.setItem('rate',String(next)); }catch(e){}
+  if(dirty!==false) markSettingsDirty();
+  return next;
+}
+function setTtsPitchFromControl(value,dirty){
+  const next=clampTtsNumber(value,0.5,2.0,DEFAULT_SETTINGS.pitch);
+  pitch=next;
+  if(appSettings) appSettings.pitch=next;
+  const slider=getTtsPitchSlider();
+  if(slider && Number(slider.value)!==next) slider.value=String(next);
+  const pv=document.getElementById('pv');
+  if(pv) pv.textContent=next.toFixed(1);
+  try{ localStorage.setItem('pitch',String(next)); }catch(e){}
+  if(dirty!==false) markSettingsDirty();
+  return next;
+}
+function getEffectiveTtsRate(){
+  const slider=getTtsRateSlider();
+  const next=clampTtsNumber(slider ? slider.value : rate,0.5,1.8,DEFAULT_SETTINGS.rate);
+  rate=next;
+  if(appSettings) appSettings.rate=next;
+  return next;
+}
+function getEffectiveTtsPitch(){
+  const slider=getTtsPitchSlider();
+  const next=clampTtsNumber(slider ? slider.value : pitch,0.5,2.0,DEFAULT_SETTINGS.pitch);
+  pitch=next;
+  if(appSettings) appSettings.pitch=next;
+  return next;
+}
+function attachTtsRangeSync(){
+  const rateSlider=getTtsRateSlider();
+  const pitchSlider=getTtsPitchSlider();
+  const bind=(el,fn)=>{
+    if(!el || el.dataset.ttsSyncBound==='1') return;
+    el.dataset.ttsSyncBound='1';
+    ['input','change','touchend','pointerup','mouseup','keyup'].forEach(evt=>{
+      el.addEventListener(evt,()=>fn(el.value,true),{passive:true});
+    });
+  };
+  bind(rateSlider,setTtsRateFromControl);
+  bind(pitchSlider,setTtsPitchFromControl);
+  setTtsRateFromControl(rate,false);
+  setTtsPitchFromControl(pitch,false);
+}
+
 function normalizeSettings(obj){
   const s=Object.assign({}, DEFAULT_SETTINGS, obj||{});
   s.rate=Math.max(0.5, Math.min(1.8, Number(s.rate)||DEFAULT_SETTINGS.rate));
@@ -3403,11 +3454,13 @@ function applySettings(settings, rebuildVoiceCards=false){
   th=appSettings.thinkTime;
   theoryAutoMode=appSettings.theoryAutoMode;
 
-  const sliders=document.querySelectorAll('.sl-row input[type="range"]');
-  if(sliders[0]) sliders[0].value=String(rate);
-  if(sliders[1]) sliders[1].value=String(pitch);
+  const rateSlider=getTtsRateSlider();
+  const pitchSlider=getTtsPitchSlider();
+  if(rateSlider) rateSlider.value=String(rate);
+  if(pitchSlider) pitchSlider.value=String(pitch);
   const rv=document.getElementById('rv'); if(rv) rv.textContent=rate.toFixed(1);
   const pv=document.getElementById('pv'); if(pv) pv.textContent=pitch.toFixed(1);
+  attachTtsRangeSync();
 
   setRowActive('#nsRow', b=>Number(b.getAttribute('data-ns-index'))===ns);
   setRowActive('#pbRow', b=>Math.abs(Number(b.getAttribute('data-pb-value'))-pb)<0.001);
@@ -3437,15 +3490,16 @@ function applySettings(settings, rebuildVoiceCards=false){
   if(typeof updateTheoryAutoStatus==='function') updateTheoryAutoStatus();
 }
 function collectSettingsFromUI(){
-  const sliders=document.querySelectorAll('.sl-row input[type="range"]');
+  const rateSlider=getTtsRateSlider();
+  const pitchSlider=getTtsPitchSlider();
   const activeNs=document.querySelector('#nsRow .sb.on');
   const activePb=document.querySelector('#pbRow .sb.on');
   const activeTh=document.querySelector('#thRow .sb.on');
   const activeTheory=document.querySelector('#theoryAutoRow .sb.on, #theoryAutoRowTop .sb.on');
   return normalizeSettings({
     voiceName: selV ? selV.name : '',
-    rate: sliders[0] ? Number(sliders[0].value) : rate,
-    pitch: sliders[1] ? Number(sliders[1].value) : pitch,
+    rate: rateSlider ? Number(rateSlider.value) : rate,
+    pitch: pitchSlider ? Number(pitchSlider.value) : pitch,
     numberStyle: activeNs ? Number(activeNs.getAttribute('data-ns-index')) : ns,
     pauseBetweenChoices: activePb ? Number(activePb.getAttribute('data-pb-value')) : pb,
     thinkTime: activeTh ? Number(activeTh.getAttribute('data-th-value')) : th,
@@ -3474,6 +3528,7 @@ function resetSettingsToDefault(){
 function initSettingsOnce(){
   appSettings=loadSettings();
   applySettings(appSettings);
+  attachTtsRangeSync();
 }
 
 /* ── v13 STS 계열 TTS 발음 보정 ── */
@@ -3635,7 +3690,11 @@ function spk(txt,cb,mode){
     quizResumeTask=()=>spk(rawTxt,cb,'quiz');
   }
   const u=new SpeechSynthesisUtterance(toKorean(rawTxt));
-  u.lang='ko-KR'; if(selV) u.voice=selV; u.rate=rate; u.pitch=pitch;
+  u.lang='ko-KR';
+  if(selV) u.voice=selV;
+  u.rate=getEffectiveTtsRate();
+  u.pitch=getEffectiveTtsPitch();
+  u.volume=1;
   u.onend=()=>{
     if(token!==speakToken) return;
     clrB();
@@ -4076,7 +4135,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.05-question-number-jump-list')
+    navigator.serviceWorker.register('sw.js?v=31.08-2007-41-q53-2007-42-q4-fix')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
