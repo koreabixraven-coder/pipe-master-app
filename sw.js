@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-12-memorized-question-skip-listening';
+const CACHE_NAME = 'pipe-master-v31-13-tablet-landscape-fixed-logo-scroll-pane';
 const ASSETS = [
   './',
   './index.html',
@@ -80,4 +80,4 @@ self.addEventListener('fetch', e => {
 // v31.11: 문제 번호 이동창 1~60 번호판에 반복출제 뱃지(예: 🔁2, 🔁3)를 표시. 문제/보기/정답/해설 데이터 변경 없음
 
 
-// v31.12: 암기완료 문제 표시 및 전체읽기/이동중청취 제외 기능 추가. 동일 반복문제 일괄 암기완료/해제 지원.
+// v31.13: 태블릿 가로모드 문제풀이 화면 1행 로고/조작아이콘 고정, 2행 본문 독립 스크롤 영역 적용.

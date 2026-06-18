@@ -7,11 +7,11 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
-<title>RavenBix · 배관기능장 4291문제</title>
+<title>RavenBix · 배관기능장 4351문제</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.12"></script>
+<script src="questions.js?v=31.13"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -1137,6 +1137,80 @@
     #screenQuiz .tts-bar .stop{display:none!important;}
   }
 
+
+  /* ── v31.13 태블릿 가로모드 2분할 화면: 1행 로고 고정 + 2행 본문 자동 스크롤 ──
+     - 갤럭시탭/태블릿 가로모드 문제풀이 화면에서만 적용
+     - 최상단 로고행과 우측 조작아이콘은 고정
+     - 문제/보기/해설/암기/반복표시/하단상태는 2행 스크롤 영역에서만 이동
+     - 모바일 세로모드와 데이터/TTS 로직은 변경 없음
+  */
+  .quiz-scroll-pane{width:100%;}
+  @media (min-width:760px) and (orientation:landscape){
+    #screenQuiz.show{
+      position:fixed!important;
+      inset:0!important;
+      width:100vw!important;
+      height:100dvh!important;
+      overflow:hidden!important;
+      background:#121212!important;
+    }
+    #screenQuiz .app{
+      height:100dvh!important;
+      min-height:100dvh!important;
+      max-height:100dvh!important;
+      overflow:hidden!important;
+      display:flex!important;
+      flex-direction:column!important;
+      padding-top:8px!important;
+      padding-bottom:0!important;
+    }
+    #screenQuiz .topbar{
+      position:relative!important;
+      z-index:80!important;
+      flex:0 0 auto!important;
+      margin-bottom:0!important;
+      padding-top:8px!important;
+      padding-bottom:8px!important;
+      background:#121212!important;
+      box-shadow:0 8px 18px rgba(18,18,18,.92)!important;
+    }
+    #screenQuiz .quiz-scroll-pane{
+      flex:1 1 auto!important;
+      min-height:0!important;
+      overflow-y:auto!important;
+      overflow-x:hidden!important;
+      -webkit-overflow-scrolling:touch!important;
+      overscroll-behavior:contain!important;
+      display:flex!important;
+      flex-direction:column!important;
+      padding:0 0 34px!important;
+      scroll-padding-top:14px!important;
+    }
+    #screenQuiz .quiz-scroll-pane > .divider{
+      flex:0 0 auto!important;
+      margin-top:0!important;
+      margin-bottom:12px!important;
+    }
+    #screenQuiz .quiz-scroll-pane > *{
+      flex-shrink:0!important;
+    }
+    #screenQuiz #driveStartBtn{
+      display:none!important;
+    }
+    #screenQuiz .quiz-scroll-pane .desktop-quiz-grid{
+      order:2!important;
+    }
+    #screenQuiz .quiz-scroll-pane .quiz-bottom-control-zone{
+      order:20!important;
+    }
+    #screenQuiz .quiz-scroll-pane .footer{
+      order:30!important;
+    }
+    #screenQuiz .quiz-scroll-pane .q-card{
+      margin-top:0!important;
+    }
+  }
+
 </style>
 </head>
 <body>
@@ -1531,6 +1605,9 @@
       </button>
     </div>
   </div>
+
+  <!-- v31.13: 태블릿 가로모드 1행 로고 고정 + 2행 스크롤 영역 -->
+  <div class="quiz-scroll-pane" id="quizScrollPane">
   <div class="divider"></div>
 
   <!-- 이동모드 바 -->
@@ -1673,6 +1750,7 @@
   <div class="footer" style="margin-top:8px;">
     <p>© 2025 RavenBix. All rights reserved.<br>배관기능장 예상기출문제 TTS 수험앱 · 무단 복제 및 배포 금지</p>
   </div>
+  </div><!-- quiz-scroll-pane -->
 </div><!-- app -->
 </div><!-- screenQuiz -->
 
@@ -1694,6 +1772,7 @@ function goScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
   document.getElementById(id).classList.add('show');
   window.scrollTo(0,0);
+  resetQuizScrollPane();
   if(id==='screenHome') updateHomeCounts();
   if(id==='screenTheory') buildTheorySubjects();
   if(id==='screenQuizToc') buildQuizToc();
@@ -1706,6 +1785,13 @@ function goHome(){
   if(driveOn) toggleDrive();
   stopTheoryDriveMode();
   goScreen('screenHome');
+}
+
+function resetQuizScrollPane(){
+  try{
+    const pane=document.getElementById('quizScrollPane');
+    if(pane) pane.scrollTop=0;
+  }catch(e){}
 }
 
 
@@ -1758,6 +1844,7 @@ function openDriveFromHome(e){
   if(!driveOn) toggleDrive();
   setTimeout(()=>{
     window.scrollTo(0,0);
+    resetQuizScrollPane();
     setSt('이동 중 청취 모드를 시작했습니다.');
   },120);
 }
@@ -2930,7 +3017,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v31.12</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v31.13</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
@@ -4359,7 +4446,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.12-memorized-question-skip-listening')
+    navigator.serviceWorker.register('sw.js?v=31.13-tablet-landscape-fixed-logo-scroll-pane')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
@@ -4399,7 +4486,17 @@ function quizTtsFocus(el,label){
   const st=document.getElementById('quizTrackStatus');
   if(st){st.textContent=label||'읽는 위치 추적 중';st.classList.add('on');}
   setTimeout(()=>{
-    try{el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});}
+    try{
+      const pane=document.getElementById('quizScrollPane');
+      if(pane && getComputedStyle(pane).overflowY !== 'visible'){
+        const pr=pane.getBoundingClientRect();
+        const er=el.getBoundingClientRect();
+        const next=pane.scrollTop + (er.top - pr.top) - (pane.clientHeight/2) + (er.height/2);
+        pane.scrollTo({top:Math.max(0,next),behavior:'smooth'});
+      }else{
+        el.scrollIntoView({behavior:'smooth',block:'center',inline:'nearest'});
+      }
+    }
     catch(e){try{el.scrollIntoView(true);}catch(_e){}}
   },70);
 }
