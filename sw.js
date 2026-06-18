@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-13-tablet-landscape-fixed-logo-scroll-pane';
+const CACHE_NAME = 'pipe-master-v31-17-restore-repeat-badge-direct-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -81,3 +81,10 @@ self.addEventListener('fetch', e => {
 
 
 // v31.13: 태블릿 가로모드 문제풀이 화면 1행 로고/조작아이콘 고정, 2행 본문 독립 스크롤 영역 적용.
+
+// v31.14: 2025년 배관기능장 CBT 필기시험 복원문제(2) 60문항 원본대조 추가.
+// v31.15: 기출복원문제에도 반복출제 뱃지와 암기완료 청취 제외 기능 적용.
+
+// v31.16: 기출복원문제 반복출제 뱃지 미표시 방지용 런타임 보정 및 questions.js 캐시버스터 갱신.
+
+// v31.17: 기출복원문제 번호이동창 반복뱃지가 DB 메타데이터뿐 아니라 index 내 복원 반복참조표를 직접 참조하도록 보정.

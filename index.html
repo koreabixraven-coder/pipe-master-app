@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.13"></script>
+<script src="questions.js?v=31.17"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -1759,6 +1759,34 @@
 const LEVELS = (typeof QUESTION_TOC!=="undefined" ? QUESTION_TOC : Object.keys(DB));
 let curLevel = '배관공학의기초1';
 let Qs = DB[curLevel];
+
+/* ── v31.17 기출복원문제 반복뱃지 직접참조 보정 ──
+   일부 기기/PWA에서 복원문제 DB 메타데이터 반영이 늦어 번호판 뱃지가 표시되지 않는 경우를 방지하기 위해,
+   문제번호 이동창과 반복상세/암기동일문제 기능이 RESTORE_REPEAT_REF_PATCH를 직접 참조하도록 보강합니다. */
+const RESTORE_REPEAT_REF_PATCH = {"복원2019_1회#1":[{"level":"복원2019_1회","label":"2019-1회","no":1},{"level":"복원2023_1회","label":"2023-1회","no":8}],"복원2019_1회#3":[{"level":"복원2019_1회","label":"2019-1회","no":3},{"level":"복원2024_2회","label":"2024-2회","no":16}],"복원2019_1회#44":[{"level":"복원2019_1회","label":"2019-1회","no":44},{"level":"복원2021_1회","label":"2021-1회","no":23}],"복원2019_2회#2":[{"level":"복원2019_2회","label":"2019-2회","no":2},{"level":"복원2022_2회","label":"2022-2회","no":4}],"복원2019_2회#5":[{"level":"복원2019_2회","label":"2019-2회","no":5},{"level":"복원2025_1회","label":"2025-1회","no":35}],"복원2019_2회#10":[{"level":"복원2019_2회","label":"2019-2회","no":10},{"level":"복원2021_1회","label":"2021-1회","no":5}],"복원2019_2회#11":[{"level":"복원2019_2회","label":"2019-2회","no":11},{"level":"복원2024_1회","label":"2024-1회","no":49}],"복원2019_2회#21":[{"level":"복원2019_2회","label":"2019-2회","no":21},{"level":"복원2022_1회","label":"2022-1회","no":51}],"복원2019_2회#37":[{"level":"복원2019_2회","label":"2019-2회","no":37},{"level":"복원2025_1회","label":"2025-1회","no":14}],"복원2019_2회#50":[{"level":"복원2019_2회","label":"2019-2회","no":50},{"level":"복원2020_2회","label":"2020-2회","no":18}],"복원2020_1회#7":[{"level":"복원2020_1회","label":"2020-1회","no":7},{"level":"복원2023_1회","label":"2023-1회","no":9}],"복원2020_1회#16":[{"level":"복원2020_1회","label":"2020-1회","no":16},{"level":"복원2023_2회","label":"2023-2회","no":16}],"복원2020_1회#43":[{"level":"복원2020_1회","label":"2020-1회","no":43},{"level":"복원2025_2회","label":"2025-2회","no":8}],"복원2020_1회#45":[{"level":"복원2020_1회","label":"2020-1회","no":45},{"level":"복원2025_2회","label":"2025-2회","no":44}],"복원2020_1회#51":[{"level":"복원2020_1회","label":"2020-1회","no":51},{"level":"복원2021_1회","label":"2021-1회","no":53}],"복원2020_1회#55":[{"level":"복원2020_1회","label":"2020-1회","no":55},{"level":"복원2025_1회","label":"2025-1회","no":56}],"복원2020_1회#56":[{"level":"복원2020_1회","label":"2020-1회","no":56},{"level":"복원2021_1회","label":"2021-1회","no":55}],"복원2020_2회#18":[{"level":"복원2019_2회","label":"2019-2회","no":50},{"level":"복원2020_2회","label":"2020-2회","no":18}],"복원2020_2회#40":[{"level":"복원2020_2회","label":"2020-2회","no":40},{"level":"복원2025_1회","label":"2025-1회","no":16}],"복원2020_2회#54":[{"level":"복원2020_2회","label":"2020-2회","no":54},{"level":"복원2024_2회","label":"2024-2회","no":47}],"복원2021_1회#1":[{"level":"복원2021_1회","label":"2021-1회","no":1},{"level":"복원2024_1회","label":"2024-1회","no":17}],"복원2021_1회#5":[{"level":"복원2019_2회","label":"2019-2회","no":10},{"level":"복원2021_1회","label":"2021-1회","no":5}],"복원2021_1회#23":[{"level":"복원2019_1회","label":"2019-1회","no":44},{"level":"복원2021_1회","label":"2021-1회","no":23}],"복원2021_1회#43":[{"level":"복원2021_1회","label":"2021-1회","no":43},{"level":"복원2024_1회","label":"2024-1회","no":1}],"복원2021_1회#53":[{"level":"복원2020_1회","label":"2020-1회","no":51},{"level":"복원2021_1회","label":"2021-1회","no":53}],"복원2021_1회#55":[{"level":"복원2020_1회","label":"2020-1회","no":56},{"level":"복원2021_1회","label":"2021-1회","no":55}],"복원2021_1회#59":[{"level":"복원2021_1회","label":"2021-1회","no":59},{"level":"복원2024_1회","label":"2024-1회","no":56}],"복원2021_2회#10":[{"level":"복원2021_2회","label":"2021-2회","no":10},{"level":"복원2022_1회","label":"2022-1회","no":10}],"복원2021_2회#22":[{"level":"복원2021_2회","label":"2021-2회","no":22},{"level":"복원2022_1회","label":"2022-1회","no":5}],"복원2021_2회#34":[{"level":"복원2021_2회","label":"2021-2회","no":34},{"level":"복원2022_1회","label":"2022-1회","no":36}],"복원2021_2회#46":[{"level":"복원2021_2회","label":"2021-2회","no":46},{"level":"복원2024_2회","label":"2024-2회","no":29}],"복원2021_2회#49":[{"level":"복원2021_2회","label":"2021-2회","no":49},{"level":"복원2023_2회","label":"2023-2회","no":54}],"복원2021_2회#57":[{"level":"복원2021_2회","label":"2021-2회","no":57},{"level":"복원2024_2회","label":"2024-2회","no":55}],"복원2022_1회#5":[{"level":"복원2021_2회","label":"2021-2회","no":22},{"level":"복원2022_1회","label":"2022-1회","no":5}],"복원2022_1회#10":[{"level":"복원2021_2회","label":"2021-2회","no":10},{"level":"복원2022_1회","label":"2022-1회","no":10}],"복원2022_1회#36":[{"level":"복원2021_2회","label":"2021-2회","no":34},{"level":"복원2022_1회","label":"2022-1회","no":36}],"복원2022_1회#51":[{"level":"복원2019_2회","label":"2019-2회","no":21},{"level":"복원2022_1회","label":"2022-1회","no":51}],"복원2022_2회#4":[{"level":"복원2019_2회","label":"2019-2회","no":2},{"level":"복원2022_2회","label":"2022-2회","no":4}],"복원2022_2회#60":[{"level":"복원2022_2회","label":"2022-2회","no":60},{"level":"복원2023_1회","label":"2023-1회","no":60}],"복원2023_1회#8":[{"level":"복원2019_1회","label":"2019-1회","no":1},{"level":"복원2023_1회","label":"2023-1회","no":8}],"복원2023_1회#9":[{"level":"복원2020_1회","label":"2020-1회","no":7},{"level":"복원2023_1회","label":"2023-1회","no":9}],"복원2023_1회#38":[{"level":"복원2023_1회","label":"2023-1회","no":38},{"level":"복원2025_1회","label":"2025-1회","no":21}],"복원2023_1회#55":[{"level":"복원2023_1회","label":"2023-1회","no":55},{"level":"복원2024_2회","label":"2024-2회","no":57}],"복원2023_1회#57":[{"level":"복원2023_1회","label":"2023-1회","no":57},{"level":"복원2024_1회","label":"2024-1회","no":59}],"복원2023_1회#60":[{"level":"복원2022_2회","label":"2022-2회","no":60},{"level":"복원2023_1회","label":"2023-1회","no":60}],"복원2023_2회#16":[{"level":"복원2020_1회","label":"2020-1회","no":16},{"level":"복원2023_2회","label":"2023-2회","no":16}],"복원2023_2회#54":[{"level":"복원2021_2회","label":"2021-2회","no":49},{"level":"복원2023_2회","label":"2023-2회","no":54}],"복원2024_1회#1":[{"level":"복원2021_1회","label":"2021-1회","no":43},{"level":"복원2024_1회","label":"2024-1회","no":1}],"복원2024_1회#13":[{"level":"복원2024_1회","label":"2024-1회","no":13},{"level":"복원2025_2회","label":"2025-2회","no":3}],"복원2024_1회#17":[{"level":"복원2021_1회","label":"2021-1회","no":1},{"level":"복원2024_1회","label":"2024-1회","no":17}],"복원2024_1회#48":[{"level":"복원2024_1회","label":"2024-1회","no":48},{"level":"복원2025_1회","label":"2025-1회","no":39}],"복원2024_1회#49":[{"level":"복원2019_2회","label":"2019-2회","no":11},{"level":"복원2024_1회","label":"2024-1회","no":49}],"복원2024_1회#52":[{"level":"복원2024_1회","label":"2024-1회","no":52},{"level":"복원2025_1회","label":"2025-1회","no":46}],"복원2024_1회#53":[{"level":"복원2024_1회","label":"2024-1회","no":53},{"level":"복원2025_2회","label":"2025-2회","no":38}],"복원2024_1회#56":[{"level":"복원2021_1회","label":"2021-1회","no":59},{"level":"복원2024_1회","label":"2024-1회","no":56}],"복원2024_1회#58":[{"level":"복원2024_1회","label":"2024-1회","no":58},{"level":"복원2025_2회","label":"2025-2회","no":58}],"복원2024_1회#59":[{"level":"복원2023_1회","label":"2023-1회","no":57},{"level":"복원2024_1회","label":"2024-1회","no":59}],"복원2024_2회#16":[{"level":"복원2019_1회","label":"2019-1회","no":3},{"level":"복원2024_2회","label":"2024-2회","no":16}],"복원2024_2회#29":[{"level":"복원2021_2회","label":"2021-2회","no":46},{"level":"복원2024_2회","label":"2024-2회","no":29}],"복원2024_2회#47":[{"level":"복원2020_2회","label":"2020-2회","no":54},{"level":"복원2024_2회","label":"2024-2회","no":47}],"복원2024_2회#49":[{"level":"복원2024_2회","label":"2024-2회","no":49},{"level":"복원2025_2회","label":"2025-2회","no":46}],"복원2024_2회#51":[{"level":"복원2024_2회","label":"2024-2회","no":51},{"level":"복원2025_2회","label":"2025-2회","no":35}],"복원2024_2회#55":[{"level":"복원2021_2회","label":"2021-2회","no":57},{"level":"복원2024_2회","label":"2024-2회","no":55}],"복원2024_2회#57":[{"level":"복원2023_1회","label":"2023-1회","no":55},{"level":"복원2024_2회","label":"2024-2회","no":57}],"복원2025_1회#14":[{"level":"복원2019_2회","label":"2019-2회","no":37},{"level":"복원2025_1회","label":"2025-1회","no":14}],"복원2025_1회#16":[{"level":"복원2020_2회","label":"2020-2회","no":40},{"level":"복원2025_1회","label":"2025-1회","no":16}],"복원2025_1회#21":[{"level":"복원2023_1회","label":"2023-1회","no":38},{"level":"복원2025_1회","label":"2025-1회","no":21}],"복원2025_1회#35":[{"level":"복원2019_2회","label":"2019-2회","no":5},{"level":"복원2025_1회","label":"2025-1회","no":35}],"복원2025_1회#39":[{"level":"복원2024_1회","label":"2024-1회","no":48},{"level":"복원2025_1회","label":"2025-1회","no":39}],"복원2025_1회#46":[{"level":"복원2024_1회","label":"2024-1회","no":52},{"level":"복원2025_1회","label":"2025-1회","no":46}],"복원2025_1회#56":[{"level":"복원2020_1회","label":"2020-1회","no":55},{"level":"복원2025_1회","label":"2025-1회","no":56}],"복원2025_2회#3":[{"level":"복원2024_1회","label":"2024-1회","no":13},{"level":"복원2025_2회","label":"2025-2회","no":3}],"복원2025_2회#8":[{"level":"복원2020_1회","label":"2020-1회","no":43},{"level":"복원2025_2회","label":"2025-2회","no":8}],"복원2025_2회#35":[{"level":"복원2024_2회","label":"2024-2회","no":51},{"level":"복원2025_2회","label":"2025-2회","no":35}],"복원2025_2회#38":[{"level":"복원2024_1회","label":"2024-1회","no":53},{"level":"복원2025_2회","label":"2025-2회","no":38}],"복원2025_2회#44":[{"level":"복원2020_1회","label":"2020-1회","no":45},{"level":"복원2025_2회","label":"2025-2회","no":44}],"복원2025_2회#46":[{"level":"복원2024_2회","label":"2024-2회","no":49},{"level":"복원2025_2회","label":"2025-2회","no":46}],"복원2025_2회#58":[{"level":"복원2024_1회","label":"2024-1회","no":58},{"level":"복원2025_2회","label":"2025-2회","no":58}]};
+function applyRestoreRepeatPatch(){
+  try{
+    if(typeof DB==='undefined' || !DB || !RESTORE_REPEAT_REF_PATCH) return;
+    Object.keys(RESTORE_REPEAT_REF_PATCH).forEach(key=>{
+      const sp=key.split('#');
+      const level=sp[0];
+      const no=Number(sp[1]||0);
+      const refs=RESTORE_REPEAT_REF_PATCH[key];
+      const arr=DB[level];
+      if(!Array.isArray(arr) || !Array.isArray(refs) || refs.length<2) return;
+      const q=arr.find(item=>Number(item && item.no)===no);
+      if(!q) return;
+      if(!Array.isArray(q._repeatRefs) || q._repeatRefs.length<2){
+        q._repeatRefs=refs;
+        q._repeatScope='기출복원문제 2019~2025 탑재 데이터 기준';
+        q._repeatMethod='문제 원문 유사도 94% 이상, 부정형/긍정형 불일치 제외';
+        q._repeatCount=refs.length;
+      }
+    });
+  }catch(e){}
+}
+applyRestoreRepeatPatch();
+
 let cur=0, answered=false, driveOn=false, theoryDriveOn=false, paused=false, locked=false;
 let synth=window.speechSynthesis, voices=[], selV=null;
 let rate=1.1, pitch=1.0, ns=0, pb=0.5, th=3;
@@ -2725,7 +2753,7 @@ let quizPrepared=false;
 const QUIZ_GROUPS=[
   {key:'기출문제', icon:'①', desc:'챕터1·챕터2·챕터3·챕터4·챕터5 신규 단원을 훈련합니다.', levels:["배관공학의기초1","관의접합및성형3","용접의종류및특성4","챕터2_01_관의종류및특성","챕터2_02_관이음재료","챕터2_03_밸브및배관부속재료","챕터2_04_관의지지기구","챕터2_05_보온단열재","챕터3_01_배관설비도면","챕터3_02_판금","챕터4_01_급수설비","챕터4_02_배수및통기배관","챕터4_03_급탕설비","챕터4_04_소화설비","챕터4_05_온수난방설비","챕터4_06_증기난방설비","챕터4_07_냉방및공기조화설비","챕터4_08_집진설비및세정설비","챕터4_09_플랜트배관설비","챕터4_10_위생설비및소화설비","챕터4_11_배관설비검사및계측","챕터4_12_설비자동화","챕터4_13_안전관리","챕터5_01_공업경영"], labels:["챕터1-01. 배관공학의 기초","챕터1-02. 관의 접합 및 성형","챕터1-03. 용접의 종류 및 특성","챕터2-01. 관의 종류 및 특성","챕터2-02. 관 이음 재료","챕터2-03. 밸브 및 배관 부속재료","챕터2-04. 관의 지지 기구","챕터2-05. 보온 단열재","챕터3-01. 배관설비도면","챕터3-02. 판금","챕터4-01. 급수설비","챕터4-02. 배수 및 통기배관","챕터4-03. 급탕설비","챕터4-04. 소화설비","챕터4-05. 온수난방설비","챕터4-06. 증기난방설비","챕터4-07. 냉방 및 공기조화설비","챕터4-08. 집진설비 및 세정설비","챕터4-09. 플랜트 배관설비","챕터4-10. 위생설비 및 소화설비","챕터4-11. 배관설비 검사 및 계측","챕터4-12. 설비자동화","챕터4-13. 안전관리","챕터5-01. 공업경영"]},
   {key:'기출회차41회~63회', icon:'②', desc:'2007-41회부터 2018-63회까지의 실제 과년도 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출43회','기출44회','기출45회','기출46회','기출47회','기출48회','기출49회','기출50회','기출51회','기출52회','기출53회','기출54회','기출55회','기출56회','기출57회','기출58회','기출59회','기출60회','기출61회','기출62회','기출63회'], labels:['2007-41회','2007-42회','2008-43회','2008-44회','2009-45회','2009-46회','2010-47회','2010-48회','2011-49회','2011-50회','2012-51회','2012-52회','2013-53회','2013-54회','2014-55회 ★','2014-56회 ★','2015-57회 ★','2016-58회 ★','2016-59회 ★','2017-60회 ★','2017-61회 ★','2018-62회 ★','2018-63회']},
-  {key:'기출복원문제', icon:'③', desc:'2019-1회, 2019-2회, 2020-1회, 2020-2회, 2021-1회, 2021-2회, 2022-1회, 2022-2회, 2023-1회, 2023-2회, 2024-1회, 2024-2회, 2025-1회 복원문제를 추가했으며, 원본대조 완료 회차에는 ★ 표시를 반영했습니다.', levels:['복원2019_1회','복원2019_2회','복원2020_1회','복원2020_2회','복원2021_1회','복원2021_2회','복원2022_1회','복원2022_2회','복원2023_1회','복원2023_2회','복원2024_1회','복원2024_2회','복원2025_1회','복원2025_2회'], labels:['2019-1회','2019-2회 ★','2020-1회 ★','2020-2회 ★','2021-1회 ★','2021-2회 ★','2022-1회 ★','2022-2회 ★','2023-1회 ★','2023-2회 ★','2024-1회 ★','2024-2회 ★','2025-1회 ★','2025-2회']}
+  {key:'기출복원문제', icon:'③', desc:'2019-1회, 2019-2회, 2020-1회, 2020-2회, 2021-1회, 2021-2회, 2022-1회, 2022-2회, 2023-1회, 2023-2회, 2024-1회, 2024-2회, 2025-1회, 2025-2회 복원문제를 추가했으며, 원본대조 완료 회차에는 ★ 표시를 반영했습니다.', levels:['복원2019_1회','복원2019_2회','복원2020_1회','복원2020_2회','복원2021_1회','복원2021_2회','복원2022_1회','복원2022_2회','복원2023_1회','복원2023_2회','복원2024_1회','복원2024_2회','복원2025_1회','복원2025_2회'], labels:['2019-1회','2019-2회 ★','2020-1회 ★','2020-2회 ★','2021-1회 ★','2021-2회 ★','2022-1회 ★','2022-2회 ★','2023-1회 ★','2023-2회 ★','2024-1회 ★','2024-2회 ★','2025-1회 ★','2025-2회 ★']}
 ];
 function getQuizLevelLabel(lv){
   for(const g of QUIZ_GROUPS){
@@ -3017,7 +3045,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v31.13</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v31.15</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
@@ -4184,6 +4212,27 @@ function questionKeyFromRef(ref){
   const no=Number(ref.no||0);
   return (level && no>0) ? level+'#'+no : '';
 }
+function getQuestionRepeatRefs(q,level,idx){
+  if(q && Array.isArray(q._repeatRefs) && q._repeatRefs.length>=2) return q._repeatRefs;
+  try{
+    const lv=String(level||curLevel||'');
+    const no=getQuestionStableNo(q,idx);
+    const key=lv+'#'+no;
+    const refs=(typeof RESTORE_REPEAT_REF_PATCH!=='undefined' && RESTORE_REPEAT_REF_PATCH) ? RESTORE_REPEAT_REF_PATCH[key] : null;
+    if(Array.isArray(refs) && refs.length>=2) return refs;
+  }catch(e){}
+  return [];
+}
+function getQuestionRepeatScope(q,level,idx){
+  if(q && q._repeatScope) return q._repeatScope;
+  const refs=getQuestionRepeatRefs(q,level,idx);
+  return refs.length>=2 ? '기출복원문제 2019~2025 탑재 데이터 기준' : '기출회차41회~63회 탑재 데이터 기준';
+}
+function getQuestionRepeatMethod(q,level,idx){
+  if(q && q._repeatMethod) return q._repeatMethod;
+  const refs=getQuestionRepeatRefs(q,level,idx);
+  return refs.length>=2 ? '문제 원문 유사도 94% 이상, 부정형/긍정형 불일치 제외' : '';
+}
 function isMemorizedQuestion(q,level,idx){
   return !!(memorizedQuestions && memorizedQuestions[questionKey(level,q,idx)]);
 }
@@ -4192,7 +4241,7 @@ function currentQuestionKey(){
 }
 function getRepeatGroupKeys(q,level,idx){
   const keys=[];
-  const refs=(q && Array.isArray(q._repeatRefs) && q._repeatRefs.length>=2) ? q._repeatRefs : [];
+  const refs=getQuestionRepeatRefs(q,level,idx);
   if(refs.length){
     refs.forEach(r=>{const k=questionKeyFromRef(r); if(k && !keys.includes(k)) keys.push(k);});
   }
@@ -4270,7 +4319,7 @@ function renderMemoBox(q){
   if(!box) return;
   if(!q){box.className='memo-box'; box.innerHTML=''; return;}
   const memo=isMemorizedQuestion(q,curLevel,cur);
-  const refs=(q && Array.isArray(q._repeatRefs)) ? q._repeatRefs : [];
+  const refs=getQuestionRepeatRefs(q,curLevel,cur);
   const hasGroup=refs.length>=2;
   box.className='memo-box'+(memo?' done':'');
   const groupCount=hasGroup?getRepeatGroupKeys(q,curLevel,cur).length:1;
@@ -4297,9 +4346,11 @@ function closeQuestionJump(e){
   const p=document.getElementById('qJumpPanel');
   if(p){p.classList.remove('show');p.setAttribute('aria-hidden','true');}
 }
-function getQuestionRepeatCount(q){
-  const refs=(q && Array.isArray(q._repeatRefs)) ? q._repeatRefs : [];
-  return refs.length>=2 ? refs.length : 0;
+function getQuestionRepeatCount(q,level,idx){
+  const refs=getQuestionRepeatRefs(q,level,idx);
+  if(refs.length>=2) return refs.length;
+  const n=Number(q && q._repeatCount);
+  return Number.isFinite(n) && n>=2 ? n : 0;
 }
 function buildQuestionJumpGrid(){
   const g=document.getElementById('qJumpGrid');
@@ -4310,7 +4361,7 @@ function buildQuestionJumpGrid(){
   if(sub) sub.textContent=getQuizLevelLabel(curLevel)+' · '+total+'문제 중 원하는 번호를 누르면 바로 이동합니다. 🔁숫자는 반복출제 총 횟수, 암기는 청취 제외 표시입니다.';
   for(let i=0;i<total;i++){
     const q=Qs[i];
-    const rc=getQuestionRepeatCount(q);
+    const rc=getQuestionRepeatCount(q,curLevel,i);
     const memo=isMemorizedQuestion(q,curLevel,i);
     const b=document.createElement('button');
     b.className='qjump-num'+(rc>=2?' has-repeat':'')+(memo?' memorized':'')+(i===cur?' active':'');
@@ -4368,7 +4419,7 @@ function nextQ(){
 function renderRepeatBox(q){
   const box=document.getElementById('repeatBox');
   if(!box) return;
-  const refs=(q && Array.isArray(q._repeatRefs)) ? q._repeatRefs : [];
+  const refs=getQuestionRepeatRefs(q,curLevel,cur);
   if(refs.length<2){
     box.className='repeat-box';
     box.innerHTML='';
@@ -4384,7 +4435,7 @@ function renderRepeatBox(q){
   list.textContent=refs.map(r=>(r.label||r.level||'기출')+' '+Number(r.no||0)+'번').join(' · ');
   const note=document.createElement('div');
   note.className='rp-note';
-  note.textContent=q._repeatScope || '기출회차41회~63회 탑재 데이터 기준';
+  note.textContent=getQuestionRepeatScope(q,curLevel,cur);
   box.appendChild(title);
   box.appendChild(list);
   box.appendChild(note);
@@ -4446,7 +4497,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.13-tablet-landscape-fixed-logo-scroll-pane')
+    navigator.serviceWorker.register('sw.js?v=31.17-restore-repeat-badge-direct-fix')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
