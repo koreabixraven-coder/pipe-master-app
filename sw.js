@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-09-2025-1-cbt-restore-original-verified-star-mark';
+const CACHE_NAME = 'pipe-master-v31-12-memorized-question-skip-listening';
 const ASSETS = [
   './',
   './index.html',
@@ -74,3 +74,10 @@ self.addEventListener('fetch', e => {
 // v31.08: 2007-41회 53번 정답 ①, 2007-42회 4번 정답 ② 및 해설 교정
 
 // v31.09: 2025-1회 CBT 복원문제 60문항 원본 사진 및 HTML 대조 반영, ★ 표시
+
+// v31.10: 기출회차41회~63회 탑재 데이터 기준 반복·유사 출제 표시 기능 추가
+
+// v31.11: 문제 번호 이동창 1~60 번호판에 반복출제 뱃지(예: 🔁2, 🔁3)를 표시. 문제/보기/정답/해설 데이터 변경 없음
+
+
+// v31.12: 암기완료 문제 표시 및 전체읽기/이동중청취 제외 기능 추가. 동일 반복문제 일괄 암기완료/해제 지원.

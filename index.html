@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.09"></script>
+<script src="questions.js?v=31.12"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -604,10 +604,40 @@
   .qjump-sub{font-size:11px;color:#888;line-height:1.45;}
   .qjump-close{width:38px;height:38px;border-radius:11px;border:0.5px solid #3A1515;background:#1A1A1A;color:#E24B4A;font-size:18px;cursor:pointer;flex-shrink:0;}
   .qjump-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;}
-  .qjump-num{min-height:42px;border-radius:11px;border:0.5px solid #2A2A2A;background:#181818;color:#D9D9D9;font-size:13px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+  .qjump-num{min-height:42px;border-radius:11px;border:0.5px solid #2A2A2A;background:#181818;color:#D9D9D9;font-size:13px;font-weight:800;cursor:pointer;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.05;position:relative;overflow:hidden;}
   .qjump-num:active{transform:scale(.97);}
   .qjump-num.active{background:#0C2D4A;border-color:#378ADD;color:#A8D2FF;box-shadow:0 0 0 1px rgba(55,138,221,.25);}
-  @media(max-width:420px){.qjump-grid{grid-template-columns:repeat(5,1fr);gap:6px;}.qjump-num{min-height:40px;font-size:12px;}.qjump-sheet{padding:12px;border-radius:16px;}}
+  .qjump-main-num{display:block;font-size:13px;font-weight:900;letter-spacing:-0.2px;}
+  .qjump-repeat-badge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:2px 5px;border-radius:999px;background:#261B05;border:0.5px solid #7B5A14;color:#FFD36A;font-size:10px;font-weight:900;line-height:1;white-space:nowrap;}
+  .qjump-num.active .qjump-repeat-badge{background:#3A2800;border-color:#E0A728;color:#FFE39A;}
+  .qjump-num.has-repeat{border-color:#5A4311;background:#1C1608;}
+  .qjump-num.has-repeat.active{border-color:#E0A728;background:#17263B;}
+  @media(max-width:420px){.qjump-grid{grid-template-columns:repeat(5,1fr);gap:6px;}.qjump-num{min-height:42px;font-size:12px;}.qjump-main-num{font-size:12px;}.qjump-repeat-badge{font-size:9px;min-width:25px;padding:2px 4px;}.qjump-sheet{padding:12px;border-radius:16px;}}
+
+  /* ── v31.10 기출 반복출제 표시 ── */
+  .repeat-box{display:none;margin-top:10px;padding:10px 12px;border-radius:12px;border:0.5px solid #4B3E16;background:#1A1508;color:#F2D58A;font-size:11px;line-height:1.55;}
+  .repeat-box.show{display:block;}
+  .repeat-box .rp-title{font-weight:800;color:#FAC775;margin-bottom:3px;}
+  .repeat-box .rp-list{color:#D7C89E;word-break:keep-all;}
+  .repeat-box .rp-note{font-size:10px;color:#8F8052;margin-top:4px;}
+  @media (min-width:760px){.repeat-box{font-size:12px;padding:11px 13px;}}
+  /* ── v31.12 암기완료 문제 제외 청취 ── */
+  .memo-box{display:block;margin-top:10px;padding:10px 12px;border-radius:12px;border:0.5px solid #1E4B42;background:#071B18;color:#BFEFE2;font-size:11px;line-height:1.55;}
+  .memo-box.done{border-color:#2F7A61;background:#071F18;}
+  .memo-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;}
+  .memo-status{font-weight:900;color:#7DF0C7;}
+  .memo-status.pending{color:#B8C6CA;}
+  .memo-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .memo-btn{border:0;border-radius:999px;padding:7px 9px;font-size:11px;font-weight:900;background:#17372F;color:#DDFBF2;box-shadow:inset 0 0 0 0.5px rgba(125,240,199,.25);cursor:pointer;}
+  .memo-btn.warn{background:#34220A;color:#FFE0A8;}
+  .memo-btn.off{background:#2C2F34;color:#D9DEE3;}
+  .memo-toggle{margin-top:8px;display:flex;align-items:center;gap:8px;color:#B6C9C3;font-size:10.5px;}
+  .memo-toggle input{width:16px;height:16px;accent-color:#18A77A;}
+  .memo-hint{font-size:10px;color:#7E9A94;margin-top:5px;}
+  .qjump-num.memorized{opacity:.62;border-style:dashed;background:#121619;}
+  .qjump-num.memorized.active{opacity:1;background:#142237;}
+  .qjump-memo-badge{display:inline-flex;align-items:center;justify-content:center;min-width:28px;padding:2px 5px;border-radius:999px;background:#0B2C23;border:0.5px solid #25745E;color:#86FFD4;font-size:10px;font-weight:900;line-height:1;white-space:nowrap;}
+  @media(max-width:420px){.memo-actions{display:grid;grid-template-columns:1fr;}.memo-btn{width:100%;}.qjump-memo-badge{font-size:9px;min-width:24px;padding:2px 4px;}}
   .quiz-logo-ico.qli-play.paused{border-color:#BA7517;background:#1A1000;color:#FAC775;}
   .quiz-logo-ico:active{transform:translateY(1px);}
   .theory-topline{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:0.5px solid #222;margin-bottom:10px;}
@@ -1239,9 +1269,13 @@
       <label>일반 전체읽기 완전 자동진행</label>
       <label class="tog"><input type="checkbox" id="quizFullAuto"><span class="tog-sl"></span></label>
     </div>
-    <div class="tog-row" style="margin-bottom:10px;">
+    <div class="tog-row">
       <label>문제풀이 TTS 읽는 위치 자동추적</label>
       <label class="tog"><input type="checkbox" id="quizTrack" checked><span class="tog-sl"></span></label>
+    </div>
+    <div class="tog-row" style="margin-bottom:10px;">
+      <label>암기완료 문제 청취 제외</label>
+      <label class="tog"><input type="checkbox" id="memoSkipSetting" data-memo-skip-toggle checked onchange="setSkipMemorizedListening(this.checked)"><span class="tog-sl"></span></label>
     </div>
     <button class="test-btn" onclick="ttsTest()">
       <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
@@ -1546,7 +1580,7 @@
       <div class="qjump-head">
         <div>
           <div class="qjump-title">문제 번호 이동</div>
-          <div class="qjump-sub" id="qJumpSub">원하는 번호를 누르면 해당 문제로 바로 이동합니다.</div>
+          <div class="qjump-sub" id="qJumpSub">원하는 번호를 누르면 해당 문제로 바로 이동합니다. 암기완료 문제는 암기 뱃지로 표시됩니다.</div>
         </div>
         <button class="qjump-close" onclick="closeQuestionJump()" aria-label="닫기">×</button>
       </div>
@@ -1592,6 +1626,8 @@
           <span class="q-cat" id="qCat">-</span>
         </div>
         <div class="q-text" id="qText">문제를 로딩 중입니다...</div>
+        <div class="repeat-box" id="repeatBox" aria-live="polite"></div>
+        <div class="memo-box" id="memoBox" aria-live="polite"></div>
       </div>
       <div class="opts" id="opts"></div>
       <div class="ex-box" id="exBox"></div>
@@ -2894,7 +2930,7 @@ function buildLevelBar(){
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v31.09</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v31.12</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
@@ -3027,6 +3063,8 @@ function loadV(){
   const qfa=document.getElementById('quizFullAuto');
   const qtr=document.getElementById('quizTrack');
   const pwm=document.getElementById('padWideMode');
+  const mss=document.getElementById('memoSkipSetting');
+  if(mss) mss.checked=skipMemorizedListeningEnabled();
   if(ae) ae.onchange=()=>{ if(appSettings) appSettings.autoExplain=ae.checked; markSettingsDirty(); };
   if(an) an.onchange=()=>{ if(appSettings) appSettings.autoNext=an.checked; markSettingsDirty(); };
   if(qfa) qfa.onchange=()=>{ if(appSettings) appSettings.quizFullAuto=qfa.checked; markSettingsDirty(); };
@@ -3890,6 +3928,7 @@ function mRead(t){
   setQuizLogoPlayPauseIcon('pause');
   if(!Qs.length){setSt('이 단계에 문제가 없습니다');return;}
   if(paused){paused=false; resetQuizPauseButton(); quizResumeTask=null; try{synth.cancel();}catch(e){}}
+  if(t==='all' && !ensureCurrentPlayableForListening()) return;
   const q=Qs[cur], L=NL[ns]; clrB();
   if(t!=='all') normalFullAuto=false;
   if(t==='q'){
@@ -3964,6 +4003,10 @@ function stopTH(){
 function resetAuto(){cur=0;answered=false;buildDots();renderQ();autoPlay();}
 function autoPlay(){
   if(!driveOn||paused||!Qs.length) return;
+  if(!ensureCurrentPlayableForListening()){
+    setSt('암기완료 문제를 제외하면 이동중청취할 문제가 없습니다.');
+    return;
+  }
   const q=Qs[cur], L=NL[ns];
   setSt('🔊 문제 읽는 중...');
   quizTtsFocus(document.querySelector('#screenQuiz .q-card') || document.getElementById('qText'),'문제 읽는 중');
@@ -3990,12 +4033,12 @@ function autoReveal(){
   setSt('🔊 정답 및 해설 낭독 중...');
   spkAns(L,q,()=>{
     if(!driveOn) return;
-    if(cur<Qs.length-1){
-      setSt('다음 문제로 이동합니다...');
-      nxTimer=setTimeout(()=>{cur++;answered=false;renderQ();buildDots();autoPlay();},1800);
+    if(goNextPlayableForListening()){
+      setSt('다음 청취 문제로 이동합니다...');
+      nxTimer=setTimeout(()=>{autoPlay();},1800);
     } else {
-      setSt('🎉 이 단계 완료! 수고하셨습니다.');
-      spkQ('이 단계의 모든 문제가 완료되었습니다. 수고하셨습니다.',()=>{});
+      setSt('🎉 암기완료 제외 청취가 완료되었습니다. 수고하셨습니다.');
+      spkQ('암기완료 문제를 제외한 청취가 완료되었습니다. 수고하셨습니다.',()=>{});
     }
   });
 }
@@ -4027,6 +4070,134 @@ function answer(idx){
     });
   }
 }
+/* ── v31.12 암기완료 문제 제외 청취 ── */
+const MEMO_KEY='pipe_master_memorized_questions_v31_12';
+const MEMO_SKIP_KEY='pipe_master_skip_memorized_listening_v31_12';
+let memorizedQuestions=loadMemorizedQuestions();
+function loadMemorizedQuestions(){
+  try{
+    const raw=localStorage.getItem(MEMO_KEY);
+    const obj=raw?JSON.parse(raw):{};
+    return (obj && typeof obj==='object' && !Array.isArray(obj)) ? obj : {};
+  }catch(e){return {};}
+}
+function saveMemorizedQuestions(){
+  try{localStorage.setItem(MEMO_KEY,JSON.stringify(memorizedQuestions||{}));}catch(e){}
+}
+function getQuestionStableNo(q,idx){
+  const n=Number(q && q.no);
+  return Number.isFinite(n) && n>0 ? n : (Number(idx)||0)+1;
+}
+function questionKey(level,q,idx){
+  return String(level||curLevel||'')+'#'+getQuestionStableNo(q,idx);
+}
+function questionKeyFromRef(ref){
+  if(!ref) return '';
+  const level=String(ref.level||'');
+  const no=Number(ref.no||0);
+  return (level && no>0) ? level+'#'+no : '';
+}
+function isMemorizedQuestion(q,level,idx){
+  return !!(memorizedQuestions && memorizedQuestions[questionKey(level,q,idx)]);
+}
+function currentQuestionKey(){
+  return (!Qs || !Qs.length) ? '' : questionKey(curLevel,Qs[cur],cur);
+}
+function getRepeatGroupKeys(q,level,idx){
+  const keys=[];
+  const refs=(q && Array.isArray(q._repeatRefs) && q._repeatRefs.length>=2) ? q._repeatRefs : [];
+  if(refs.length){
+    refs.forEach(r=>{const k=questionKeyFromRef(r); if(k && !keys.includes(k)) keys.push(k);});
+  }
+  const self=questionKey(level,q,idx);
+  if(self && !keys.includes(self)) keys.push(self);
+  return keys;
+}
+function skipMemorizedListeningEnabled(){
+  try{return localStorage.getItem(MEMO_SKIP_KEY)!=='false';}catch(e){return true;}
+}
+function setSkipMemorizedListening(v){
+  try{localStorage.setItem(MEMO_SKIP_KEY,v?'true':'false');}catch(e){}
+  document.querySelectorAll('[data-memo-skip-toggle]').forEach(el=>{el.checked=!!v;});
+  renderMemoBox(Qs && Qs[cur]);
+}
+function findNextPlayableIndex(start){
+  if(!Qs || !Qs.length) return -1;
+  const begin=Math.max(0,Number(start)||0);
+  for(let i=begin;i<Qs.length;i++){
+    if(!skipMemorizedListeningEnabled() || !isMemorizedQuestion(Qs[i],curLevel,i)) return i;
+  }
+  return -1;
+}
+function ensureCurrentPlayableForListening(){
+  if(!skipMemorizedListeningEnabled() || !Qs || !Qs.length) return true;
+  if(!isMemorizedQuestion(Qs[cur],curLevel,cur)) return true;
+  const next=findNextPlayableIndex(cur+1);
+  if(next<0){
+    setQuizLogoPlayPauseIcon('play');
+    normalFullAuto=false;
+    setSt('암기완료 제외 후 청취할 문제가 없습니다. 암기제외를 끄거나 암기해제를 해주세요.');
+    return false;
+  }
+  cur=next;
+  answered=false;
+  renderQ();
+  buildDots();
+  setSt('암기완료 문제를 건너뛰고 '+(cur+1)+'번부터 청취합니다.');
+  return true;
+}
+function goNextPlayableForListening(){
+  const next=skipMemorizedListeningEnabled()?findNextPlayableIndex(cur+1):(cur+1);
+  if(next>=0 && next<Qs.length){
+    cur=next;
+    answered=false;
+    renderQ();
+    buildDots();
+    return true;
+  }
+  return false;
+}
+function markCurrentMemorized(withGroup){
+  if(!Qs || !Qs.length) return;
+  const q=Qs[cur];
+  const keys=withGroup?getRepeatGroupKeys(q,curLevel,cur):[questionKey(curLevel,q,cur)];
+  const stamp={t:Date.now()};
+  keys.forEach(k=>{if(k) memorizedQuestions[k]=stamp;});
+  saveMemorizedQuestions();
+  renderMemoBox(q);
+  buildQuestionJumpGrid();
+  setSt(withGroup?'동일 반복문제 '+keys.length+'개를 암기완료로 표시했습니다.':'현재 문제를 암기완료로 표시했습니다.');
+}
+function clearCurrentMemorized(withGroup){
+  if(!Qs || !Qs.length) return;
+  const q=Qs[cur];
+  const keys=withGroup?getRepeatGroupKeys(q,curLevel,cur):[questionKey(curLevel,q,cur)];
+  keys.forEach(k=>{if(k && memorizedQuestions[k]) delete memorizedQuestions[k];});
+  saveMemorizedQuestions();
+  renderMemoBox(q);
+  buildQuestionJumpGrid();
+  setSt(withGroup?'동일 반복문제 암기완료 표시를 해제했습니다.':'현재 문제 암기완료 표시를 해제했습니다.');
+}
+function renderMemoBox(q){
+  const box=document.getElementById('memoBox');
+  if(!box) return;
+  if(!q){box.className='memo-box'; box.innerHTML=''; return;}
+  const memo=isMemorizedQuestion(q,curLevel,cur);
+  const refs=(q && Array.isArray(q._repeatRefs)) ? q._repeatRefs : [];
+  const hasGroup=refs.length>=2;
+  box.className='memo-box'+(memo?' done':'');
+  const groupCount=hasGroup?getRepeatGroupKeys(q,curLevel,cur).length:1;
+  const skipOn=skipMemorizedListeningEnabled();
+  box.innerHTML=''
+    +'<div class="memo-head"><div class="memo-status '+(memo?'':'pending')+'">'+(memo?'✅ 암기완료 문제':'암기 전 문제')+'</div>'
+    +'<div style="font-size:10px;color:#7E9A94;">청취 제외 '+(skipOn?'ON':'OFF')+'</div></div>'
+    +'<div class="memo-actions">'
+    +(memo?'<button class="memo-btn off" onclick="clearCurrentMemorized(false)">현재 문제 암기해제</button>':'<button class="memo-btn" onclick="markCurrentMemorized(false)">현재 문제 암기완료</button>')
+    +(hasGroup?(memo?'<button class="memo-btn off" onclick="clearCurrentMemorized(true)">동일문제 '+groupCount+'개 해제</button>':'<button class="memo-btn warn" onclick="markCurrentMemorized(true)">동일문제 '+groupCount+'개 함께 암기완료</button>'):'')
+    +'</div>'
+    +'<label class="memo-toggle"><input type="checkbox" data-memo-skip-toggle '+(skipOn?'checked':'')+' onchange="setSkipMemorizedListening(this.checked)"> 암기완료 문제는 전체읽기/이동중청취에서 제외</label>'
+    +'<div class="memo-hint">문제는 삭제하지 않고 이 기기 브라우저에만 암기표시를 저장합니다. 번호 이동창에도 “암기”로 표시됩니다.</div>';
+}
 function openQuestionJump(){
   if(!Qs || !Qs.length){setSt('이동할 문제가 없습니다.');return;}
   if(driveOn){setSt('이동 중 청취 모드에서는 번호 이동을 사용할 수 없습니다.');return;}
@@ -4039,17 +4210,41 @@ function closeQuestionJump(e){
   const p=document.getElementById('qJumpPanel');
   if(p){p.classList.remove('show');p.setAttribute('aria-hidden','true');}
 }
+function getQuestionRepeatCount(q){
+  const refs=(q && Array.isArray(q._repeatRefs)) ? q._repeatRefs : [];
+  return refs.length>=2 ? refs.length : 0;
+}
 function buildQuestionJumpGrid(){
   const g=document.getElementById('qJumpGrid');
   const sub=document.getElementById('qJumpSub');
   if(!g) return;
   const total=(Qs && Qs.length) ? Qs.length : 0;
   g.innerHTML='';
-  if(sub) sub.textContent=getQuizLevelLabel(curLevel)+' · '+total+'문제 중 원하는 번호를 누르면 바로 이동합니다.';
+  if(sub) sub.textContent=getQuizLevelLabel(curLevel)+' · '+total+'문제 중 원하는 번호를 누르면 바로 이동합니다. 🔁숫자는 반복출제 총 횟수, 암기는 청취 제외 표시입니다.';
   for(let i=0;i<total;i++){
+    const q=Qs[i];
+    const rc=getQuestionRepeatCount(q);
+    const memo=isMemorizedQuestion(q,curLevel,i);
     const b=document.createElement('button');
-    b.className='qjump-num'+(i===cur?' active':'');
-    b.textContent=String(i+1);
+    b.className='qjump-num'+(rc>=2?' has-repeat':'')+(memo?' memorized':'')+(i===cur?' active':'');
+    b.setAttribute('aria-label',(i+1)+'번 문제'+(rc>=2?' 반복출제 총 '+rc+'회':'')+(memo?' 암기완료':''));
+    b.title=(i+1)+'번'+(rc>=2?' · 반복출제 총 '+rc+'회':'')+(memo?' · 암기완료':'');
+    const n=document.createElement('span');
+    n.className='qjump-main-num';
+    n.textContent=String(i+1).padStart(2,'0');
+    b.appendChild(n);
+    if(rc>=2){
+      const badge=document.createElement('span');
+      badge.className='qjump-repeat-badge';
+      badge.textContent='🔁'+rc;
+      b.appendChild(badge);
+    }
+    if(memo){
+      const mb=document.createElement('span');
+      mb.className='qjump-memo-badge';
+      mb.textContent='암기';
+      b.appendChild(mb);
+    }
     b.onclick=()=>jumpToQuestion(i);
     g.appendChild(b);
   }
@@ -4082,6 +4277,31 @@ function nextQ(){
 }
 
 /* ── 문제 렌더링 ── */
+
+function renderRepeatBox(q){
+  const box=document.getElementById('repeatBox');
+  if(!box) return;
+  const refs=(q && Array.isArray(q._repeatRefs)) ? q._repeatRefs : [];
+  if(refs.length<2){
+    box.className='repeat-box';
+    box.innerHTML='';
+    return;
+  }
+  box.className='repeat-box show';
+  box.innerHTML='';
+  const title=document.createElement('div');
+  title.className='rp-title';
+  title.textContent='🔁 반복출제 표시 · 총 '+refs.length+'회 출제';
+  const list=document.createElement('div');
+  list.className='rp-list';
+  list.textContent=refs.map(r=>(r.label||r.level||'기출')+' '+Number(r.no||0)+'번').join(' · ');
+  const note=document.createElement('div');
+  note.className='rp-note';
+  note.textContent=q._repeatScope || '기출회차41회~63회 탑재 데이터 기준';
+  box.appendChild(title);
+  box.appendChild(list);
+  box.appendChild(note);
+}
 function renderQ(){
   tStop(); answered=false;
   document.getElementById('nxBtn').style.display='none';
@@ -4091,6 +4311,8 @@ function renderQ(){
     document.getElementById('qNum').textContent='문제 없음';
     document.getElementById('qCat').textContent='-';
     document.getElementById('qText').textContent='이 단계에 문제가 없습니다. 나중에 추가될 예정입니다.';
+    renderRepeatBox(null);
+    renderMemoBox(null);
     document.getElementById('opts').innerHTML='';
     return;
   }
@@ -4098,6 +4320,8 @@ function renderQ(){
   document.getElementById('qNum').textContent='문제 '+(cur+1)+' / '+Qs.length;
   document.getElementById('qCat').textContent=q.cat;
   document.getElementById('qText').textContent=q.q;
+  renderRepeatBox(q);
+  renderMemoBox(q);
   const ol=document.getElementById('opts'); ol.innerHTML='';
   ['①','②','③','④'].forEach((c,i)=>{
     const b=document.createElement('button'); b.className='opt';
@@ -4135,7 +4359,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.09-2025-1-cbt-restore-original-verified-star-mark')
+    navigator.serviceWorker.register('sw.js?v=31.12-memorized-question-skip-listening')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
@@ -4217,9 +4441,16 @@ function scheduleAutoNextAfterExplain(reason){
       setSt('⏸ 자동 다음 문제 이동이 일시정지되었습니다. 이어서재생을 누르세요.');
       return;
     }
-    nextQ();
-    if(normalFullAuto && !driveOn && cur<Qs.length){
-      setTimeout(()=>mRead('all'),650);
+    if(normalFullAuto && !driveOn){
+      if(goNextPlayableForListening()){
+        setTimeout(()=>mRead('all'),650);
+      }else{
+        normalFullAuto=false;
+        setSt('암기완료 문제를 제외한 전체읽기가 완료되었습니다.');
+        setTimeout(()=>{autoNextLock=false; quizTtsClearTrack();},300);
+      }
+    }else{
+      nextQ();
     }
   },1200);
 }
