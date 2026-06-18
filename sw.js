@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-19-landscape-top-actions-right-edge-fix';
+const CACHE_NAME = 'pipe-master-v31-20-bugfix-deadcode-cleanup';
 const ASSETS = [
   './',
   './index.html',
@@ -90,3 +90,9 @@ self.addEventListener('fetch', e => {
 // v31.17: 기출복원문제 번호이동창 반복뱃지가 DB 메타데이터뿐 아니라 index 내 복원 반복참조표를 직접 참조하도록 보정.
 
 // v31.18: 문제번호 이동창에서 암기완료 문제를 녹색 테두리와 ✓암기 뱃지로 더 명확히 표시.
+
+// v31.20: 버그 수정 및 데드코드 정리.
+//   BUG: 재생아이콘 자동갱신 .active→.show 클래스 오타 수정 (4019행).
+//   BUG: 기출63회 DB 미존재 — QUIZ_GROUPS에서 제거.
+//   중복: synth.onvoiceschanged + tryLoadV() 2중 호출 삭제.
+//   데드코드: 빈 stub 함수 6개, 미사용 유틸 함수 10개, ttsStop 별칭 삭제.

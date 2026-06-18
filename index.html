@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.18"></script>
+<script src="questions.js?v=31.20"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -1889,23 +1889,6 @@ function openSettingsFromAnywhere(e){
   if(e){e.stopPropagation(); e.preventDefault();}
   toggleSettings(true);
 }
-function openQuizSettingsFromHome(e){
-  openSettingsFromAnywhere(e);
-}
-function openDriveFromHome(e){
-  if(e){e.stopPropagation(); e.preventDefault();}
-  goScreen('screenQuiz');
-  if(!driveOn) toggleDrive();
-  setTimeout(()=>{
-    window.scrollTo(0,0);
-    resetQuizScrollPane();
-    setSt('이동 중 청취 모드를 시작했습니다.');
-  },120);
-}
-function openTheoryFromHome(e){
-  if(e){e.stopPropagation(); e.preventDefault();}
-  goScreen('screenTheory');
-}
 
 
 /* ── 이론 화면 공통 청취 ── */
@@ -2237,18 +2220,6 @@ function theoryReplayChapter(){
   setTimeout(()=>theoryReadAll(true),180);
 }
 
-function theoryTextForRead(sec){
-  let txt='';
-  txt+=(sec.title||'이론')+'. ';
-  const body=sec.detail || sec.content || sec.screenText || sec.originalText || '';
-  if(body) txt+=body+'. ';
-  if(sec.memory) txt+='암기문장. '+sec.memory+'. ';
-  if(appSettings && appSettings.theoryExamTTS && sec.points && sec.points.length){
-    txt+=sec.points.join('. ')+'. ';
-  }
-  return cleanTheorySpeechText(txt);
-}
-
 
 function annotateTheoryCards(){
   const cards=Array.from(document.querySelectorAll('#theoryContentArea .section-card'));
@@ -2537,12 +2508,6 @@ function cleanTheorySpeechText(s){
     .replace(/설명문\s*\.?\s*/g,'')
     .trim();
 }
-function makeTheoryChapterIntro(){
-  return '';
-}
-function makeTheoryCommonExamPoint(){
-  return '';
-}
 function getTheoryBodyFromCard(el){
   const blocks=Array.from(el.querySelectorAll('.sec-block'));
   const detailBlock=blocks.find(b=>{
@@ -2572,20 +2537,6 @@ function getTheoryBodyFromCard(el){
 }
 function getTheoryExamPointsFromCard(el){
   return Array.from(el.querySelectorAll('.sec-point')).map(p=>p.textContent.trim()).filter(Boolean);
-}
-function makeTheorySectionSpeech(el, idx){
-  const title=(el.querySelector('.sec-title')?.textContent || ('항목 '+(idx+1))).trim();
-  const body=getTheoryBodyFromCard(el);
-  const memory=(el.querySelector('.sec-memory')?.textContent || '').replace(/^암기문장\.\s*/,'').trim();
-  const exam=getTheoryExamPointsFromCard(el);
-
-  let text = title+'. ';
-  if(body) text += body+'. ';
-  if(memory) text += '암기문장. '+memory+'. ';
-  if(appSettings && appSettings.theoryExamTTS && exam.length){
-    text += exam.join('. ')+'. ';
-  }
-  return cleanTheorySpeechText(text);
 }
 
 
@@ -2656,23 +2607,6 @@ function splitTheoryTTSChunks(text){
     pushTheoryLineAsChunks(chunks,line,THEORY_TTS_GAP_MS);
   });
   return chunks.filter(v=>v && v.text);
-}
-function normalizeTheoryCompareText(s){
-  return cleanTheorySpeechText(s)
-    .replace(/\.\.\./g,'')
-    .replace(/[\s.,:;·ㆍ\-_\/\\()[\]{}<>"'‘’“”]/g,'')
-    .trim();
-}
-function isTheoryDuplicateMemory(body,memory){
-  const b=normalizeTheoryCompareText(body);
-  const m=normalizeTheoryCompareText(memory);
-  if(!b || !m || m.length<60) return false;
-  const mHead=m.slice(0,70);
-  const bHead=b.slice(0,140);
-  if(bHead.includes(mHead)) return true;
-  if(m.includes('조') && String(memory||'').includes('...') && bHead.includes(m.slice(0,50))) return true;
-  if(m.length>120 && b.slice(0,90)===m.slice(0,90)) return true;
-  return false;
 }
 function filterTheoryMemoryForSpeech(body,memory){
   const mem=String(memory||'').replace(/^암기문장\.\s*/,'').trim();
@@ -2778,7 +2712,7 @@ let curQuizGroup='기출문제';
 let quizPrepared=false;
 const QUIZ_GROUPS=[
   {key:'기출문제', icon:'①', desc:'챕터1·챕터2·챕터3·챕터4·챕터5 신규 단원을 훈련합니다.', levels:["배관공학의기초1","관의접합및성형3","용접의종류및특성4","챕터2_01_관의종류및특성","챕터2_02_관이음재료","챕터2_03_밸브및배관부속재료","챕터2_04_관의지지기구","챕터2_05_보온단열재","챕터3_01_배관설비도면","챕터3_02_판금","챕터4_01_급수설비","챕터4_02_배수및통기배관","챕터4_03_급탕설비","챕터4_04_소화설비","챕터4_05_온수난방설비","챕터4_06_증기난방설비","챕터4_07_냉방및공기조화설비","챕터4_08_집진설비및세정설비","챕터4_09_플랜트배관설비","챕터4_10_위생설비및소화설비","챕터4_11_배관설비검사및계측","챕터4_12_설비자동화","챕터4_13_안전관리","챕터5_01_공업경영"], labels:["챕터1-01. 배관공학의 기초","챕터1-02. 관의 접합 및 성형","챕터1-03. 용접의 종류 및 특성","챕터2-01. 관의 종류 및 특성","챕터2-02. 관 이음 재료","챕터2-03. 밸브 및 배관 부속재료","챕터2-04. 관의 지지 기구","챕터2-05. 보온 단열재","챕터3-01. 배관설비도면","챕터3-02. 판금","챕터4-01. 급수설비","챕터4-02. 배수 및 통기배관","챕터4-03. 급탕설비","챕터4-04. 소화설비","챕터4-05. 온수난방설비","챕터4-06. 증기난방설비","챕터4-07. 냉방 및 공기조화설비","챕터4-08. 집진설비 및 세정설비","챕터4-09. 플랜트 배관설비","챕터4-10. 위생설비 및 소화설비","챕터4-11. 배관설비 검사 및 계측","챕터4-12. 설비자동화","챕터4-13. 안전관리","챕터5-01. 공업경영"]},
-  {key:'기출회차41회~63회', icon:'②', desc:'2007-41회부터 2018-63회까지의 실제 과년도 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출43회','기출44회','기출45회','기출46회','기출47회','기출48회','기출49회','기출50회','기출51회','기출52회','기출53회','기출54회','기출55회','기출56회','기출57회','기출58회','기출59회','기출60회','기출61회','기출62회','기출63회'], labels:['2007-41회','2007-42회','2008-43회','2008-44회','2009-45회','2009-46회','2010-47회','2010-48회','2011-49회','2011-50회','2012-51회','2012-52회','2013-53회','2013-54회','2014-55회 ★','2014-56회 ★','2015-57회 ★','2016-58회 ★','2016-59회 ★','2017-60회 ★','2017-61회 ★','2018-62회 ★','2018-63회']},
+  {key:'기출회차41회~63회', icon:'②', desc:'2007-41회부터 2018-63회까지의 실제 과년도 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출43회','기출44회','기출45회','기출46회','기출47회','기출48회','기출49회','기출50회','기출51회','기출52회','기출53회','기출54회','기출55회','기출56회','기출57회','기출58회','기출59회','기출60회','기출61회','기출62회'], labels:['2007-41회','2007-42회','2008-43회','2008-44회','2009-45회','2009-46회','2010-47회','2010-48회','2011-49회','2011-50회','2012-51회','2012-52회','2013-53회','2013-54회','2014-55회 ★','2014-56회 ★','2015-57회 ★','2016-58회 ★','2016-59회 ★','2017-60회 ★','2017-61회 ★','2018-62회 ★']},
   {key:'기출복원문제', icon:'③', desc:'2019-1회, 2019-2회, 2020-1회, 2020-2회, 2021-1회, 2021-2회, 2022-1회, 2022-2회, 2023-1회, 2023-2회, 2024-1회, 2024-2회, 2025-1회, 2025-2회 복원문제를 추가했으며, 원본대조 완료 회차에는 ★ 표시를 반영했습니다.', levels:['복원2019_1회','복원2019_2회','복원2020_1회','복원2020_2회','복원2021_1회','복원2021_2회','복원2022_1회','복원2022_2회','복원2023_1회','복원2023_2회','복원2024_1회','복원2024_2회','복원2025_1회','복원2025_2회'], labels:['2019-1회','2019-2회 ★','2020-1회 ★','2020-2회 ★','2021-1회 ★','2021-2회 ★','2022-1회 ★','2022-2회 ★','2023-1회 ★','2023-2회 ★','2024-1회 ★','2024-2회 ★','2025-1회 ★','2025-2회 ★']}
 ];
 function getQuizLevelLabel(lv){
@@ -3154,7 +3088,6 @@ function setTH(v,b){
 
 /* ── 음성 로드 ── */
 
-function preferKoreanOnlineVoice(){}
 
 
 function loadV(){
@@ -3432,29 +3365,6 @@ function togglePause(){
 }
 /* ── TTS ── */
 /* ── 영문 → 한글 발음 변환 ── */
-
-
-
-function ensureDefaultTogglesVisual(){}
-
-
-
-/* ── v15 기본 설정 즉시 적용 ── */
-
-/* ── v16 설정값 ↔ 화면 동기화 ── */
-function setActiveInRow(rowSel, predicate){
-  document.querySelectorAll(rowSel+' .sb').forEach(b=>b.classList.toggle('on', predicate(b)));
-}
-function applySettingsToRuntimeAndUI(){}
-
-
-function applyUserRequestedDefaultSettings(){}
-
-function resetToUserDefaultSettings(){}
-
-
-/* ── v14 사용자 기본 설정값 ── */
-function applyDefaultVoiceSettingsIfFirstRun(){}
 
 
 
@@ -3966,7 +3876,6 @@ function tStop(){
   clrB(); clearTheoryTrack(); quizTtsClearTrack(); setSt('');
   if(!driveOn && !theoryDriveOn) relWake();
 }
-function ttsStop(){ tStop(); }
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
 function setSt(m){document.getElementById('status').innerHTML=m;}
 
@@ -4016,7 +3925,7 @@ function toggleQuizLogoPlayPause(){
 }
 if(!window.__quizLogoPlayPauseWatcher){
   window.__quizLogoPlayPauseWatcher=setInterval(()=>{
-    if(document.getElementById('screenQuiz')?.classList.contains('active')) refreshQuizLogoPlayPause();
+    if(document.getElementById('screenQuiz')?.classList.contains('show')) refreshQuizLogoPlayPause();
   },1200);
 }
 
@@ -4254,16 +4163,8 @@ function getQuestionRepeatScope(q,level,idx){
   const refs=getQuestionRepeatRefs(q,level,idx);
   return refs.length>=2 ? '기출복원문제 2019~2025 탑재 데이터 기준' : '기출회차41회~63회 탑재 데이터 기준';
 }
-function getQuestionRepeatMethod(q,level,idx){
-  if(q && q._repeatMethod) return q._repeatMethod;
-  const refs=getQuestionRepeatRefs(q,level,idx);
-  return refs.length>=2 ? '문제 원문 유사도 94% 이상, 부정형/긍정형 불일치 제외' : '';
-}
 function isMemorizedQuestion(q,level,idx){
   return !!(memorizedQuestions && memorizedQuestions[questionKey(level,q,idx)]);
-}
-function currentQuestionKey(){
-  return (!Qs || !Qs.length) ? '' : questionKey(curLevel,Qs[cur],cur);
 }
 function getRepeatGroupKeys(q,level,idx){
   const keys=[];
@@ -4527,15 +4428,11 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.18-memorized-badge-on-number-list')
+    navigator.serviceWorker.register('sw.js?v=31.20-bugfix-deadcode-cleanup')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
 }
-
-/* 음성 로드 */
-if(synth.onvoiceschanged!==undefined) synth.onvoiceschanged=loadV;
-tryLoadV();
 
 /* 홈화면 시작 */
 document.querySelectorAll('.screen').forEach(s=>s.classList.remove('show'));
