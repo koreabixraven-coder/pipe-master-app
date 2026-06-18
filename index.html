@@ -1215,6 +1215,28 @@
     }
   }
 
+
+  /* ── v31.19 태블릿/데스크탑 가로모드 상단 조작아이콘 우측 가림 보정 ──
+     - 문제풀이 가로모드에서 우측 마지막 설정 아이콘이 화면 밖으로 밀리는 현상 보정
+     - 설정 아이콘은 가로모드 문제풀이 로고행에서 숨기고, 홈 아이콘을 마지막 위치로 사용
+     - 모바일 세로모드와 홈/설정 화면의 설정 기능은 유지
+  */
+  @media (min-width:760px) and (orientation:landscape){
+    #screenQuiz .top-actions{
+      max-width:calc(100vw - 190px)!important;
+      overflow:visible!important;
+      padding-right:0!important;
+      margin-right:0!important;
+    }
+    #screenQuiz .setting-trigger{
+      display:none!important;
+    }
+    #screenQuiz .home-icon-btn{
+      margin-right:0!important;
+      flex-shrink:0!important;
+    }
+  }
+
 </style>
 </head>
 <body>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-18-memorized-badge-on-number-list';
+const CACHE_NAME = 'pipe-master-v31-19-landscape-top-actions-right-edge-fix';
 const ASSETS = [
   './',
   './index.html',
