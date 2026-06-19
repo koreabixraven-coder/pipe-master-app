@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-20-bugfix-deadcode-cleanup';
+const CACHE_NAME = 'pipe-master-v31-21-cross-session-memorize-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -96,3 +96,7 @@ self.addEventListener('fetch', e => {
 //   BUG: 기출63회 DB 미존재 — QUIZ_GROUPS에서 제거.
 //   중복: synth.onvoiceschanged + tryLoadV() 2중 호출 삭제.
 //   데드코드: 빈 stub 함수 6개, 미사용 유틸 함수 10개, ttsStop 별칭 삭제.
+
+// v31.21: 교차회차 암기완료 제외 버그 수정.
+//   isMemorizedQuestion()가 직접키만 확인 → _repeatRefs 교차참조도 확인하도록 보강.
+//   "현재 문제 암기완료"만 눌러도 다른 회차의 동일문제가 재생에서 제외됨.

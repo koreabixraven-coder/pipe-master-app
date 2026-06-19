@@ -4164,7 +4164,18 @@ function getQuestionRepeatScope(q,level,idx){
   return refs.length>=2 ? '기출복원문제 2019~2025 탑재 데이터 기준' : '기출회차41회~63회 탑재 데이터 기준';
 }
 function isMemorizedQuestion(q,level,idx){
-  return !!(memorizedQuestions && memorizedQuestions[questionKey(level,q,idx)]);
+  if(!memorizedQuestions) return false;
+  /* 1. 직접키 확인 (빠른 경로) */
+  if(memorizedQuestions[questionKey(level,q,idx)]) return true;
+  /* 2. 교차회차 확인: _repeatRefs 내 어느 키라도 암기완료이면 동일문제로 판정 */
+  const refs=getQuestionRepeatRefs(q,level,idx);
+  if(refs.length>=2){
+    for(let i=0;i<refs.length;i++){
+      const k=questionKeyFromRef(refs[i]);
+      if(k && memorizedQuestions[k]) return true;
+    }
+  }
+  return false;
 }
 function getRepeatGroupKeys(q,level,idx){
   const keys=[];
@@ -4428,7 +4439,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.20-bugfix-deadcode-cleanup')
+    navigator.serviceWorker.register('sw.js?v=31.21-cross-session-memorize-fix')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
