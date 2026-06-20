@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.23"></script>
+<script src="questions.js?v=31.24"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -2140,10 +2140,34 @@ function focusTheoryMemoryListItem(idx,label){
     },80);
   }
 }
+function cleanTheoryHeadingForSpeech(s){
+  let t=cleanTheorySpeechText(s);
+  t=t
+    .replace(/^\s*[0-9]+\s*p\s*\.?\s*/i,'')
+    .replace(/^\s*[0-9]+\s*페이지\s*/,'')
+    .replace(/^\s*[\[\(]?\s*[0-9]+\s*페이지\s*[\]\)]?\s*/,'')
+    .replace(/^\s*제\s*[0-9]+\s*편\s*/,'')
+    .replace(/\s+/g,' ')
+    .trim();
+  return t;
+}
+function isPageOnlyTheoryHeading(s){
+  const raw=String(s||'').trim();
+  const cleaned=cleanTheoryHeadingForSpeech(raw);
+  if(!raw) return true;
+  if(!cleaned) return true;
+  if(/^[0-9]+\s*(p|페이지)?\s*\.?$/i.test(raw)) return true;
+  if(/^[\[\(]?\s*[0-9]+\s*페이지\s*[\]\)]?$/i.test(raw)) return true;
+  return false;
+}
 function buildTheoryMemorySpeechChunks(it){
   const chunks=[];
-  pushTheorySpeechChunk(chunks,it.subjectTitle,THEORY_TTS_TITLE_GAP_MS);
-  pushTheorySpeechChunk(chunks,it.sectionTitle,THEORY_TTS_TITLE_GAP_MS);
+  const subject=cleanTheoryHeadingForSpeech(it&&it.subjectTitle);
+  const chapter=cleanTheoryHeadingForSpeech(it&&it.chapterTitle);
+  const section=isPageOnlyTheoryHeading(it&&it.sectionTitle)?'':cleanTheoryHeadingForSpeech(it&&it.sectionTitle);
+  if(subject) pushTheorySpeechChunk(chunks,subject,THEORY_TTS_TITLE_GAP_MS);
+  if(chapter && chapter!==subject) pushTheorySpeechChunk(chunks,chapter,THEORY_TTS_TITLE_GAP_MS);
+  if(section && section!==chapter && section!==subject) pushTheorySpeechChunk(chunks,section,THEORY_TTS_TITLE_GAP_MS);
   splitTheoryTTSChunks(it.memory).forEach(c=>chunks.push(c));
   return chunks.filter(v=>v && v.text);
 }
@@ -2177,7 +2201,8 @@ function theoryMemoryReadNext(sessionId){
   }
   const q=theoryMemoryReadQueue[theoryMemoryReadIndex++];
   const it=q.item;
-  focusTheoryMemoryListItem(q.itemIndex,'암기문장 읽는 중. '+it.subjectTitle+' '+(q.itemIndex+1)+'/'+q.itemTotal+' · 문단 '+(q.chunkIndex+1)+'/'+q.chunkTotal);
+  const chapterLabel=cleanTheoryHeadingForSpeech(it.chapterTitle)||it.sectionTitle||'';
+  focusTheoryMemoryListItem(q.itemIndex,'암기문장 읽는 중. '+it.subjectTitle+(chapterLabel?' · '+chapterLabel:'')+' '+(q.itemIndex+1)+'/'+q.itemTotal+' · 문단 '+(q.chunkIndex+1)+'/'+q.chunkTotal);
   spk(q.text,()=>{
     setTimeout(()=>theoryMemoryReadNext(sessionId),q.gapMs||THEORY_TTS_GAP_MS);
   });
@@ -4823,5 +4848,6 @@ function importProgress(){
   }
 }
 </script>
+<!-- v31.24: 암기문장 전체듣기 순서 보강. 과목명 → 소제목/챕터명 → 암기내용, 페이지/반복 표기 생략, 문단 쉼타임 유지. -->
 </body>
 </html>
