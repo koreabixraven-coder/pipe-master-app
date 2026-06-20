@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-27-theory-memory-text-final-clean';
+const CACHE_NAME = 'pipe-master-v31-28-theory-memory-empty-fallback-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -112,4 +112,6 @@ self.addEventListener('fetch', e => {
 
 // v31.26: Theory memory text clean/align filter added. Display/TTS removes unused labels, page/repeat markers, empty brackets, ellipses, and consecutive duplicate lines without modifying data files.
 
-// v31.27: 암기과목 화면 표시 텍스트 최종 정렬. 페이지/장표시/깨진 괄호/문장 밀림 보정.
+// v31.28: 암기과목 화면 표시 텍스트 최종 정렬. 페이지/장표시/깨진 괄호/문장 밀림 보정.
+
+// v31.28: 암기과목 배관제도 5/6처럼 정렬 필터 후 빈 박스가 남는 경우 detail 원문 fallback 복구. '한다.' 문단 밀림 방지 보정.

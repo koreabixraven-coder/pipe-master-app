@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.27"></script>
+<script src="questions.js?v=31.28"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -2052,7 +2052,7 @@ function buildTheorySubjects(){
 
 /* ── v31.22 이론 암기문장만 별도 목록 ── */
 /* v31.23: 암기문장/페이지/반복 표기는 TTS에서 생략하고, 목록기호·콜론·문단 기준 쉼타임을 강화. */
-/* v31.27: 암기과목 화면 표시까지 페이지/장표시/깨진 괄호/문장 밀림을 최종 보정한다. */
+/* v31.26: 암기문장 표시·TTS 전용 텍스트 정렬 필터 추가. 원본 데이터는 보존한다. */
 let theoryMemoryFilterSubject='all';
 let theoryMemoryReadQueue=[];
 let theoryMemoryReadIndex=0;
@@ -2069,7 +2069,7 @@ function collectTheoryMemoryItems(){
       sections.forEach((sec,sectionIdx)=>{
         const memory=String((sec&&sec.memory)||'').trim();
         if(!memory) return;
-        items.push({
+        const item={
           subject,
           subjectTitle:(s.title||subject),
           subjectIcon:(s.icon||'📘'),
@@ -2077,8 +2077,11 @@ function collectTheoryMemoryItems(){
           sectionIdx,
           chapterTitle:(ch.title||('챕터 '+(chapterIdx+1))),
           sectionTitle:((sec&&sec.title)||('항목 '+(sectionIdx+1))),
-          memory
-        });
+          memory,
+          detail:String((sec&&sec.detail)||'')
+        };
+        if(!getTheoryMemoryCleanText(item)) return;
+        items.push(item);
       });
     });
   });
@@ -2136,10 +2139,15 @@ function buildTheoryMemoryList(){
     div.setAttribute('data-subject',it.subject);
     div.setAttribute('data-chapter-index',String(it.chapterIdx));
     div.setAttribute('data-section-index',String(it.sectionIdx));
-    const titleHtml=formatTheoryMemoryTitleDisplay(it);
+    const titleA=cleanTheoryHeadingForSpeech(it.chapterTitle)||it.chapterTitle;
+    const titleB=isPageOnlyTheoryHeading(it.sectionTitle)?'':(cleanTheoryHeadingForSpeech(it.sectionTitle)||it.sectionTitle);
+    const titleHtml=(titleB && comparableTheoryText(titleB)!==comparableTheoryText(titleA))
+      ? escapeTheoryHTML(titleA)+'<br>'+escapeTheoryHTML(titleB)
+      : escapeTheoryHTML(titleA);
+    const memoryHtml=formatTheoryMemoryDisplay(it);
     div.innerHTML=`<div class="tm-path">${escapeTheoryHTML(it.subjectIcon)} ${escapeTheoryHTML(it.subjectTitle)} · ${it.chapterIdx+1}장</div>
       <div class="tm-title">${titleHtml}</div>
-      <div class="tm-memory" data-memory-edit="1">${formatTheoryMemoryDisplay(it)}</div>`;
+      <div class="tm-memory" data-memory-edit="1">${memoryHtml}</div>`;
     if(theoryMemoryEditMode){
       div.onclick=(ev)=>{ev.stopPropagation();};
       const mem=div.querySelector('.tm-memory');
@@ -2189,8 +2197,6 @@ function cleanTheoryHeadingForSpeech(s){
     .replace(/^\s*[0-9]+\s*페이지\s*/,'')
     .replace(/^\s*[\[\(]?\s*[0-9]+\s*페이지\s*[\]\)]?\s*/,'')
     .replace(/^\s*제\s*[0-9]+\s*편\s*/,'')
-    .replace(/^\s*제\s*[0-9]+\s*장\s*/,'')
-    .replace(/\s+[0-9]{1,3}\s*(페이지|p)?\s*$/i,'')
     .replace(/\s+/g,' ')
     .trim();
   return t;
@@ -2203,14 +2209,6 @@ function isPageOnlyTheoryHeading(s){
   if(/^[0-9]+\s*(p|페이지)?\s*\.?$/i.test(raw)) return true;
   if(/^[\[\(]?\s*[0-9]+\s*페이지\s*[\]\)]?$/i.test(raw)) return true;
   return false;
-}
-function formatTheoryMemoryTitleDisplay(it){
-  const parts=[];
-  const chapter=cleanTheoryHeadingForSpeech(it&&it.chapterTitle);
-  const section=isPageOnlyTheoryHeading(it&&it.sectionTitle)?'':cleanTheoryHeadingForSpeech(it&&it.sectionTitle);
-  if(chapter) parts.push(chapter);
-  if(section && comparableTheoryText(section)!==comparableTheoryText(chapter)) parts.push(section);
-  return parts.length ? parts.map(escapeTheoryHTML).join('<br>') : escapeTheoryHTML((it&&it.chapterTitle)||'암기항목');
 }
 function buildTheoryMemorySpeechChunks(it){
   const chunks=[];
@@ -2419,8 +2417,9 @@ function splitTheoryParagraphs(s){
   t=t.replace(/([^\n])\s*(\([0-9]+\)\s*)/g,'$1\n$2');
   t=t.replace(/([^\n])\s*(\([가-힣]\)\s*)/g,'$1\n$2');
   t=t.replace(/([^\n0-9])\s*([0-9]{1,2}[.)]\s+(?=[^0-9]))/g,'$1\n$2');
-  /* '한다.'의 끝 글자 '다.'가 항목기호로 오인되어 줄이 밀리는 문제를 방지한다. */
-  t=t.replace(new RegExp('([^\\n가-힣])\\s*(['+hangulMarkers+'][.)]\\s+)','g'),'$1\n$2');
+  /* v31.28: '한다.'의 마지막 '다.'가 항목기호로 오인되어 줄이 밀리는 문제 방지.
+     가./나./다. 형식은 단어 중간이 아니라 공백·줄시작 뒤에 있을 때만 문단기호로 처리한다. */
+  t=t.replace(new RegExp('(^|\\n|\\s)(['+hangulMarkers+'][.)]\\s+)','g'),'$1\n$2');
   t=t.replace(new RegExp('([^\\n])\\s*(['+circled+'])\\s*','g'),'$1\n$2 ');
   t=t.replace(new RegExp('([^\\n])\\s*(['+smallCircled+'])\\s*','g'),'$1\n$2 ');
   t=t.replace(new RegExp('([^\\n])\\s*(['+alphaCircled+'])\\s*','g'),'$1\n$2 ');
@@ -2446,37 +2445,18 @@ function comparableTheoryText(s){
     .trim();
 }
 function normalizeTheoryMemoryRaw(s){
-  const hadTailEllipsis=/[.]{3,}|…+/.test(String(s||''));
   let t=String(s||'')
     .replace(/\u00a0/g,' ')
     .replace(/\r\n/g,'\n')
     .replace(/\r/g,'\n')
     .replace(/[“”]/g,'"')
     .replace(/[‘’]/g,"'")
-    .replace(/\b(한|된|있|없)\s+다[.。]/g,'$1다.')
-    .replace(/\b한\n다[.。]/g,'한다.')
-    .replace(/\b된\n다[.。]/g,'된다.')
-    .replace(/\b있\n다[.。]/g,'있다.')
-    .replace(/\b없\n다[.。]/g,'없다.')
-    .replace(/\b한\n다/g,'한다')
-    .replace(/\b된\n다/g,'된다')
-    .replace(/\b있\n다/g,'있다')
-    .replace(/\b없\n다/g,'없다')
-    .replace(/\n[ \t]*([.)])/g,'$1')
-    .replace(/[ \t]*([([{])\n[ \t]*/g,' $1')
-    .replace(/\n[ \t]*([)\\]}])/g,'$1')
-    .replace(/\b제\s*\d+\s*장\s*[^\n]{0,30}?\s+\d{1,3}\s*(?:한\s*다\.?|한다\.)?\s*/g,' ')
-    .replace(/^\s*제\s*\d+\s*장\s*[^0-9\n]{0,30}\s*$/gm,' ')
-    .replace(/^\s*\d+\s*제\s*\d+\s*편\s*핵심이론정리\s*/gm,' ')
-    .replace(/\b\d{1,3}\s*제\s*\d+\s*편\s*핵심이론정리\s*/g,' ')
     .replace(/\[\s*\d+\s*페이지\s*\]/g,' ')
-    .replace(/(^|\n|\s)\d{1,3}\s*페이지(?=\s|$|[.。])/g,' ')
-    .replace(/(^|\n|\s)\d{1,3}\s*p\s*\.?\s*(?=[가-힣A-Za-z])/gi,' ')
+    .replace(/(^|\s)\d+\s*페이지(?=\s|$|[.。])/g,' ')
     .replace(/\(\s*반복\s*\)/g,' ')
     .replace(/(^|\s)반복(?=\s|$|[.。])/g,' ')
     .replace(/(^|\s)(암기문장|핵심개념|상세설명|화면표시문|설명문)\s*[:：.]?\s*/g,'$1')
     .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g,' ')
-    .replace(/(^|\n|\s)[()](?=\s|$|\n)/g,' ')
     .replace(/[.]{3,}|…+/g,' ')
     .replace(/[ \t]+/g,' ')
     .trim();
@@ -2484,56 +2464,85 @@ function normalizeTheoryMemoryRaw(s){
   const lines=t.split(/\n+/).map(v=>v.replace(/[ \t]+/g,' ').trim()).filter(Boolean);
   const out=[];
   lines.forEach(line=>{
-    let cleaned=line
-      .replace(/^\s*제\s*\d+\s*장\s*[^0-9\n]{0,30}\s*\d{1,3}\s*(?:한\s*다\.?|한다\.)?\s*/,' ')
-      .replace(/^\s*제\s*\d+\s*장\s*[^0-9\n]{0,30}\s*$/,'')
-      .replace(/^\s*\d{1,3}\s*제\s*\d+\s*편\s*핵심이론정리\s*/,' ')
-      .replace(/^\s*\d{1,3}\s*페이지\s*$/,'')
-      .replace(/^\s*\d{1,3}\s*p\s*\.?\s*/i,'')
-      .replace(/^\s*(?:한\s*다|한다|다)[.。]?\s*$/,'')
-      .replace(/^\s*(?:한\s*다|한다)[.。]?\s+(?=[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷(]|[가나다라마바사아자차카타파하][.)])/,'')
+    const cleaned=line
       .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g,' ')
-      .replace(/(^|\s)[()](?=\s|$)/g,' ')
       .replace(/[.]{3,}|…+/g,' ')
       .replace(/[ \t]+/g,' ')
       .trim();
     if(!cleaned) return;
     const cmp=comparableTheoryText(cleaned);
-    if(!cmp) return;
-    if(/^(한다|한다|다)$/.test(cmp)) return;
     const prev=out.length?comparableTheoryText(out[out.length-1]):'';
     if(cmp && prev && cmp===prev) return;
     out.push(cleaned);
   });
-  if(hadTailEllipsis && out.length){
-    const last=out[out.length-1]||'';
-    if(!/(다[.。]?$|[.。]$|[)]$|]$|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]$)/.test(last.trim())) out.pop();
-  }
+  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function isTheoryMemoryHeaderNoiseLine(line,input){
+  const raw=String(line||'').replace(/[ 	]+/g,' ').trim();
+  if(!raw) return true;
+  const noMarker=stripTheoryLeadingMarker(raw);
+  const clean=noMarker.replace(/[ 	]+/g,' ').trim();
+  const cmp=comparableTheoryText(clean);
+  if(!cmp) return true;
+  /* 화면 제목/페이지/원문 머리글은 암기본문에서 제외한다. */
+  if(/^[0-9]{1,3}\s*p\.?\s*$/i.test(raw) || /^[0-9]{1,3}\s*페이지\s*$/i.test(raw)) return true;
+  if(/^[\[\(]?\s*[0-9]{1,3}\s*페이지\s*[\]\)]?$/i.test(raw)) return true;
+  if(/^제\s*[0-9]{1,2}\s*(장|편)/.test(raw) && raw.length<=42) return true;
+  if(/^[0-9]{1,3}\s*제\s*[0-9]{1,2}\s*편\s*핵심이론정리/.test(raw)) return true;
+  if(/^제\s*[0-9]{1,2}\s*편\s*핵심이론정리/.test(raw)) return true;
+  if(/^(?:\(|\)|\[|\]|\{|\})+$/.test(raw)) return true;
+  if(/^(?:이미지\s*참조|그림\s*참조|표\s*참조)$/i.test(clean)) return true;
+  const subjectTitle=String(input&&input.subjectTitle||input&&input.subject||'').trim();
+  const labels=[subjectTitle, cleanTheoryHeadingForSpeech(input&&input.chapterTitle||''), cleanTheoryHeadingForSpeech(input&&input.sectionTitle||'')]
+    .map(comparableTheoryText).filter(Boolean);
+  if(labels.includes(cmp)) return true;
+  return false;
+}
+function cleanTheoryMemoryTextCandidate(input,rawText){
+  let t=normalizeTheoryMemoryRaw(rawText);
+  if(!t) return '';
+  let lines=t.split(/\n+/).map(v=>v.replace(/[ \t]+/g,' ').trim()).filter(Boolean);
+  const out=[];
+  lines.forEach(line=>{
+    if(/\(?\s*그림\s*:/.test(line)) return;
+    let cleaned=line
+      .replace(/^\s*[0-9]{1,3}\s*p\.?\s*/i,'')
+      .replace(/^\s*[0-9]{1,3}\s*페이지\s*/i,'')
+      .replace(/\s*\(\s*이미지\s*참조\s*\)\s*/gi,' ')
+      .replace(/\s*\[\s*이미지\s*참조\s*\]\s*/gi,' ')
+      .replace(/\s*\(\s*그림\s*:[^)]*\)\s*/gi,' ')
+      .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g,' ')
+      .replace(/[ \t]+/g,' ')
+      .trim();
+    if(isTheoryMemoryHeaderNoiseLine(cleaned,input)) return;
+    /* '시킨\n다.'처럼 분리된 문장 끝을 되붙인다. */
+    if(out.length && /^[다요음됨함임][.]$/.test(cleaned)){
+      out[out.length-1]=(out[out.length-1]+cleaned).replace(/\s+/g,' ').trim();
+      return;
+    }
+    const cmp=comparableTheoryText(cleaned);
+    const prev=out.length?comparableTheoryText(out[out.length-1]):'';
+    if(cmp && prev && cmp===prev) return;
+    out.push(cleaned);
+  });
   return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
 function getTheoryMemoryCleanText(input){
   const isObj=input && typeof input==='object';
-  let t=normalizeTheoryMemoryRaw(isObj?input.memory:input);
-  if(!isObj) return t;
-  const subjectTitle=String(input.subjectTitle||input.subject||'').trim();
-  if(subjectTitle){
-    const re=new RegExp('^\\s*(?:[0-9]{1,2}[.)]\\s*)?'+escapeTheoryRegExp(subjectTitle)+'\\s*');
-    t=t.replace(re,'').trim();
+  if(!isObj) return normalizeTheoryMemoryRaw(input);
+  const rawMemory=String(input.memory||'');
+  const rawDetail=String(input.detail||'');
+  const memoryLooksTruncated=/[.]{3,}|…+/.test(rawMemory);
+  const candidates=[];
+  /* v31.28: memory가 말줄임표로 잘린 항목 또는 빈 박스가 되는 항목은 detail 원문을 우선 사용한다. */
+  if(rawDetail && memoryLooksTruncated) candidates.push(rawDetail);
+  candidates.push(rawMemory);
+  if(rawDetail && !memoryLooksTruncated) candidates.push(rawDetail);
+  for(const raw of candidates){
+    const cleaned=cleanTheoryMemoryTextCandidate(input,raw);
+    if(cleaned) return cleaned;
   }
-  let lines=t.split(/\n+/).map(v=>v.trim()).filter(Boolean);
-  const labels=[subjectTitle, cleanTheoryHeadingForSpeech(input.chapterTitle||''), cleanTheoryHeadingForSpeech(input.sectionTitle||'')]
-    .map(comparableTheoryText).filter(Boolean);
-  while(lines.length && labels.includes(comparableTheoryText(lines[0]))){
-    lines.shift();
-  }
-  const out=[];
-  lines.forEach(line=>{
-    const cmp=comparableTheoryText(line);
-    const prev=out.length?comparableTheoryText(out[out.length-1]):'';
-    if(cmp && prev && cmp===prev) return;
-    out.push(line);
-  });
-  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+  return '';
 }
 function formatTheoryMemoryDisplay(input){
   return escapeTheoryHTML(getTheoryMemoryCleanText(input));
@@ -3033,10 +3042,6 @@ function cleanTheorySpeechText(s){
     .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g,' ')
     .replace(/\[[^\]]*?\d+\s*페이지[^\]]*?\]/g,' ')
     .replace(/(^|\s)\d+\s*페이지(?=\s|$|[.。])/g,' ')
-    .replace(/^\s*\d+\s*p\s*\.?\s*/i,' ')
-    .replace(/^\s*\d+\s*제\s*\d+\s*편\s*핵심이론정리\s*/,' ')
-    .replace(/^\s*제\s*\d+\s*장\s*[^0-9\n]{0,30}\s*\d{1,3}\s*(?:한\s*다\.?|한다\.)?\s*/,' ')
-    .replace(/(^|\s)[()](?=\s|$)/g,' ')
     .replace(/\(\s*반복\s*\)/g,' ')
     .replace(/(^|\s)(암기문장|핵심개념|상세설명|화면표시문|설명문)\s*[:：.]?\s*/g,' ')
     .replace(/(^|\s)반복(?=\s|$|[.。])/g,' ')
@@ -4985,7 +4990,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.27-theory-memory-text-final-clean')
+    navigator.serviceWorker.register('sw.js?v=31.28-theory-memory-empty-fallback-fix')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
