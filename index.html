@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.24"></script>
+<script src="questions.js?v=31.25"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -244,6 +244,17 @@
   .tm-memory{font-size:12px;color:#FFE7B5;line-height:1.65;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;}
   .tm-empty{background:#1A1A1A;border:0.5px dashed #555;border-radius:13px;padding:16px;color:#888;font-size:12px;line-height:1.55;text-align:center;}
   @media(min-width:760px){.theory-memory-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;}.theory-memory-item{min-height:150px;}}
+
+  /* ── v31.25 암기과목 편집모드 ── */
+  .theory-memory-edit-bar{display:none;gap:7px;flex-wrap:wrap;align-items:center;background:#14100A;border:0.5px solid #BA7517;border-radius:13px;padding:10px;margin:8px 0 12px;}
+  .theory-memory-edit-bar.show{display:flex;}
+  .tm-edit-btn{border:0.5px solid #BA7517;background:#1A140A;color:#FFD9A0;border-radius:10px;padding:8px 10px;font-size:11px;font-weight:800;cursor:pointer;}
+  .tm-edit-btn.primary{border-color:#1D9E75;background:#0A2E22;color:#9FE1CB;}
+  .tm-edit-btn.warn{border-color:#6B3A16;background:#2A1708;color:#F0B36C;}
+  .tm-edit-note{flex:1 1 100%;font-size:10.5px;color:#BDAA83;line-height:1.5;}
+  body.theory-memory-editing #theoryMemoryList .theory-memory-item{cursor:default;border-color:#5A4311;background:#161209;}
+  body.theory-memory-editing #theoryMemoryList .tm-memory{outline:1px dashed rgba(186,117,23,.75);border-radius:8px;padding:7px 8px;background:#1A1000;color:#FFE7B5;min-height:42px;}
+  body.theory-memory-editing #theoryMemoryList .tm-memory:focus{outline:2px solid #BA7517;background:#211400;}
   .sec-exam{margin-top:8px;padding:9px 10px;border-radius:10px;background:#1A1000;border:0.5px solid #BA7517;color:#FAC775;font-size:12px;line-height:1.65;}
 
   .theory-tts-bar{display:flex;gap:6px;margin-bottom:10px;position:sticky;top:0;background:#121212;padding:8px 0;z-index:10;}
@@ -1358,6 +1369,12 @@
     </div>
     <p class="s-hint">기본 OFF. 이론 TTS는 제목. 본문. 암기문장만 읽습니다. 켜면 시험포인트를 마지막에 추가로 읽습니다.</p>
 
+    <div class="tog-row" style="margin-top:8px;margin-bottom:10px;">
+      <label>암기과목 편집모드</label>
+      <label class="tog"><input type="checkbox" id="theoryMemoryEditMode" onchange="setTheoryMemoryEditModeFromUI(this.checked,true)"><span class="tog-sl"></span></label>
+    </div>
+    <p class="s-hint">기본 OFF. 켜면 암기문장 모아보기에서 암기문장 텍스트를 직접 수정하고 저장할 수 있습니다. 원본 theory.js는 변경하지 않고 이 브라우저에만 보관합니다.</p>
+
 
 <div class="s-title">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -1530,6 +1547,12 @@
     <button class="theory-drive-mini" onclick="theoryMemoryReadAll(event)">🎧 암기문장 전체듣기</button>
     <div class="bb-title" id="theoryMemoryTitle" style="font-size:14px;font-weight:700;color:#FFD9A0;margin-bottom:10px;">암기문장 모아보기</div>
     <div class="theory-memory-head" id="theoryMemorySummary">이론 항목 중 암기문장만 별도 목록으로 표시합니다.</div>
+    <div class="theory-memory-edit-bar" id="theoryMemoryEditBar">
+      <button class="tm-edit-btn primary" onclick="saveTheoryMemoryEditsFromList(event)">💾 암기편집 저장</button>
+      <button class="tm-edit-btn" onclick="cancelTheoryMemoryEditList(event)">↩ 수정취소</button>
+      <button class="tm-edit-btn warn" onclick="restoreTheoryMemoryOriginalForFiltered(event)">원본복원</button>
+      <div class="tm-edit-note">설정에서 암기과목 편집모드를 켜면 이 목록의 암기문장 텍스트를 바로 수정할 수 있습니다. 저장 내용은 이 브라우저에 보관되며 TTS도 수정한 문장으로 읽습니다.</div>
+    </div>
     <div class="theory-memory-filter" id="theoryMemoryFilter"></div>
     <div class="theory-memory-list" id="theoryMemoryList"></div>
   </div>
@@ -2033,6 +2056,7 @@ let theoryMemoryFilterSubject='all';
 let theoryMemoryReadQueue=[];
 let theoryMemoryReadIndex=0;
 let theoryMemoryReadSession=0;
+let theoryMemoryEditMode=false;
 function collectTheoryMemoryItems(){
   const items=[];
   if(typeof THEORY==='undefined' || !THEORY) return items;
@@ -2094,8 +2118,10 @@ function buildTheoryMemoryList(){
   const items=getTheoryMemoryFilteredItems();
   if(summary){
     const label=theoryMemoryFilterSubject==='all'?'전체 과목':((THEORY[theoryMemoryFilterSubject]&&THEORY[theoryMemoryFilterSubject].title)||theoryMemoryFilterSubject);
-    summary.textContent=label+' 암기문장 '+items.length+'개를 표시합니다. 항목을 누르면 원래 이론 위치로 이동합니다.';
+    summary.textContent=label+' 암기문장 '+items.length+'개를 표시합니다. '+(theoryMemoryEditMode?'편집모드 ON: 암기문장을 수정한 뒤 저장하세요.':'항목을 누르면 원래 이론 위치로 이동합니다.');
   }
+  const editBar=document.getElementById('theoryMemoryEditBar');
+  if(editBar) editBar.classList.toggle('show',!!theoryMemoryEditMode);
   list.innerHTML='';
   if(!items.length){
     list.innerHTML='<div class="tm-empty">표시할 암기문장이 없습니다.</div>';
@@ -2105,10 +2131,24 @@ function buildTheoryMemoryList(){
     const div=document.createElement('div');
     div.className='theory-memory-item tts-track-target';
     div.setAttribute('data-memory-index',String(i));
+    div.setAttribute('data-memory-key',theoryEditKey(it.subject,it.chapterIdx,it.sectionIdx));
+    div.setAttribute('data-subject',it.subject);
+    div.setAttribute('data-chapter-index',String(it.chapterIdx));
+    div.setAttribute('data-section-index',String(it.sectionIdx));
     div.innerHTML=`<div class="tm-path">${escapeTheoryHTML(it.subjectIcon)} ${escapeTheoryHTML(it.subjectTitle)} · ${it.chapterIdx+1}장</div>
       <div class="tm-title">${escapeTheoryHTML(it.chapterTitle)}<br>${escapeTheoryHTML(it.sectionTitle)}</div>
-      <div class="tm-memory">${formatTheoryDisplay(it.memory)}</div>`;
-    div.onclick=()=>openTheoryMemoryItem(it.subject,it.chapterIdx,it.sectionIdx);
+      <div class="tm-memory" data-memory-edit="1">${formatTheoryDisplay(it.memory)}</div>`;
+    if(theoryMemoryEditMode){
+      div.onclick=(ev)=>{ev.stopPropagation();};
+      const mem=div.querySelector('.tm-memory');
+      if(mem){
+        mem.setAttribute('contenteditable','true');
+        mem.setAttribute('spellcheck','false');
+        mem.onclick=(ev)=>ev.stopPropagation();
+      }
+    }else{
+      div.onclick=()=>openTheoryMemoryItem(it.subject,it.chapterIdx,it.sectionIdx);
+    }
     list.appendChild(div);
   });
 }
@@ -2225,6 +2265,106 @@ function theoryMemoryReadAll(e){
   reqWake('암기문장 전체듣기');
   setTheoryTrackText('암기문장 전체듣기를 시작합니다. 암기문장·페이지·반복 표기는 읽지 않고 문단마다 잠시 쉽니다.');
   theoryMemoryReadNext(sessionId);
+}
+
+
+function getTheorySectionByIndex(subject,chapterIdx,sectionIdx){
+  return THEORY && THEORY[subject] && THEORY[subject].chapters && THEORY[subject].chapters[chapterIdx] && THEORY[subject].chapters[chapterIdx].sections ? THEORY[subject].chapters[chapterIdx].sections[sectionIdx] : null;
+}
+function applyTheoryMemoryEditModeToDom(){
+  const on=!!theoryMemoryEditMode;
+  document.body.classList.toggle('theory-memory-editing',on);
+  const bar=document.getElementById('theoryMemoryEditBar');
+  if(bar) bar.classList.toggle('show',on);
+  document.querySelectorAll('#theoryMemoryList .tm-memory[data-memory-edit="1"]').forEach(el=>{
+    if(on){
+      el.setAttribute('contenteditable','true');
+      el.setAttribute('spellcheck','false');
+      el.setAttribute('title','암기문장을 수정한 뒤 암기편집 저장을 누르세요.');
+    }else{
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('spellcheck');
+      el.removeAttribute('title');
+    }
+  });
+}
+function setTheoryMemoryEditMode(on,dirty){
+  theoryMemoryEditMode=!!on;
+  if(appSettings) appSettings.theoryMemoryEditMode=theoryMemoryEditMode;
+  const cb=document.getElementById('theoryMemoryEditMode');
+  if(cb) cb.checked=theoryMemoryEditMode;
+  if(theoryMemoryEditMode){
+    try{synth.cancel();}catch(e){}
+    stopTheoryMemoryRead();
+    clearTheoryTrack();
+  }
+  applyTheoryMemoryEditModeToDom();
+  if(dirty) markSettingsDirty();
+}
+function setTheoryMemoryEditModeFromUI(on,dirty){
+  setTheoryMemoryEditMode(on,dirty);
+  if(document.getElementById('screenTheoryMemory') && document.getElementById('screenTheoryMemory').classList.contains('show')) buildTheoryMemoryList();
+}
+function saveTheoryMemoryEditsFromList(e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  if(!theoryMemoryEditMode){ alert('설정에서 암기과목 편집모드를 먼저 켜주세요.'); return; }
+  const cards=Array.from(document.querySelectorAll('#theoryMemoryList .theory-memory-item[data-memory-key]'));
+  if(!cards.length){ alert('저장할 암기문장이 없습니다.'); return; }
+  const edits=loadTheoryUserEdits();
+  let saved=0, skipped=0;
+  cards.forEach(card=>{
+    const node=card.querySelector('.tm-memory[data-memory-edit="1"]');
+    if(!node) return;
+    const subject=card.getAttribute('data-subject');
+    const chapterIdx=Number(card.getAttribute('data-chapter-index'));
+    const sectionIdx=Number(card.getAttribute('data-section-index'));
+    const key=theoryEditKey(subject,chapterIdx,sectionIdx);
+    const val=String(node.innerText||'').replace(/\u00a0/g,' ').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
+    if(!val){ skipped++; return; }
+    const patch=Object.assign({},edits[key]||{});
+    patch.memory=val;
+    patch.updatedAt=new Date().toISOString();
+    edits[key]=patch;
+    const sec=getTheorySectionByIndex(subject,chapterIdx,sectionIdx);
+    if(sec) sec.memory=val;
+    saved++;
+  });
+  saveTheoryUserEdits(edits);
+  buildTheoryMemoryList();
+  setTheoryMemoryEditMode(theoryMemoryEditMode,false);
+  const msg='암기문장 '+saved+'개 저장 완료. 수정한 문장으로 화면과 TTS가 반영됩니다.'+(skipped?' 빈 문장 '+skipped+'개는 저장하지 않았습니다.':'');
+  setTheoryTrackText(msg);
+  alert(msg);
+}
+function cancelTheoryMemoryEditList(e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  buildTheoryMemoryList();
+  setTheoryMemoryEditMode(theoryMemoryEditMode,false);
+  setTheoryTrackText('저장하지 않은 암기문장 수정은 취소했습니다.');
+}
+function restoreTheoryMemoryOriginalForFiltered(e){
+  if(e){e.preventDefault();e.stopPropagation();}
+  const items=getTheoryMemoryFilteredItems();
+  if(!items.length){ alert('복원할 암기문장이 없습니다.'); return; }
+  const label=theoryMemoryFilterSubject==='all'?'전체 암기문장':(((THEORY[theoryMemoryFilterSubject]||{}).title)||theoryMemoryFilterSubject);
+  if(!confirm(label+'의 저장된 암기문장 편집 내용을 원본으로 복원할까요?\n제목/본문 등 다른 이론 편집은 유지하고 memory 암기문장 편집만 해제합니다.')) return;
+  const edits=loadTheoryUserEdits();
+  let restored=0;
+  items.forEach(it=>{
+    const key=theoryEditKey(it.subject,it.chapterIdx,it.sectionIdx);
+    const patch=edits[key];
+    if(patch && Object.prototype.hasOwnProperty.call(patch,'memory')){
+      delete patch.memory;
+      patch.updatedAt=new Date().toISOString();
+      const remain=Object.keys(patch).filter(k=>k!=='updatedAt');
+      if(!remain.length) delete edits[key];
+      else edits[key]=patch;
+      restored++;
+    }
+  });
+  saveTheoryUserEdits(edits);
+  alert(restored+'개 암기문장 편집값을 원본으로 복원합니다. 앱을 새로고침합니다.');
+  location.reload();
 }
 
 function openSubject(key){
@@ -3409,6 +3549,7 @@ function loadV(){
   const qfa=document.getElementById('quizFullAuto');
   const qtr=document.getElementById('quizTrack');
   const pwm=document.getElementById('padWideMode');
+  const tmem=document.getElementById('theoryMemoryEditMode');
   const mss=document.getElementById('memoSkipSetting');
   if(mss) mss.checked=skipMemorizedListeningEnabled();
   if(ae) ae.onchange=()=>{ if(appSettings) appSettings.autoExplain=ae.checked; markSettingsDirty(); };
@@ -3655,7 +3796,8 @@ const DEFAULT_SETTINGS={
   quizTrack:true,
   theoryExamTTS:false,
   theoryAutoMode:'subject',
-  padWideMode:true
+  padWideMode:true,
+  theoryMemoryEditMode:false
 };
 let appSettings=null;
 let settingsDirty=false;
@@ -3741,6 +3883,7 @@ function normalizeSettings(obj){
   s.theoryExamTTS=!!s.theoryExamTTS;
   s.theoryAutoMode=['once','next','subject','all'].includes(s.theoryAutoMode)?s.theoryAutoMode:DEFAULT_SETTINGS.theoryAutoMode;
   s.padWideMode=(s.padWideMode===undefined)?true:!!s.padWideMode;
+  s.theoryMemoryEditMode=(s.theoryMemoryEditMode===undefined)?false:!!s.theoryMemoryEditMode;
   s.voiceName=String(s.voiceName||'');
   return s;
 }
@@ -3765,6 +3908,7 @@ function mirrorLegacySettings(s){
     localStorage.setItem('theoryExamTTS',String(s.theoryExamTTS));
     localStorage.setItem('pipe_theory_auto_mode',s.theoryAutoMode);
     localStorage.setItem('padWideMode',String(s.padWideMode));
+    localStorage.setItem('theoryMemoryEditMode',String(s.theoryMemoryEditMode));
     if(s.voiceName) localStorage.setItem('voiceName',s.voiceName);
     else localStorage.removeItem('voiceName');
   }catch(e){}
@@ -3841,6 +3985,8 @@ function applySettings(settings, rebuildVoiceCards=false){
   if(qfa) qfa.checked=appSettings.quizFullAuto;
   if(qtr) qtr.checked=appSettings.quizTrack;
   if(pwm) pwm.checked=appSettings.padWideMode;
+  if(tmem) tmem.checked=appSettings.theoryMemoryEditMode;
+  setTheoryMemoryEditMode(appSettings.theoryMemoryEditMode,false);
 
   if(voices && voices.length){
     selV = voices.find(v=>v.name===appSettings.voiceName) || preferredKoreanVoice();
@@ -3870,6 +4016,7 @@ function collectSettingsFromUI(){
     quizTrack: !(document.getElementById('quizTrack') && !document.getElementById('quizTrack').checked),
     theoryExamTTS: !!(document.getElementById('theoryExamTTS') && document.getElementById('theoryExamTTS').checked),
     padWideMode: !(document.getElementById('padWideMode') && !document.getElementById('padWideMode').checked),
+    theoryMemoryEditMode: !!(document.getElementById('theoryMemoryEditMode') && document.getElementById('theoryMemoryEditMode').checked),
     theoryAutoMode: activeTheory ? activeTheory.getAttribute('data-theory-auto') : theoryAutoMode
   });
 }
@@ -4712,7 +4859,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.23-theory-memory-pause-clean')
+    navigator.serviceWorker.register('sw.js?v=31.25-theory-memory-edit-mode')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
@@ -4851,3 +4998,4 @@ function importProgress(){
 <!-- v31.24: 암기문장 전체듣기 순서 보강. 과목명 → 소제목/챕터명 → 암기내용, 페이지/반복 표기 생략, 문단 쉼타임 유지. -->
 </body>
 </html>
+<!-- v31.25: 암기과목 편집모드 추가. 설정 ON/OFF, 암기문장 모아보기 텍스트 직접 수정/저장/복원 지원. 데이터 파일 변경 없음. -->

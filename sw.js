@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-24-theory-memory-tts-chapter-title-step';
+const CACHE_NAME = 'pipe-master-v31-25-theory-memory-edit-mode';
 const ASSETS = [
   './',
   './index.html',
@@ -107,3 +107,5 @@ self.addEventListener('fetch', e => {
 // v31.23: 이론/암기문장 TTS에서 암기문장·페이지·반복 표기 생략, 1.2.3./가.나.다./원형문자/콜론 문단 쉼타임 강화. 데이터 변경 없음.
 
 // v31.24: Theory memory TTS reads subject, chapter/subtitle, then memory content.
+
+// v31.25: Theory memory edit mode ON/OFF added in settings. Memory list text can be edited, saved, canceled, or restored locally.
