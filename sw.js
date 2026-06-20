@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-29-theory-memory-strict-only-audit';
+const CACHE_NAME = 'pipe-master-v31-30-safe-rollback-memory-edit';
 const ASSETS = [
   './',
   './index.html',
@@ -110,10 +110,4 @@ self.addEventListener('fetch', e => {
 
 // v31.25: Theory memory edit mode ON/OFF added in settings. Memory list text can be edited, saved, canceled, or restored locally.
 
-// v31.26: Theory memory text clean/align filter added. Display/TTS removes unused labels, page/repeat markers, empty brackets, ellipses, and consecutive duplicate lines without modifying data files.
-
-// v31.28: 암기과목 화면 표시 텍스트 최종 정렬. 페이지/장표시/깨진 괄호/문장 밀림 보정.
-
-// v31.28: 암기과목 배관제도 5/6처럼 정렬 필터 후 빈 박스가 남는 경우 detail 원문 fallback 복구. '한다.' 문단 밀림 방지 보정.
-
-// v31.29: 암기과목 전수검수. 암기목록/청취는 sec.memory만 사용하고 detail 원문 fallback 제거. 본문 섞임 문제 보정.
+// v31.30: Safe rollback from v31.29 to v31.25 stable memory-edit structure. Removed risky text-clean/detail-fallback changes to restore quiz session entry and memory TTS playback.

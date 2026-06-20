@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.29"></script>
+<script src="questions.js?v=31.30"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -241,7 +241,7 @@
   .theory-memory-item.tts-reading{border-color:#BA7517!important;background:#1A1000!important;box-shadow:0 0 0 1px rgba(186,117,23,.25),0 8px 24px rgba(0,0,0,.35);}
   .tm-path{font-size:10px;color:#BA7517;font-weight:800;margin-bottom:5px;line-height:1.45;}
   .tm-title{font-size:12px;color:#E0E0E0;font-weight:800;margin-bottom:6px;line-height:1.45;}
-  .tm-memory{font-size:12px;color:#FFE7B5;line-height:1.72;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;padding:8px 9px;border-left:3px solid #BA7517;background:#15110A;border-radius:8px;tab-size:2;}
+  .tm-memory{font-size:12px;color:#FFE7B5;line-height:1.65;white-space:pre-line;word-break:keep-all;overflow-wrap:anywhere;}
   .tm-empty{background:#1A1A1A;border:0.5px dashed #555;border-radius:13px;padding:16px;color:#888;font-size:12px;line-height:1.55;text-align:center;}
   @media(min-width:760px){.theory-memory-list{display:grid;grid-template-columns:1fr 1fr;gap:10px;}.theory-memory-item{min-height:150px;}}
 
@@ -2052,8 +2052,6 @@ function buildTheorySubjects(){
 
 /* ── v31.22 이론 암기문장만 별도 목록 ── */
 /* v31.23: 암기문장/페이지/반복 표기는 TTS에서 생략하고, 목록기호·콜론·문단 기준 쉼타임을 강화. */
-/* v31.26: 암기문장 표시·TTS 전용 텍스트 정렬 필터 추가. 원본 데이터는 보존한다. */
-/* v31.29: 암기과목 전수검수. 암기목록/청취는 sec.memory만 사용하고 detail 본문 fallback은 금지한다. */
 let theoryMemoryFilterSubject='all';
 let theoryMemoryReadQueue=[];
 let theoryMemoryReadIndex=0;
@@ -2070,7 +2068,7 @@ function collectTheoryMemoryItems(){
       sections.forEach((sec,sectionIdx)=>{
         const memory=String((sec&&sec.memory)||'').trim();
         if(!memory) return;
-        const item={
+        items.push({
           subject,
           subjectTitle:(s.title||subject),
           subjectIcon:(s.icon||'📘'),
@@ -2078,11 +2076,8 @@ function collectTheoryMemoryItems(){
           sectionIdx,
           chapterTitle:(ch.title||('챕터 '+(chapterIdx+1))),
           sectionTitle:((sec&&sec.title)||('항목 '+(sectionIdx+1))),
-          memory,
-          detail:String((sec&&sec.detail)||'')
-        };
-        if(!getTheoryMemoryCleanText(item)) return;
-        items.push(item);
+          memory
+        });
       });
     });
   });
@@ -2140,15 +2135,9 @@ function buildTheoryMemoryList(){
     div.setAttribute('data-subject',it.subject);
     div.setAttribute('data-chapter-index',String(it.chapterIdx));
     div.setAttribute('data-section-index',String(it.sectionIdx));
-    const titleA=cleanTheoryHeadingForSpeech(it.chapterTitle)||it.chapterTitle;
-    const titleB=isPageOnlyTheoryHeading(it.sectionTitle)?'':(cleanTheoryHeadingForSpeech(it.sectionTitle)||it.sectionTitle);
-    const titleHtml=(titleB && comparableTheoryText(titleB)!==comparableTheoryText(titleA))
-      ? escapeTheoryHTML(titleA)+'<br>'+escapeTheoryHTML(titleB)
-      : escapeTheoryHTML(titleA);
-    const memoryHtml=formatTheoryMemoryDisplay(it);
     div.innerHTML=`<div class="tm-path">${escapeTheoryHTML(it.subjectIcon)} ${escapeTheoryHTML(it.subjectTitle)} · ${it.chapterIdx+1}장</div>
-      <div class="tm-title">${titleHtml}</div>
-      <div class="tm-memory" data-memory-edit="1">${memoryHtml}</div>`;
+      <div class="tm-title">${escapeTheoryHTML(it.chapterTitle)}<br>${escapeTheoryHTML(it.sectionTitle)}</div>
+      <div class="tm-memory" data-memory-edit="1">${formatTheoryDisplay(it.memory)}</div>`;
     if(theoryMemoryEditMode){
       div.onclick=(ev)=>{ev.stopPropagation();};
       const mem=div.querySelector('.tm-memory');
@@ -2219,7 +2208,7 @@ function buildTheoryMemorySpeechChunks(it){
   if(subject) pushTheorySpeechChunk(chunks,subject,THEORY_TTS_TITLE_GAP_MS);
   if(chapter && chapter!==subject) pushTheorySpeechChunk(chunks,chapter,THEORY_TTS_TITLE_GAP_MS);
   if(section && section!==chapter && section!==subject) pushTheorySpeechChunk(chunks,section,THEORY_TTS_TITLE_GAP_MS);
-  splitTheoryTTSChunks(getTheoryMemoryCleanText(it)).forEach(c=>chunks.push(c));
+  splitTheoryTTSChunks(it.memory).forEach(c=>chunks.push(c));
   return chunks.filter(v=>v && v.text);
 }
 function buildTheoryMemoryReadQueue(items){
@@ -2330,7 +2319,7 @@ function saveTheoryMemoryEditsFromList(e){
     const chapterIdx=Number(card.getAttribute('data-chapter-index'));
     const sectionIdx=Number(card.getAttribute('data-section-index'));
     const key=theoryEditKey(subject,chapterIdx,sectionIdx);
-    const val=normalizeTheoryMemoryRaw(String(node.innerText||'').replace(/\u00a0/g,' ').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim());
+    const val=String(node.innerText||'').replace(/\u00a0/g,' ').replace(/\r\n/g,'\n').replace(/\r/g,'\n').trim();
     if(!val){ skipped++; return; }
     const patch=Object.assign({},edits[key]||{});
     patch.memory=val;
@@ -2418,9 +2407,7 @@ function splitTheoryParagraphs(s){
   t=t.replace(/([^\n])\s*(\([0-9]+\)\s*)/g,'$1\n$2');
   t=t.replace(/([^\n])\s*(\([가-힣]\)\s*)/g,'$1\n$2');
   t=t.replace(/([^\n0-9])\s*([0-9]{1,2}[.)]\s+(?=[^0-9]))/g,'$1\n$2');
-  /* v31.28: '한다.'의 마지막 '다.'가 항목기호로 오인되어 줄이 밀리는 문제 방지.
-     가./나./다. 형식은 단어 중간이 아니라 공백·줄시작 뒤에 있을 때만 문단기호로 처리한다. */
-  t=t.replace(new RegExp('(^|\\n|\\s)(['+hangulMarkers+'][.)]\\s+)','g'),'$1\n$2');
+  t=t.replace(new RegExp('([^\\n])\\s*(['+hangulMarkers+'][.)]\\s+)','g'),'$1\n$2');
   t=t.replace(new RegExp('([^\\n])\\s*(['+circled+'])\\s*','g'),'$1\n$2 ');
   t=t.replace(new RegExp('([^\\n])\\s*(['+smallCircled+'])\\s*','g'),'$1\n$2 ');
   t=t.replace(new RegExp('([^\\n])\\s*(['+alphaCircled+'])\\s*','g'),'$1\n$2 ');
@@ -2430,114 +2417,6 @@ function splitTheoryParagraphs(s){
 }
 function formatTheoryDisplay(s){
   return escapeTheoryHTML(splitTheoryParagraphs(s));
-}
-
-function escapeTheoryRegExp(s){
-  return String(s||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-}
-function stripTheoryLeadingMarker(s){
-  return String(s||'').replace(/^\s*(\([0-9]+\)|\([가-힣]\)|[0-9]{1,2}[.)]|[가나다라마바사아자차카타파하][.)]|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]|[㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷]|[ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ])\s*/,'').trim();
-}
-function comparableTheoryText(s){
-  return cleanTheorySpeechText(stripTheoryLeadingMarker(s))
-    .replace(/^[0-9]+\s*p\s*\.?\s*/i,'')
-    .replace(/^[0-9]+\s*페이지\s*/,'')
-    .replace(/[\s.·,，:：()\[\]{}]/g,'')
-    .trim();
-}
-function normalizeTheoryMemoryRaw(s){
-  let t=String(s||'')
-    .replace(/\u00a0/g,' ')
-    .replace(/\r\n/g,'\n')
-    .replace(/\r/g,'\n')
-    .replace(/[“”]/g,'"')
-    .replace(/[‘’]/g,"'")
-    .replace(/\[\s*\d+\s*페이지\s*\]/g,' ')
-    .replace(/(^|\s)\d+\s*페이지(?=\s|$|[.。])/g,' ')
-    .replace(/\(\s*반복\s*\)/g,' ')
-    .replace(/(^|\s)반복(?=\s|$|[.。])/g,' ')
-    .replace(/(^|\s)(암기문장|핵심개념|상세설명|화면표시문|설명문)\s*[:：.]?\s*/g,'$1')
-    .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g,' ')
-    .replace(/[.]{3,}|…+/g,' ')
-    .replace(/[ \t]+/g,' ')
-    .trim();
-  t=splitTheoryParagraphs(t);
-  const lines=t.split(/\n+/).map(v=>v.replace(/[ \t]+/g,' ').trim()).filter(Boolean);
-  const out=[];
-  lines.forEach(line=>{
-    const cleaned=line
-      .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g,' ')
-      .replace(/[.]{3,}|…+/g,' ')
-      .replace(/[ \t]+/g,' ')
-      .trim();
-    if(!cleaned) return;
-    const cmp=comparableTheoryText(cleaned);
-    const prev=out.length?comparableTheoryText(out[out.length-1]):'';
-    if(cmp && prev && cmp===prev) return;
-    out.push(cleaned);
-  });
-  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
-}
-function isTheoryMemoryHeaderNoiseLine(line,input){
-  const raw=String(line||'').replace(/[ 	]+/g,' ').trim();
-  if(!raw) return true;
-  const noMarker=stripTheoryLeadingMarker(raw);
-  const clean=noMarker.replace(/[ 	]+/g,' ').trim();
-  const cmp=comparableTheoryText(clean);
-  if(!cmp) return true;
-  /* 화면 제목/페이지/원문 머리글은 암기본문에서 제외한다. */
-  if(/^[0-9]{1,3}\s*p\.?\s*$/i.test(raw) || /^[0-9]{1,3}\s*페이지\s*$/i.test(raw)) return true;
-  if(/^[\[\(]?\s*[0-9]{1,3}\s*페이지\s*[\]\)]?$/i.test(raw)) return true;
-  if(/^제\s*[0-9]{1,2}\s*(장|편)/.test(raw) && raw.length<=42) return true;
-  if(/^[0-9]{1,3}\s*제\s*[0-9]{1,2}\s*편\s*핵심이론정리/.test(raw)) return true;
-  if(/^제\s*[0-9]{1,2}\s*편\s*핵심이론정리/.test(raw)) return true;
-  if(/^(?:\(|\)|\[|\]|\{|\})+$/.test(raw)) return true;
-  if(/^(?:이미지\s*참조|그림\s*참조|표\s*참조)$/i.test(clean)) return true;
-  const subjectTitle=String(input&&input.subjectTitle||input&&input.subject||'').trim();
-  const labels=[subjectTitle, cleanTheoryHeadingForSpeech(input&&input.chapterTitle||''), cleanTheoryHeadingForSpeech(input&&input.sectionTitle||'')]
-    .map(comparableTheoryText).filter(Boolean);
-  if(labels.includes(cmp)) return true;
-  return false;
-}
-function cleanTheoryMemoryTextCandidate(input,rawText){
-  let t=normalizeTheoryMemoryRaw(rawText);
-  if(!t) return '';
-  let lines=t.split(/\n+/).map(v=>v.replace(/[ \t]+/g,' ').trim()).filter(Boolean);
-  const out=[];
-  lines.forEach(line=>{
-    if(/\(?\s*그림\s*:/.test(line)) return;
-    let cleaned=line
-      .replace(/^\s*[0-9]{1,3}\s*p\.?\s*/i,'')
-      .replace(/^\s*[0-9]{1,3}\s*페이지\s*/i,'')
-      .replace(/\s*\(\s*이미지\s*참조\s*\)\s*/gi,' ')
-      .replace(/\s*\[\s*이미지\s*참조\s*\]\s*/gi,' ')
-      .replace(/\s*\(\s*그림\s*:[^)]*\)\s*/gi,' ')
-      .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g,' ')
-      .replace(/[ \t]+/g,' ')
-      .trim();
-    if(isTheoryMemoryHeaderNoiseLine(cleaned,input)) return;
-    /* '시킨\n다.'처럼 분리된 문장 끝을 되붙인다. */
-    if(out.length && /^[다요음됨함임][.]$/.test(cleaned)){
-      out[out.length-1]=(out[out.length-1]+cleaned).replace(/\s+/g,' ').trim();
-      return;
-    }
-    const cmp=comparableTheoryText(cleaned);
-    const prev=out.length?comparableTheoryText(out[out.length-1]):'';
-    if(cmp && prev && cmp===prev) return;
-    out.push(cleaned);
-  });
-  return out.join('\n').replace(/\n{3,}/g,'\n\n').trim();
-}
-function getTheoryMemoryCleanText(input){
-  const isObj=input && typeof input==='object';
-  if(!isObj) return normalizeTheoryMemoryRaw(input);
-  /* v31.29: 암기과목은 theory.js의 memory 필드만 사용한다.
-     detail 본문 fallback은 일반 이론 전체가 암기목록에 섞이는 원인이므로 금지한다. */
-  const rawMemory=String(input.memory||'');
-  return cleanTheoryMemoryTextCandidate(input,rawMemory);
-}
-function formatTheoryMemoryDisplay(input){
-  return escapeTheoryHTML(getTheoryMemoryCleanText(input));
 }
 function formatTheoryPoint(s){
   return escapeTheoryHTML(splitTheoryParagraphs(s));
@@ -2699,7 +2578,7 @@ function openChapter(idx){
     const key=sec.key?`<div class="sec-block"><div class="sec-label">핵심개념</div><div class="sec-content" data-edit-field="key">${formatTheoryDisplay(sec.key)}</div></div>`:'';
     const detail=sec.detail?`<div class="sec-block"><div class="sec-label">상세설명</div><div class="sec-content" data-edit-field="detail">${formatTheoryDisplay(sec.detail)}</div></div>`:`<div class="sec-content" data-edit-field="content">${formatTheoryDisplay(sec.content||'')}</div>`;
     const exam=pts?`<div class="sec-block"><div class="sec-label">시험포인트</div><div class="sec-points">${pts}</div></div>`:'';
-    const memory=sec.memory?`<div class="sec-memory"><b>암기문장.</b> <span data-edit-field="memory">${formatTheoryMemoryDisplay({memory:sec.memory,subject:curSubject,subjectTitle:(THEORY[curSubject]&&THEORY[curSubject].title)||curSubject,chapterIdx:curChapterIdx,sectionIdx:secIdx,chapterTitle:ch.title,sectionTitle:sec.title||''})}</span></div>`:'';
+    const memory=sec.memory?`<div class="sec-memory"><b>암기문장.</b> <span data-edit-field="memory">${formatTheoryDisplay(sec.memory)}</span></div>`:'';
     card.innerHTML=`${level}<div class="sec-title" data-edit-field="title">${formatTheoryDisplay(sec.title)}</div>${key}${detail}${exam}${memory}`;
     area.appendChild(card);
   });
@@ -3030,8 +2909,6 @@ function cleanTheorySpeechText(s){
     .replace(/\\frac\{1\}\{2\}H/g,'이분의 일 H')
     .replace(/\\circ/g,'도')
     .replace(/\s+/g,' ')
-    .replace(/[.]{3,}|…+/g,' ')
-    .replace(/\(\s*\)|\[\s*\]|\{\s*\}/g,' ')
     .replace(/\[[^\]]*?\d+\s*페이지[^\]]*?\]/g,' ')
     .replace(/(^|\s)\d+\s*페이지(?=\s|$|[.。])/g,' ')
     .replace(/\(\s*반복\s*\)/g,' ')
@@ -3144,7 +3021,7 @@ function splitTheoryTTSChunks(text){
   return chunks.filter(v=>v && v.text);
 }
 function filterTheoryMemoryForSpeech(body,memory){
-  const mem=normalizeTheoryMemoryRaw(String(memory||'').replace(/^암기문장\.\s*/,'').trim());
+  const mem=String(memory||'').replace(/^암기문장\.\s*/,'').trim();
   if(!mem) return '';
   /* v30.20_TTS_FIX_05
      FIX_04의 중복 암기문장 생략 조건이 16페이지와 공업경영 138페이지처럼
@@ -4982,7 +4859,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.28-theory-memory-empty-fallback-fix')
+    navigator.serviceWorker.register('sw.js?v=31.30-safe-rollback-memory-edit')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });
@@ -5122,4 +4999,4 @@ function importProgress(){
 </body>
 </html>
 <!-- v31.25: 암기과목 편집모드 추가. 설정 ON/OFF, 암기문장 모아보기 텍스트 직접 수정/저장/복원 지원. 데이터 파일 변경 없음. -->
-<!-- v31.26: 암기문장 표시/TTS 정렬 필터 추가. 불필요한 반복·페이지·빈괄호·말줄임 및 연속중복 줄을 정리. 데이터 파일 변경 없음. -->
+<!-- v31.30: 안전복구판. v31.26~v31.29 암기문장 텍스트 정렬/본문 fallback 계열을 제거하고 v31.25 안정 구조로 롤백. 문제풀이 회차 진입과 암기문장 전체듣기 정상화 우선. questions.js/theory.js 원본 데이터 변경 없음. -->
