@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-25-theory-memory-edit-mode';
+const CACHE_NAME = 'pipe-master-v31-27-theory-memory-text-final-clean';
 const ASSETS = [
   './',
   './index.html',
@@ -109,3 +109,7 @@ self.addEventListener('fetch', e => {
 // v31.24: Theory memory TTS reads subject, chapter/subtitle, then memory content.
 
 // v31.25: Theory memory edit mode ON/OFF added in settings. Memory list text can be edited, saved, canceled, or restored locally.
+
+// v31.26: Theory memory text clean/align filter added. Display/TTS removes unused labels, page/repeat markers, empty brackets, ellipses, and consecutive duplicate lines without modifying data files.
+
+// v31.27: 암기과목 화면 표시 텍스트 최종 정렬. 페이지/장표시/깨진 괄호/문장 밀림 보정.

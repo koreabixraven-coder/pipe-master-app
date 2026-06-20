@@ -1,20 +1,8 @@
-배관기능장 앱 v31.22_THEORY_MEMORY_LIST
-Windows 압축폴더 호환 재생성본입니다.
+WINDOWS_OK 배포본 안내
 
-수정 이유:
-- 이전 ZIP 안에 긴/깨진 한글 원본 파일명이 섞여 Windows 기본 압축폴더에서 "올바르지 않습니다" 오류가 날 수 있어,
-  배포본은 앱 실행에 필요한 핵심 파일만 넣어 다시 압축했습니다.
+이 압축파일은 윈도우 기본 "압축(ZIP) 폴더"에서 열리도록 파일명을 영문/숫자 중심으로 정리한 배포본입니다.
+압축을 푼 뒤 index.html을 실행하면 됩니다.
 
-포함 핵심 파일:
-- index.html
-- manifest.json
-- questions.js
-- theory.js
-- sw.js
-- icon-72/96/128/192/512.png
-
-유지 사항:
-- 총문항수 4411문항 유지
-- questions.js / theory.js 데이터 변경 없음
-- 암기문장 모아보기 기능 유지
-- 캐시명 pipe-master-v31-22-theory-memory-list 유지
+버전: v31.23_THEORY_MEMORY_TTS_PAUSE_CLEAN
+주요 변경: 이론/암기문장 TTS에서 화면용 라벨·페이지·반복 표기를 읽지 않고, 목록기호/콜론/문단 기준으로 쉼타임을 적용합니다.
+데이터 변경: questions.js, theory.js 원본 데이터 변경 없음. 총문항수 4411문항 유지.
