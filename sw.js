@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-30-safe-rollback-memory-edit';
+const CACHE_NAME = 'pipe-master-v31-21-cross-session-memorize-fix';
 const ASSETS = [
   './',
   './index.html',
@@ -100,14 +100,3 @@ self.addEventListener('fetch', e => {
 // v31.21: 교차회차 암기완료 제외 버그 수정.
 //   isMemorizedQuestion()가 직접키만 확인 → _repeatRefs 교차참조도 확인하도록 보강.
 //   "현재 문제 암기완료"만 눌러도 다른 회차의 동일문제가 재생에서 제외됨.
-
-// v31.22: 이론 항목 중 memory 암기문장만 별도 목록으로 모아보기 추가. 이론/문제 데이터 변경 없음.
-
-
-// v31.23: 이론/암기문장 TTS에서 암기문장·페이지·반복 표기 생략, 1.2.3./가.나.다./원형문자/콜론 문단 쉼타임 강화. 데이터 변경 없음.
-
-// v31.24: Theory memory TTS reads subject, chapter/subtitle, then memory content.
-
-// v31.25: Theory memory edit mode ON/OFF added in settings. Memory list text can be edited, saved, canceled, or restored locally.
-
-// v31.30: Safe rollback from v31.29 to v31.25 stable memory-edit structure. Removed risky text-clean/detail-fallback changes to restore quiz session entry and memory TTS playback.
