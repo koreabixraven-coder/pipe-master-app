@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.22"></script>
+<script src="questions.js?v=31.23"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -2028,6 +2028,7 @@ function buildTheorySubjects(){
 
 
 /* ── v31.22 이론 암기문장만 별도 목록 ── */
+/* v31.23: 암기문장/페이지/반복 표기는 TTS에서 생략하고, 목록기호·콜론·문단 기준 쉼타임을 강화. */
 let theoryMemoryFilterSubject='all';
 let theoryMemoryReadQueue=[];
 let theoryMemoryReadIndex=0;
@@ -2139,6 +2140,33 @@ function focusTheoryMemoryListItem(idx,label){
     },80);
   }
 }
+function buildTheoryMemorySpeechChunks(it){
+  const chunks=[];
+  pushTheorySpeechChunk(chunks,it.subjectTitle,THEORY_TTS_TITLE_GAP_MS);
+  pushTheorySpeechChunk(chunks,it.sectionTitle,THEORY_TTS_TITLE_GAP_MS);
+  splitTheoryTTSChunks(it.memory).forEach(c=>chunks.push(c));
+  return chunks.filter(v=>v && v.text);
+}
+function buildTheoryMemoryReadQueue(items){
+  const q=[];
+  (items||[]).forEach((it,itemIndex)=>{
+    const chunks=buildTheoryMemorySpeechChunks(it);
+    chunks.forEach((chunk,chunkIndex)=>{
+      const text=cleanTheorySpeechText(chunk.text||chunk);
+      if(!text) return;
+      q.push({
+        itemIndex,
+        itemTotal:(items||[]).length,
+        chunkIndex,
+        chunkTotal:chunks.length,
+        item:it,
+        text,
+        gapMs:chunk.gapMs||THEORY_TTS_GAP_MS
+      });
+    });
+  });
+  return q;
+}
 function theoryMemoryReadNext(sessionId){
   if(sessionId!==theoryMemoryReadSession) return;
   if(!theoryMemoryReadQueue.length || theoryMemoryReadIndex>=theoryMemoryReadQueue.length){
@@ -2147,12 +2175,11 @@ function theoryMemoryReadNext(sessionId){
     if(!driveOn && !theoryDriveOn) relWake();
     return;
   }
-  const idx=theoryMemoryReadIndex;
-  const it=theoryMemoryReadQueue[theoryMemoryReadIndex++];
-  focusTheoryMemoryListItem(idx,'암기문장 읽는 중. '+it.subjectTitle+' '+(idx+1)+'/'+theoryMemoryReadQueue.length);
-  const text='암기문장. '+it.subjectTitle+'. '+it.sectionTitle+'. '+it.memory;
-  spk(cleanTheorySpeechText(text),()=>{
-    setTimeout(()=>theoryMemoryReadNext(sessionId),THEORY_TTS_GAP_MS);
+  const q=theoryMemoryReadQueue[theoryMemoryReadIndex++];
+  const it=q.item;
+  focusTheoryMemoryListItem(q.itemIndex,'암기문장 읽는 중. '+it.subjectTitle+' '+(q.itemIndex+1)+'/'+q.itemTotal+' · 문단 '+(q.chunkIndex+1)+'/'+q.chunkTotal);
+  spk(q.text,()=>{
+    setTimeout(()=>theoryMemoryReadNext(sessionId),q.gapMs||THEORY_TTS_GAP_MS);
   });
 }
 function theoryMemoryReadAll(e){
@@ -2161,7 +2188,8 @@ function theoryMemoryReadAll(e){
   try{synth.cancel();}catch(err){}
   paused=false;
   resetTheoryPauseButton();
-  theoryMemoryReadQueue=getTheoryMemoryFilteredItems();
+  const items=getTheoryMemoryFilteredItems();
+  theoryMemoryReadQueue=buildTheoryMemoryReadQueue(items);
   theoryMemoryReadIndex=0;
   theoryMemoryReadSession++;
   const sessionId=theoryMemoryReadSession;
@@ -2170,7 +2198,7 @@ function theoryMemoryReadAll(e){
     return;
   }
   reqWake('암기문장 전체듣기');
-  setTheoryTrackText('암기문장 전체듣기를 시작합니다.');
+  setTheoryTrackText('암기문장 전체듣기를 시작합니다. 암기문장·페이지·반복 표기는 읽지 않고 문단마다 잠시 쉽니다.');
   theoryMemoryReadNext(sessionId);
 }
 
@@ -2205,12 +2233,16 @@ function splitTheoryParagraphs(s){
   let t=String(s||'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
 
   /* 긴 한 줄 원문을 목차 기호 단위로 읽기 좋게 줄바꿈한다.
-     원문 문자는 삭제하지 않고 줄바꿈만 추가한다. */
+     원문 문자는 삭제하지 않고 줄바꿈만 추가한다.
+     v31.23: (1)/(가)/①/㉮뿐 아니라 1. 2. 3. / 가. 나. 다. 형식도 문단으로 인식한다. */
   const circled='①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮';
   const smallCircled='㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷';
   const alphaCircled='ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ';
+  const hangulMarkers='가나다라마바사아자차카타파하';
   t=t.replace(/([^\n])\s*(\([0-9]+\)\s*)/g,'$1\n$2');
   t=t.replace(/([^\n])\s*(\([가-힣]\)\s*)/g,'$1\n$2');
+  t=t.replace(/([^\n0-9])\s*([0-9]{1,2}[.)]\s+(?=[^0-9]))/g,'$1\n$2');
+  t=t.replace(new RegExp('([^\\n])\\s*(['+hangulMarkers+'][.)]\\s+)','g'),'$1\n$2');
   t=t.replace(new RegExp('([^\\n])\\s*(['+circled+'])\\s*','g'),'$1\n$2 ');
   t=t.replace(new RegExp('([^\\n])\\s*(['+smallCircled+'])\\s*','g'),'$1\n$2 ');
   t=t.replace(new RegExp('([^\\n])\\s*(['+alphaCircled+'])\\s*','g'),'$1\n$2 ');
@@ -2595,9 +2627,11 @@ let theoryAutoScroll=true;
 let theoryReadQueue=[];
 let theoryReadIndex=0;
 let theoryActiveIndex=0;
-const THEORY_TTS_GAP_MS=650;
-const THEORY_TTS_MARKER_GAP_MS=400;
-const THEORY_TTS_COLON_GAP_MS=950;
+const THEORY_TTS_GAP_MS=720;
+const THEORY_TTS_TITLE_GAP_MS=900;
+const THEORY_TTS_MARKER_GAP_MS=560;
+const THEORY_TTS_COLON_GAP_MS=1050;
+const THEORY_TTS_PARAGRAPH_GAP_MS=900;
 
 function getTheoryTrackTargets(){
   return Array.from(document.querySelectorAll('#theoryContentArea .tts-track-target'));
@@ -2710,10 +2744,11 @@ function cleanTheorySpeechText(s){
     .replace(/\\frac\{1\}\{2\}H/g,'이분의 일 H')
     .replace(/\\circ/g,'도')
     .replace(/\s+/g,' ')
-    .replace(/핵심개념\s*\.?\s*/g,'')
-    .replace(/상세설명\s*\.?\s*/g,'')
-    .replace(/화면표시문\s*\.?\s*/g,'')
-    .replace(/설명문\s*\.?\s*/g,'')
+    .replace(/\[[^\]]*?\d+\s*페이지[^\]]*?\]/g,' ')
+    .replace(/(^|\s)\d+\s*페이지(?=\s|$|[.。])/g,' ')
+    .replace(/\(\s*반복\s*\)/g,' ')
+    .replace(/(^|\s)(암기문장|핵심개념|상세설명|화면표시문|설명문)\s*[:：.]?\s*/g,' ')
+    .replace(/(^|\s)반복(?=\s|$|[.。])/g,' ')
     .trim();
 }
 function getTheoryBodyFromCard(el){
@@ -2759,13 +2794,17 @@ function theoryMarkerSpeech(marker){
   if(alpha[m]) return alpha[m]+'.';
   let par=m.match(/^\(([0-9]+)\)$/);
   if(par) return par[1]+'번.';
+  par=m.match(/^([0-9]{1,2})[.)]$/);
+  if(par) return par[1]+'번.';
   par=m.match(/^\(([가-힣])\)$/);
+  if(par) return par[1]+'.';
+  par=m.match(/^([가나다라마바사아자차카타파하])[.)]$/);
   if(par) return par[1]+'.';
   return cleanTheorySpeechText(m)+'.';
 }
 function splitLeadingTheoryMarker(line){
   const s=String(line||'').trim();
-  const markerRe=/^(\([0-9]+\)|\([가-힣]\)|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]|[㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷]|[ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ])\s*(.*)$/;
+  const markerRe=/^(\([0-9]+\)|\([가-힣]\)|[0-9]{1,2}[.)]|[가나다라마바사아자차카타파하][.)]|[①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮]|[㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷]|[ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙ])\s*(.*)$/;
   const m=s.match(markerRe);
   if(!m) return null;
   return {marker:m[1], body:m[2].trim()};
@@ -2793,7 +2832,7 @@ function pushTheoryLineAsChunks(chunks,line,gapMs){
   }
   if(text.length>260){
     const parts=text.split(/(?<=[.다요음됨함임\.])\s+/).map(v=>cleanTheorySpeechText(v)).filter(Boolean);
-    if(parts.length>1) parts.forEach(p=>pushTheorySpeechChunk(chunks,p,gapMs||THEORY_TTS_GAP_MS));
+    if(parts.length>1) parts.forEach(p=>pushTheorySpeechChunk(chunks,p,THEORY_TTS_PARAGRAPH_GAP_MS));
     else pushTheorySpeechChunk(chunks,text,gapMs||THEORY_TTS_GAP_MS);
   }else{
     pushTheorySpeechChunk(chunks,text,gapMs||THEORY_TTS_GAP_MS);
@@ -2843,14 +2882,14 @@ function buildTheoryReadQueue(){
     const part=getTheoryCardPartsForSpeech(el,idx);
     const titleText=cleanTheorySpeechText(part.title);
     const bodyChunks=splitTheoryTTSChunks(part.body);
-    const memoryChunks=part.memory ? splitTheoryTTSChunks('암기문장. '+part.memory) : [];
+    const memoryChunks=part.memory ? splitTheoryTTSChunks(part.memory) : [];
     const examChunks=(appSettings && appSettings.theoryExamTTS && part.exam && part.exam.length)
       ? part.exam.flatMap(v=>splitTheoryTTSChunks(v))
       : [];
 
     const chunks=[];
     if(titleText){
-      chunks.push({text:titleText+'.', gapMs:THEORY_TTS_GAP_MS});
+      chunks.push({text:titleText+'.', gapMs:THEORY_TTS_TITLE_GAP_MS});
     }
     chunks.push(...bodyChunks);
     chunks.push(...memoryChunks);
@@ -4648,7 +4687,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.21-cross-session-memorize-fix')
+    navigator.serviceWorker.register('sw.js?v=31.23-theory-memory-pause-clean')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });

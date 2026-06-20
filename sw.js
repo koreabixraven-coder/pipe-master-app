@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-22-theory-memory-list';
+const CACHE_NAME = 'pipe-master-v31-23-theory-memory-pause-clean';
 const ASSETS = [
   './',
   './index.html',
@@ -102,3 +102,6 @@ self.addEventListener('fetch', e => {
 //   "현재 문제 암기완료"만 눌러도 다른 회차의 동일문제가 재생에서 제외됨.
 
 // v31.22: 이론 항목 중 memory 암기문장만 별도 목록으로 모아보기 추가. 이론/문제 데이터 변경 없음.
+
+
+// v31.23: 이론/암기문장 TTS에서 암기문장·페이지·반복 표기 생략, 1.2.3./가.나.다./원형문자/콜론 문단 쉼타임 강화. 데이터 변경 없음.
