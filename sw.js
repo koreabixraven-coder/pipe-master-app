@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-28-theory-memory-empty-fallback-fix';
+const CACHE_NAME = 'pipe-master-v31-29-theory-memory-strict-only-audit';
 const ASSETS = [
   './',
   './index.html',
@@ -115,3 +115,5 @@ self.addEventListener('fetch', e => {
 // v31.28: 암기과목 화면 표시 텍스트 최종 정렬. 페이지/장표시/깨진 괄호/문장 밀림 보정.
 
 // v31.28: 암기과목 배관제도 5/6처럼 정렬 필터 후 빈 박스가 남는 경우 detail 원문 fallback 복구. '한다.' 문단 밀림 방지 보정.
+
+// v31.29: 암기과목 전수검수. 암기목록/청취는 sec.memory만 사용하고 detail 원문 fallback 제거. 본문 섞임 문제 보정.

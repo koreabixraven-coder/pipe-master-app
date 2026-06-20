@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="theory.js"></script>
-<script src="questions.js?v=31.28"></script>
+<script src="questions.js?v=31.29"></script>
 <script>
 /* ── v30.22 패드 화면 확장 설정 선적용 ── */
 (function(){
@@ -2053,6 +2053,7 @@ function buildTheorySubjects(){
 /* ── v31.22 이론 암기문장만 별도 목록 ── */
 /* v31.23: 암기문장/페이지/반복 표기는 TTS에서 생략하고, 목록기호·콜론·문단 기준 쉼타임을 강화. */
 /* v31.26: 암기문장 표시·TTS 전용 텍스트 정렬 필터 추가. 원본 데이터는 보존한다. */
+/* v31.29: 암기과목 전수검수. 암기목록/청취는 sec.memory만 사용하고 detail 본문 fallback은 금지한다. */
 let theoryMemoryFilterSubject='all';
 let theoryMemoryReadQueue=[];
 let theoryMemoryReadIndex=0;
@@ -2530,19 +2531,10 @@ function cleanTheoryMemoryTextCandidate(input,rawText){
 function getTheoryMemoryCleanText(input){
   const isObj=input && typeof input==='object';
   if(!isObj) return normalizeTheoryMemoryRaw(input);
+  /* v31.29: 암기과목은 theory.js의 memory 필드만 사용한다.
+     detail 본문 fallback은 일반 이론 전체가 암기목록에 섞이는 원인이므로 금지한다. */
   const rawMemory=String(input.memory||'');
-  const rawDetail=String(input.detail||'');
-  const memoryLooksTruncated=/[.]{3,}|…+/.test(rawMemory);
-  const candidates=[];
-  /* v31.28: memory가 말줄임표로 잘린 항목 또는 빈 박스가 되는 항목은 detail 원문을 우선 사용한다. */
-  if(rawDetail && memoryLooksTruncated) candidates.push(rawDetail);
-  candidates.push(rawMemory);
-  if(rawDetail && !memoryLooksTruncated) candidates.push(rawDetail);
-  for(const raw of candidates){
-    const cleaned=cleanTheoryMemoryTextCandidate(input,raw);
-    if(cleaned) return cleaned;
-  }
-  return '';
+  return cleanTheoryMemoryTextCandidate(input,rawMemory);
 }
 function formatTheoryMemoryDisplay(input){
   return escapeTheoryHTML(getTheoryMemoryCleanText(input));
