@@ -1361,6 +1361,10 @@
       <label>정답 후 해설 자동 낭독</label>
       <label class="tog"><input type="checkbox" id="autoEx" checked><span class="tog-sl"></span></label>
     </div>
+    <div class="tog-row">
+      <label>해설 낭독 제외 (정답만 듣기)</label>
+      <label class="tog"><input type="checkbox" id="skipExplanation"><span class="tog-sl"></span></label>
+    </div>
     <div class="tog-row" style="margin-bottom:10px;">
       <label>해설 후 자동 다음 문제</label>
       <label class="tog"><input type="checkbox" id="autoNx" checked><span class="tog-sl"></span></label>
@@ -3144,6 +3148,8 @@ function loadV(){
   if(qfa) qfa.onchange=()=>{ if(appSettings) appSettings.quizFullAuto=qfa.checked; markSettingsDirty(); };
   if(qtr) qtr.onchange=()=>{ if(appSettings) appSettings.quizTrack=qtr.checked; markSettingsDirty(); };
   if(pwm) pwm.onchange=()=>{ if(appSettings) appSettings.padWideMode=pwm.checked; applyLayoutMode(pwm.checked); markSettingsDirty(); };
+  const ske=document.getElementById('skipExplanation');
+  if(ske) ske.onchange=()=>{ if(appSettings) appSettings.skipExplanation=ske.checked; markSettingsDirty(); };
   updateDirtyNote();
 }
 
@@ -3379,6 +3385,7 @@ const DEFAULT_SETTINGS={
   thinkTime:3,
   autoExplain:true,
   autoNext:true,
+  skipExplanation:false,
   quizFullAuto:false,
   quizTrack:true,
   theoryExamTTS:false,
@@ -3464,6 +3471,7 @@ function normalizeSettings(obj){
   s.thinkTime=[3,5,10,15].includes(Number(s.thinkTime))?Number(s.thinkTime):DEFAULT_SETTINGS.thinkTime;
   s.autoExplain=!!s.autoExplain;
   s.autoNext=!!s.autoNext;
+  s.skipExplanation=!!s.skipExplanation;
   s.quizFullAuto=!!s.quizFullAuto;
   s.quizTrack=(s.quizTrack===undefined)?true:!!s.quizTrack;
   s.theoryExamTTS=!!s.theoryExamTTS;
@@ -3569,6 +3577,8 @@ function applySettings(settings, rebuildVoiceCards=false){
   if(qfa) qfa.checked=appSettings.quizFullAuto;
   if(qtr) qtr.checked=appSettings.quizTrack;
   if(pwm) pwm.checked=appSettings.padWideMode;
+  const skeApply=document.getElementById('skipExplanation');
+  if(skeApply) skeApply.checked=appSettings.skipExplanation;
 
   if(voices && voices.length){
     selV = voices.find(v=>v.name===appSettings.voiceName) || preferredKoreanVoice();
@@ -3594,6 +3604,7 @@ function collectSettingsFromUI(){
     thinkTime: activeTh ? Number(activeTh.getAttribute('data-th-value')) : th,
     autoExplain: !!(document.getElementById('autoEx') && document.getElementById('autoEx').checked),
     autoNext: !!(document.getElementById('autoNx') && document.getElementById('autoNx').checked),
+    skipExplanation: !!(document.getElementById('skipExplanation') && document.getElementById('skipExplanation').checked),
     quizFullAuto: !!(document.getElementById('quizFullAuto') && document.getElementById('quizFullAuto').checked),
     quizTrack: !(document.getElementById('quizTrack') && !document.getElementById('quizTrack').checked),
     theoryExamTTS: !!(document.getElementById('theoryExamTTS') && document.getElementById('theoryExamTTS').checked),
@@ -3815,7 +3826,11 @@ function ansNo(q){ return (Number(q.ans)+1)+'번'; }
 function spkAns(L,q,cb){
   const correctEl=document.querySelectorAll('#opts .opt')[Number(q.ans)];
   quizTtsFocus(correctEl,'정답 '+ansNo(q)+' 읽는 중');
-  spkQ('정답은 '+ansNo(q)+'입니다.',()=>{
+  /* v31.21: skipExplanation 설정 시 정답+보기만 읽고 해설 건너뜀 */
+  const skipEx=appSettings && appSettings.skipExplanation;
+  const ansText=skipEx ? '정답은 '+ansNo(q)+', '+q.opts[q.ans]+'입니다.' : '정답은 '+ansNo(q)+'입니다.';
+  spkQ(ansText,()=>{
+    if(skipEx){ if(cb) cb(); return; }
     setTimeout(()=>{
       if(paused){ resumeTask=()=>{quizTtsFocus(document.getElementById('exBox'),'해설 읽는 중'); spkQ('해설. '+q.ex, cb);}; return; }
       let done=false;
@@ -4439,7 +4454,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.21-cross-session-memorize-fix')
+    navigator.serviceWorker.register('sw.js?v=31.21-cross-memo-skip-explanation')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });

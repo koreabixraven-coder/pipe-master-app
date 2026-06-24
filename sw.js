@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-21-cross-session-memorize-fix';
+const CACHE_NAME = 'pipe-master-v31-21-cross-memo-skip-explanation';
 const ASSETS = [
   './',
   './index.html',
@@ -100,3 +100,4 @@ self.addEventListener('fetch', e => {
 // v31.21: 교차회차 암기완료 제외 버그 수정.
 //   isMemorizedQuestion()가 직접키만 확인 → _repeatRefs 교차참조도 확인하도록 보강.
 //   "현재 문제 암기완료"만 눌러도 다른 회차의 동일문제가 재생에서 제외됨.
+//   설정에 "해설 낭독 제외 (정답만 듣기)" 토글 추가. ON이면 정답+보기만 낭독하고 해설 건너뜀.
