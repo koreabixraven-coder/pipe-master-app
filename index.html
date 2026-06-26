@@ -824,15 +824,16 @@
       letter-spacing: -0.2px !important;
     }
 
+    /* v31.21: 가로모드 보기 2×2 그리드 배치 */
     #screenQuiz .opts {
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 12px !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10px !important;
       margin-bottom: 14px !important;
     }
     #screenQuiz .opt {
       width: 100% !important;
-      min-height: 70px !important;
+      min-height: 58px !important;
       padding: 18px 20px !important;
       font-size: 17px !important;
       line-height: 1.72 !important;
