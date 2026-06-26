@@ -1226,8 +1226,22 @@
       max-height:38vh!important;
       overflow-y:auto!important;
       border-bottom:1px solid #2A2A2A!important;
-      padding-bottom:10px!important;
+      padding-bottom:8px!important;
       margin-bottom:0!important;
+    }
+    /* 반복출제 + 암기완료 뱃지 1행 가로 배치 */
+    #screenQuiz .q-badges-row{
+      display:flex!important;
+      gap:8px!important;
+      margin-top:8px!important;
+    }
+    #screenQuiz .q-badges-row > .repeat-box{
+      flex:1 1 50%!important;
+      margin-top:0!important;
+    }
+    #screenQuiz .q-badges-row > .memo-box{
+      flex:1 1 50%!important;
+      margin-top:0!important;
     }
     #screenQuiz .quiz-answer-pane{
       flex:1 1 auto!important;
@@ -1758,8 +1772,10 @@
           <span class="q-cat" id="qCat">-</span>
         </div>
         <div class="q-text" id="qText">문제를 로딩 중입니다...</div>
-        <div class="repeat-box" id="repeatBox" aria-live="polite"></div>
-        <div class="memo-box" id="memoBox" aria-live="polite"></div>
+        <div class="q-badges-row">
+          <div class="repeat-box" id="repeatBox" aria-live="polite"></div>
+          <div class="memo-box" id="memoBox" aria-live="polite"></div>
+        </div>
       </div>
       <div class="quiz-answer-pane" id="quizAnswerPane">
       <div class="opts" id="opts"></div>
