@@ -2894,13 +2894,34 @@ function updateQuizCurrentTitle(){
   if(el) el.textContent='현재 풀이. '+getQuizLevelLabel(curLevel)+' · '+((DB[curLevel]&&DB[curLevel].length)||0)+'문제';
 }
 
-let scoreData = {}; // { '초급1': { ok:0, ng:0, sk:0, wrong:[] } }
+/* ── v31.21 모의고사 점수 영속 저장 ── */
+const SCORE_KEY='pipe_master_score_v31_21';
+function loadScoreData(){
+  try{
+    const raw=localStorage.getItem(SCORE_KEY);
+    const obj=raw?JSON.parse(raw):{};
+    return (obj && typeof obj==='object' && !Array.isArray(obj)) ? obj : {};
+  }catch(e){return {};}
+}
+function saveScoreData(){
+  try{
+    /* wrong 배열은 세션 전용이므로 저장 시 제외 */
+    const compact={};
+    Object.keys(scoreData).forEach(k=>{
+      const d=scoreData[k];
+      if(d) compact[k]={ok:d.ok||0,ng:d.ng||0,sk:d.sk||0};
+    });
+    localStorage.setItem(SCORE_KEY,JSON.stringify(compact));
+  }catch(e){}
+}
+let scoreData = loadScoreData();
 let sessionOk=0, sessionNg=0, wrongQs=[];
 let retryMode=false;
 
 function initScore(){
   sessionOk=0; sessionNg=0; wrongQs=[];
   if(!scoreData[curLevel]) scoreData[curLevel]={ok:0,ng:0,sk:0,wrong:[]};
+  else if(!scoreData[curLevel].wrong) scoreData[curLevel].wrong=[];
   updateScoreBar();
 }
 function updateScoreBar(){
@@ -2917,11 +2938,13 @@ function recordAnswer(isOk, q){
   if(isOk) scoreData[curLevel].ok++;
   else{scoreData[curLevel].ng++;scoreData[curLevel].wrong.push(q);}
   updateScoreBar();
+  saveScoreData();
 }
 function showResult(){
   const total=Qs.length;
   const sk=total-sessionOk-sessionNg;
   if(scoreData[curLevel]) scoreData[curLevel].sk=sk;
+  saveScoreData();
   const pct=total>0?Math.round(sessionOk/total*100):0;
   const pass=pct>=60;
 
