@@ -1133,6 +1133,9 @@
     #screenQuiz .quiz-logo-ico{display:flex!important;flex-shrink:0!important;}
     #screenQuiz .home-icon-btn,
     #screenQuiz .setting-trigger{flex-shrink:0!important;}
+    /* v31.21: 설정 아이콘 가로모드 숨김 — 동일 블록 내 배치 */
+    #screenQuiz .setting-trigger{display:none!important;width:0!important;height:0!important;overflow:hidden!important;padding:0!important;margin:0!important;border:none!important;}
+    #screenQuiz .home-icon-btn{margin-right:0!important;}
     #screenQuiz .desktop-quiz-grid{order:2!important;}
     #screenQuiz .quiz-bottom-control-zone{order:20!important;}
     #screenQuiz .quiz-bottom-actions{display:none!important;}
@@ -1265,13 +1268,6 @@
       overflow:visible!important;
       padding-right:0!important;
       margin-right:0!important;
-    }
-    #screenQuiz .setting-trigger{
-      display:none!important;
-    }
-    #screenQuiz .home-icon-btn{
-      margin-right:0!important;
-      flex-shrink:0!important;
     }
   }
 
@@ -4593,7 +4589,7 @@ setTimeout(updateHomeCounts,200);
 /* Service Worker 등록 */
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('sw.js?v=31.21-split-quiz-layout')
+    navigator.serviceWorker.register('sw.js?v=31.22')
       .then(()=>console.log('SW 등록 완료'))
       .catch(e=>console.log('SW 등록 실패',e));
   });

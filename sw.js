@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pipe-master-v31-21-split-quiz-layout';
+const CACHE_NAME = 'pipe-master-v31-22';
 const ASSETS = [
   './',
   './index.html',
