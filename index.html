@@ -1347,6 +1347,53 @@
     }
   }
 
+
+
+  /* ── v31.24 SAFE: 가로모드 상하 스크롤 단일화 ──
+     - 적용 범위: 문제풀이 화면 + 태블릿/데스크탑 가로모드만
+     - 1행 로고/아이콘은 고정 유지
+     - 본문은 quiz-scroll-pane 하나만 세로 스크롤 허용
+     - q-card / 보기·해설 pane의 내부 중첩 스크롤 제거
+     - 세로모드, 휴대폰, 데이터, TTS 로직 변경 없음 */
+  @media (min-width:760px) and (orientation:landscape){
+    #screenQuiz.show,
+    #screenQuiz .app{
+      overflow:hidden!important;
+    }
+    #screenQuiz .quiz-scroll-pane{
+      flex:1 1 auto!important;
+      min-height:0!important;
+      height:auto!important;
+      max-height:none!important;
+      overflow-y:auto!important;
+      overflow-x:hidden!important;
+      -webkit-overflow-scrolling:touch!important;
+      overscroll-behavior:contain!important;
+    }
+    #screenQuiz .desktop-quiz-grid,
+    #screenQuiz .desktop-main-panel,
+    #screenQuiz .desktop-main-panel > .q-card,
+    #screenQuiz .quiz-answer-pane{
+      height:auto!important;
+      max-height:none!important;
+      min-height:0!important;
+      overflow:visible!important;
+    }
+    #screenQuiz .desktop-main-panel{
+      display:block!important;
+    }
+    #screenQuiz .desktop-main-panel > .q-card{
+      border-bottom:0.5px solid #2A2A2A!important;
+      padding-bottom:16px!important;
+      margin-bottom:10px!important;
+    }
+    #screenQuiz .quiz-answer-pane{
+      padding-top:0!important;
+      -webkit-overflow-scrolling:auto!important;
+      overscroll-behavior:auto!important;
+    }
+  }
+
 </style>
 </head>
 <body>
