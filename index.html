@@ -102,6 +102,16 @@
   .quiz-track-status{font-size:11px;color:#A8D2FF;text-align:center;margin:-4px 0 8px;min-height:16px;}
   .quiz-track-status.on{color:#9FE1CB;}
 
+  /* ── SAFE: 가로모드 TTS 추적 시 상하 흔들림 방지 ──
+     - 적용범위: 문제풀이 화면 + 태블릿/데스크탑 가로모드만
+     - 읽는 위치 표시 색상은 유지, scroll/translate 이동감은 제거 */
+  @media (min-width:760px) and (orientation:landscape){
+    #screenQuiz .quiz-tts-reading{transform:none!important;transition:border-color .18s ease,background .18s ease,box-shadow .18s ease!important;}
+    #screenQuiz .q-card.quiz-tts-reading,
+    #screenQuiz .opt.quiz-tts-reading,
+    #screenQuiz .ex-box.quiz-tts-reading{transform:none!important;}
+  }
+
   /* ── v24 문제풀이 이론형 목차 UI. 문제 로직 변경 없음 ── */
   .quiz-toc-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px;}
   .quiz-toc-card{background:#1A1A1A;border:0.5px solid #2A2A2A;border-radius:12px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .15s;-webkit-tap-highlight-color:transparent;}
@@ -4756,12 +4766,21 @@ function quizTtsClearTrack(){
   const st=document.getElementById('quizTrackStatus');
   if(st){st.textContent='';st.classList.remove('on');}
 }
+function isQuizLandscapeNoTtsMove(){
+  try{
+    return !!(document.getElementById('screenQuiz')?.classList.contains('show')
+      && window.matchMedia
+      && window.matchMedia('(min-width:760px) and (orientation:landscape)').matches);
+  }catch(e){return false;}
+}
 function quizTtsFocus(el,label){
   if(!quizTrackEnabled() || !el) return;
   quizTtsClearTrack();
   el.classList.add('quiz-tts-reading');
   const st=document.getElementById('quizTrackStatus');
   if(st){st.textContent=label||'읽는 위치 추적 중';st.classList.add('on');}
+  /* SAFE: 가로모드에서는 TTS 추적 표시만 하고 자동 상하 스크롤은 하지 않음 */
+  if(isQuizLandscapeNoTtsMove()) return;
   setTimeout(()=>{
     try{
       /* v31.21: 가로모드 2분할 — 보기/해설 영역만 스크롤, 문제 고정 유지 */
