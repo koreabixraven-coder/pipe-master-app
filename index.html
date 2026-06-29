@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#121212">
+<!-- v31.25 SAFE STABILIZED: duplicate/menu guard, quizArea guard, option text-safe render, static audit passed -->
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -90,6 +91,7 @@
   /* ── 화면 전환 ── */
   .screen{display:none;}
   .screen.show{display:block;}
+  .quiz-area{display:block;}
 
 
 
@@ -1617,7 +1619,7 @@
         <div class="hc-sub">기출문제와 기출회차 문제를 TTS와 함께 풀어봅니다.</div>
         <div class="hc-tags">
           <span class="hc-tag qz">기출문제</span>
-          <span class="hc-tag qz">기출회차41회~63회</span>
+          <span class="hc-tag qz">기출회차41회~62회</span>
           <span class="hc-tag qz">기출복원문제</span>
         </div>
       </div>
@@ -1888,6 +1890,9 @@
       <button class="rb p" onclick="restartQuiz()">처음부터</button>
     </div>
   </div>
+
+  <!-- v31.25 SAFE: JS가 제어하는 문제풀이 본문 래퍼. 결과화면과 분리하여 null 오류를 방지합니다. -->
+  <div id="quizArea" class="quiz-area">
   <div class="dots" id="dots"></div>
   <div class="status" id="status"></div>
 
@@ -1946,6 +1951,7 @@
     </div>
     <div class="quiz-track-status" id="quizTrackStatus"></div>
   </div>
+  </div><!-- quizArea -->
 
   <!-- 저작권 -->
   <div class="footer" style="margin-top:8px;">
@@ -2939,7 +2945,7 @@ let curQuizGroup='기출문제';
 let quizPrepared=false;
 const QUIZ_GROUPS=[
   {key:'기출문제', icon:'①', desc:'챕터1·챕터2·챕터3·챕터4·챕터5 신규 단원을 훈련합니다.', levels:["배관공학의기초1","관의접합및성형3","용접의종류및특성4","챕터2_01_관의종류및특성","챕터2_02_관이음재료","챕터2_03_밸브및배관부속재료","챕터2_04_관의지지기구","챕터2_05_보온단열재","챕터3_01_배관설비도면","챕터3_02_판금","챕터4_01_급수설비","챕터4_02_배수및통기배관","챕터4_03_급탕설비","챕터4_04_소화설비","챕터4_05_온수난방설비","챕터4_06_증기난방설비","챕터4_07_냉방및공기조화설비","챕터4_08_집진설비및세정설비","챕터4_09_플랜트배관설비","챕터4_10_위생설비및소화설비","챕터4_11_배관설비검사및계측","챕터4_12_설비자동화","챕터4_13_안전관리","챕터5_01_공업경영"], labels:["챕터1-01. 배관공학의 기초","챕터1-02. 관의 접합 및 성형","챕터1-03. 용접의 종류 및 특성","챕터2-01. 관의 종류 및 특성","챕터2-02. 관 이음 재료","챕터2-03. 밸브 및 배관 부속재료","챕터2-04. 관의 지지 기구","챕터2-05. 보온 단열재","챕터3-01. 배관설비도면","챕터3-02. 판금","챕터4-01. 급수설비","챕터4-02. 배수 및 통기배관","챕터4-03. 급탕설비","챕터4-04. 소화설비","챕터4-05. 온수난방설비","챕터4-06. 증기난방설비","챕터4-07. 냉방 및 공기조화설비","챕터4-08. 집진설비 및 세정설비","챕터4-09. 플랜트 배관설비","챕터4-10. 위생설비 및 소화설비","챕터4-11. 배관설비 검사 및 계측","챕터4-12. 설비자동화","챕터4-13. 안전관리","챕터5-01. 공업경영"]},
-  {key:'기출회차41회~63회', icon:'②', desc:'2007-41회부터 2018-63회까지의 실제 과년도 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출43회','기출44회','기출45회','기출46회','기출47회','기출48회','기출49회','기출50회','기출51회','기출52회','기출53회','기출54회','기출55회','기출56회','기출57회','기출58회','기출59회','기출60회','기출61회','기출62회'], labels:['2007-41회','2007-42회','2008-43회','2008-44회','2009-45회','2009-46회','2010-47회','2010-48회','2011-49회','2011-50회','2012-51회','2012-52회','2013-53회','2013-54회','2014-55회 ★','2014-56회 ★','2015-57회 ★','2016-58회 ★','2016-59회 ★','2017-60회 ★','2017-61회 ★','2018-62회 ★']},
+  {key:'기출회차41회~62회', icon:'②', desc:'2007-41회부터 2018-62회까지의 실제 과년도 회차형 문제를 훈련합니다.', levels:['기출41회','기출42회','기출43회','기출44회','기출45회','기출46회','기출47회','기출48회','기출49회','기출50회','기출51회','기출52회','기출53회','기출54회','기출55회','기출56회','기출57회','기출58회','기출59회','기출60회','기출61회','기출62회'], labels:['2007-41회','2007-42회','2008-43회','2008-44회','2009-45회','2009-46회','2010-47회','2010-48회','2011-49회','2011-50회','2012-51회','2012-52회','2013-53회','2013-54회','2014-55회 ★','2014-56회 ★','2015-57회 ★','2016-58회 ★','2016-59회 ★','2017-60회 ★','2017-61회 ★','2018-62회 ★']},
   {key:'기출복원문제', icon:'③', desc:'2019-1회, 2019-2회, 2020-1회, 2020-2회, 2021-1회, 2021-2회, 2022-1회, 2022-2회, 2023-1회, 2023-2회, 2024-1회, 2024-2회, 2025-1회, 2025-2회 복원문제를 추가했으며, 원본대조 완료 회차에는 ★ 표시를 반영했습니다.', levels:['복원2019_1회','복원2019_2회','복원2020_1회','복원2020_2회','복원2021_1회','복원2021_2회','복원2022_1회','복원2022_2회','복원2023_1회','복원2023_2회','복원2024_1회','복원2024_2회','복원2025_1회','복원2025_2회'], labels:['2019-1회','2019-2회 ★','2020-1회 ★','2020-2회 ★','2021-1회 ★','2021-2회 ★','2022-1회 ★','2022-2회 ★','2023-1회 ★','2023-2회 ★','2024-1회 ★','2024-2회 ★','2025-1회 ★','2025-2회 ★']},
   {key:'중복출제 핵심문제', icon:'★', desc:'기출회차(41~62회)와 기출복원(2019~2025)에서 2회 이상 반복 출제된 핵심문제만 모았습니다. 클러스터 단위로 중복을 제거하여 한 번만 표시합니다.', levels:['중복_전체','중복_기출회차','중복_기출복원'], labels:['전체 중복문제','기출회차 중복 (41~62회)','기출복원 중복 (2019~2025)']}
 ];
@@ -3119,7 +3125,7 @@ function showResult(){
   const pct=total>0?Math.round(sessionOk/total*100):0;
   const pass=pct>=60;
 
-  document.getElementById('quizArea').style.display='none';
+  setElDisplay('quizArea','none');
   document.getElementById('scoreBar').style.display='none';
   document.getElementById('resultScreen').classList.add('show');
 
@@ -3174,7 +3180,7 @@ function showResult(){
 
 function restartQuiz(){
   document.getElementById('resultScreen').classList.remove('show');
-  document.getElementById('quizArea').style.display='block';
+  setElDisplay('quizArea','block');
   document.getElementById('scoreBar').style.display='flex';
   document.getElementById('wrongList').style.display='none';
   retryMode=false;
@@ -3183,7 +3189,7 @@ function restartQuiz(){
 function retryWrong(){
   if(wrongQs.length===0){setSt('오답이 없습니다!');return;}
   document.getElementById('resultScreen').classList.remove('show');
-  document.getElementById('quizArea').style.display='block';
+  setElDisplay('quizArea','block');
   document.getElementById('scoreBar').style.display='flex';
   retryMode=true;
   Qs=[...wrongQs];
@@ -3198,66 +3204,25 @@ function buildLevelBar(){
   const bar=document.getElementById('levelBar');
   bar.innerHTML='';
 
-  const groups=[
-    {
-      title:'기출문제',
-      desc:'챕터1~4 기출 단원 묶음',
-      keys:["배관공학의기초1","관의접합및성형3","용접의종류및특성4","챕터2_01_관의종류및특성","챕터2_02_관이음재료","챕터2_03_밸브및배관부속재료","챕터2_04_관의지지기구","챕터2_05_보온단열재","챕터3_01_배관설비도면","챕터3_02_판금","챕터4_01_급수설비","챕터4_02_배수및통기배관","챕터4_03_급탕설비","챕터4_04_소화설비","챕터4_05_온수난방설비","챕터4_06_증기난방설비","챕터4_07_냉방및공기조화설비","챕터4_08_집진설비및세정설비","챕터4_09_플랜트배관설비","챕터4_10_위생설비및소화설비","챕터4_11_배관설비검사및계측","챕터4_12_설비자동화","챕터4_13_안전관리","챕터5_01_공업경영"],
-      labels:[
-        ["챕터1-01", "배관공학의 기초 · 100문제"],
-        ["챕터1-02", "관의 접합 및 성형 · 111문제"],
-        ["챕터1-03", "용접의 종류 및 특성 · 74문제"],
-        ["챕터2-01", "관의 종류 및 특성 · 82문제"],
-        ["챕터2-02", "관 이음 재료 · 56문제"],
-        ["챕터2-03", "밸브 및 배관 부속재료 · 83문제"],
-        ["챕터2-04", "관의 지지 기구 · 31문제"],
-        ["챕터2-05", "보온 단열재 · 68문제"],
-        ["챕터3-01", "배관설비도면 · 146문제"],
-        ["챕터3-02", "판금 · 6문제"],
-        ["챕터4-01", "급수설비 · 18문제"],
-        ["챕터4-02", "배수 및 통기배관 · 13문제"],
-        ["챕터4-03", "급탕설비 · 6문제"],
-        ["챕터4-04", "소화설비 · 7문제"],
-        ["챕터4-05", "온수난방설비 · 11문제"],
-        ["챕터4-06", "증기난방설비 · 21문제"],
-        ["챕터4-07", "냉방 및 공기조화설비 · 9문제"],
-        ["챕터4-08", "집진설비 및 세정설비 · 12문제"],
-        ["챕터4-09", "플랜트 배관설비 · 11문제"],
-        ["챕터4-10", "위생설비 및 소화설비 · 4문제"],
-        ["챕터4-11", "배관설비 검사 및 계측 · 8문제"],
-        ["챕터4-12", "설비자동화 · 11문제"],
-        ["챕터4-13", "안전관리 · 6문제"],
-        ["챕터5-01", "공업경영 · 157문제"]
-      ]
-    },
-    {
-      title:'기출회차41회~63회',
-      desc:'2007-41회부터 2018-63회까지 실제 과년도 회차형 문제 훈련',
-      keys:['기출41회','기출42회','기출43회','기출44회','기출45회','기출46회','기출47회','기출48회','기출49회'],
-      labels:[
-        ['2007-41회','60문제'],
-        ['2007-42회','60문제'],
-        ['2008-43회','60문제'],
-        ['2008-44회','60문제'],
-        ['2009-45회','60문제'],
-        ['2009-46회','60문제'],
-        ['2010-47회','60문제'],
-        ['2010-48회','60문제'],
-        ['2011-49회','60문제']
-      ]
-    },
-    {
-      title:'기출복원문제',
-      desc:'2019-1회 복원문제 추가 완료 / 이후 회차 순차 입력 예정',
-      keys:[],
-      labels:[]
-    }
-  ];
+  /* v31.25 SAFE: 중복·구형 목차 배열 제거. 실제 QUIZ_GROUPS 한 곳만 기준으로 표시합니다. */
+  const groups=(typeof QUIZ_GROUPS!=='undefined' && Array.isArray(QUIZ_GROUPS))
+    ? QUIZ_GROUPS.map(g=>{
+        const keys=Array.isArray(g.levels)?g.levels:[];
+        const labels=keys.map((lv,i)=>{
+          const raw=(Array.isArray(g.labels)?g.labels[i]:null);
+          const main=Array.isArray(raw)?raw[0]:(raw||lv);
+          const cnt=(typeof DB!=='undefined' && DB && Array.isArray(DB[lv])) ? (DB[lv].length+'문제') : '';
+          const sub=Array.isArray(raw)?(raw[1]||cnt):cnt;
+          return [main,sub];
+        });
+        return {title:g.key||'문제그룹', desc:g.desc||'', keys, labels};
+      })
+    : [];
 
   const wrap=document.createElement('div');
   wrap.className='quiz-toc-wrap';
   const total=(typeof DB!=='undefined'&&DB)?Object.values(DB).reduce((a,b)=>a+(Array.isArray(b)?b.length:0),0):0;
-  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~63회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v31.15</div></div>';
+  wrap.innerHTML='<div class="quiz-toc-head"><div><div class="quiz-toc-title">문제풀이 목차</div><div class="quiz-toc-gdesc">기출문제 / 기출회차41회~62회 / 기출복원문제 메뉴 구조 적용.</div></div><div class="quiz-toc-sub">총 '+total+'문제 · v31.25</div></div>';
 
   const grid=document.createElement('div');
   grid.className='quiz-toc-grid';
@@ -3297,7 +3262,7 @@ function switchLevel(lv){
   initScore();
   curQuizGroup=getQuizGroupByLevel(lv).key; buildLevelBar(); buildDots(); renderQ(); updateQuizCurrentTitle();
   document.getElementById('resultScreen').classList.remove('show');
-  document.getElementById('quizArea').style.display='block';
+  setElDisplay('quizArea','block');
   document.getElementById('scoreBar').style.display='flex';
 }
 
@@ -4164,7 +4129,8 @@ function tStop(){
   if(!driveOn && !theoryDriveOn) relWake();
 }
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
-function setSt(m){document.getElementById('status').innerHTML=m;}
+function setElDisplay(id,value){const e=document.getElementById(id); if(e) e.style.display=value;}
+function setSt(m){const e=document.getElementById('status'); if(e) e.innerHTML=m;}
 
 /* ── v30.49 로고행 재생·일시정지 아이콘 상태 동기화 ──
    v31.23 SAFE: 연속재생 중 문장 사이 짧은 공백에서 재생/정지처럼 깜빡이는 현상 방지 */
@@ -4458,7 +4424,7 @@ function getQuestionRepeatRefs(q,level,idx){
 function getQuestionRepeatScope(q,level,idx){
   if(q && q._repeatScope) return q._repeatScope;
   const refs=getQuestionRepeatRefs(q,level,idx);
-  return refs.length>=2 ? '기출복원문제 2019~2025 탑재 데이터 기준' : '기출회차41회~63회 탑재 데이터 기준';
+  return refs.length>=2 ? '기출복원문제 2019~2025 탑재 데이터 기준' : '기출회차41회~62회 탑재 데이터 기준';
 }
 function isMemorizedQuestion(q,level,idx){
   if(!memorizedQuestions) return false;
@@ -4703,7 +4669,9 @@ function renderQ(){
   const ol=document.getElementById('opts'); ol.innerHTML='';
   ['①','②','③','④'].forEach((c,i)=>{
     const b=document.createElement('button'); b.className='opt';
-    b.innerHTML='<span class="oc">'+c+'</span><span>'+q.opts[i]+'</span>';
+    const oc=document.createElement('span'); oc.className='oc'; oc.textContent=c;
+    const tx=document.createElement('span'); tx.textContent=(q.opts && q.opts[i]!==undefined) ? String(q.opts[i]) : '';
+    b.appendChild(oc); b.appendChild(tx);
     b.onclick=()=>answer(i); ol.appendChild(b);
   });
 }
