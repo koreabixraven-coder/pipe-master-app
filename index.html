@@ -1133,8 +1133,8 @@
     #screenQuiz .quiz-logo-ico{display:flex!important;flex-shrink:0!important;}
     #screenQuiz .home-icon-btn,
     #screenQuiz .setting-trigger{flex-shrink:0!important;}
-    /* v31.21: 설정 아이콘 가로모드 숨김 — 동일 블록 내 배치 */
-    #screenQuiz .setting-trigger{display:none!important;width:0!important;height:0!important;overflow:hidden!important;padding:0!important;margin:0!important;border:none!important;}
+    /* v31.22: 설정 아이콘 가로모드 숨김 — Samsung Internet display:none 미작동 대응 */
+    #screenQuiz .setting-trigger{position:fixed!important;left:-9999px!important;top:-9999px!important;visibility:hidden!important;width:0!important;height:0!important;pointer-events:none!important;}
     #screenQuiz .home-icon-btn{margin-right:0!important;}
     #screenQuiz .desktop-quiz-grid{order:2!important;}
     #screenQuiz .quiz-bottom-control-zone{order:20!important;}
@@ -4008,6 +4008,9 @@ function spkOpts(opts,labels,cb){
 }
 function ttsTest(){spk('안녕하세요. RavenBix 배관기능장 수험앱입니다. STS 304는 에스티에스 삼공사. STS 316은 에스티에스 삼일육으로 읽습니다. KS는 케이에스. 1MPa는 일 메가파스칼로 읽습니다.');}
 function tStop(){
+  /* v31.22: speakToken 증가 → synth.cancel()이 onerror를 발생시켜도
+     대기 중인 콜백(다음 세그먼트 재생)이 토큰 불일치로 차단됨 */
+  speakToken++;
   synth.cancel(); stopTH();
   stopTheoryDriveMode();
   if(nxTimer){clearTimeout(nxTimer);nxTimer=null;}
