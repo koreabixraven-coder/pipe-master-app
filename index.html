@@ -3914,8 +3914,10 @@ function spk(txt,cb,mode){
   u.rate=getEffectiveTtsRate();
   u.pitch=getEffectiveTtsPitch();
   u.volume=1;
-  u.onend=()=>{
-    if(token!==speakToken) return;
+  let cbFired=false;
+  const fireCb=()=>{
+    if(cbFired||token!==speakToken) return;
+    cbFired=true;
     clrB();
     if(isQuiz && !paused) quizResumeTask=null;
     if(cb){
@@ -3925,6 +3927,7 @@ function spk(txt,cb,mode){
       } else cb();
     }
   };
+  u.onend=fireCb;
   u.onerror=()=>{
     if(token!==speakToken) return;
     if(paused){
@@ -3932,10 +3935,27 @@ function spk(txt,cb,mode){
       else resumeTask=cb;
       return;
     }
-    if(cb) cb();
+    fireCb();
   };
   synth.speak(u);
   if(locked) document.getElementById('lockNow').textContent=rawTxt.length>40?rawTxt.substring(0,40)+'...':rawTxt;
+  /* v31.21 범용 onend 누락 watchdog — Galaxy Tab/Samsung Internet 대응
+     onend가 안 뜨면 체인 전체가 끊기므로, 예상 발화 시간 이후
+     synth.speaking이 false인데 콜백이 안 불렸으면 강제 호출한다. */
+  if(cb){
+    const estSec=Math.max(3, Math.min(60, rawTxt.length/(u.rate*8)));
+    const watchdog=()=>{
+      if(cbFired||token!==speakToken||paused) return;
+      try{
+        if(synth && (synth.speaking||synth.pending)){
+          setTimeout(watchdog,1200);
+          return;
+        }
+      }catch(e){}
+      fireCb();
+    };
+    setTimeout(watchdog, estSec*1000+1500);
+  }
 }
 function spkQ(txt,cb){ spk(txt,cb,'quiz'); }
 /* 정답 낭독은 보기 읽기 방식과 분리한다.
