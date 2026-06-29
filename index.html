@@ -1144,6 +1144,82 @@
     #screenQuiz .tts-bar .stop{display:none!important;}
   }
 
+  /* ── v31.23 SAFE: 데스크탑/갤럭시탭 가로모드 상단 아이콘 밀림 방지 ──
+     - 문제풀이 화면 1행 아이콘이 많아질 때 우측 설정/마지막 아이콘이 잘리는 현상 보정
+     - 기능 로직 변경 없음, 상단바 폭/아이콘 크기/여백만 보정 */
+  @media (min-width:760px) and (orientation:landscape){
+    #screenQuiz .topbar{
+      width:100%!important;
+      max-width:none!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:space-between!important;
+      gap:10px!important;
+      padding-left:max(14px, env(safe-area-inset-left))!important;
+      padding-right:max(22px, calc(env(safe-area-inset-right) + 22px))!important;
+      box-sizing:border-box!important;
+    }
+    #screenQuiz .app-title{
+      flex:1 1 auto!important;
+      min-width:120px!important;
+      overflow:hidden!important;
+    }
+    #screenQuiz .app-title .name,
+    #screenQuiz .app-title .sub{
+      white-space:nowrap!important;
+      overflow:hidden!important;
+      text-overflow:ellipsis!important;
+    }
+    #screenQuiz .top-actions{
+      flex:0 0 auto!important;
+      min-width:0!important;
+      max-width:calc(100vw - 160px)!important;
+      margin-left:auto!important;
+      gap:5px!important;
+      overflow:visible!important;
+    }
+    #screenQuiz .quiz-logo-actionbar{
+      flex:0 0 auto!important;
+      gap:5px!important;
+      margin-right:0!important;
+    }
+    #screenQuiz .quiz-logo-ico,
+    #screenQuiz .home-icon-btn,
+    #screenQuiz .setting-trigger{
+      width:36px!important;
+      height:36px!important;
+      min-width:36px!important;
+      flex:0 0 36px!important;
+      border-radius:10px!important;
+    }
+    /* 이전 버전의 가로모드 설정아이콘 강제숨김을 해제하고, 잘리지 않게 정상 배치 */
+    #screenQuiz .setting-trigger{
+      position:static!important;
+      left:auto!important;
+      top:auto!important;
+      visibility:visible!important;
+      pointer-events:auto!important;
+      display:flex!important;
+    }
+  }
+  @media (min-width:760px) and (orientation:landscape) and (max-width:900px){
+    #screenQuiz .topbar{gap:8px!important;padding-right:max(18px, calc(env(safe-area-inset-right) + 18px))!important;}
+    #screenQuiz .top-actions,
+    #screenQuiz .quiz-logo-actionbar{gap:4px!important;}
+    #screenQuiz .quiz-logo-ico,
+    #screenQuiz .home-icon-btn,
+    #screenQuiz .setting-trigger{
+      width:34px!important;
+      height:34px!important;
+      min-width:34px!important;
+      flex-basis:34px!important;
+    }
+    #screenQuiz .quiz-logo-ico svg,
+    #screenQuiz .home-icon-btn svg,
+    #screenQuiz .setting-trigger svg{width:18px!important;height:18px!important;}
+    #screenQuiz .quiz-logo-ico.qli-jump{font-size:10px!important;}
+  }
+
 
   /* ── v31.13 태블릿 가로모드 2분할 화면: 1행 로고 고정 + 2행 본문 자동 스크롤 ──
      - 갤럭시탭/태블릿 가로모드 문제풀이 화면에서만 적용
@@ -4019,6 +4095,7 @@ function tStop(){
   quizResumeTask=null;
   autoNextLock=false;
   paused=false;
+  setQuizLogoAutoHold(false);
   setQuizLogoPlayPauseIcon('play');
   const btn=document.getElementById('bigBtn');
   if(btn) btn.classList.remove('paused');
@@ -4032,9 +4109,15 @@ function tStop(){
 function clrB(){['bQ','bO','bA'].forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});}
 function setSt(m){document.getElementById('status').innerHTML=m;}
 
-/* ── v30.49 로고행 재생·일시정지 아이콘 상태 동기화 ── */
+/* ── v30.49 로고행 재생·일시정지 아이콘 상태 동기화 ──
+   v31.23 SAFE: 연속재생 중 문장 사이 짧은 공백에서 재생/정지처럼 깜빡이는 현상 방지 */
 const QUIZ_LOGO_PLAY_SVG='<polygon points="6 4 20 12 6 20 6 4"/>';
 const QUIZ_LOGO_PAUSE_SVG='<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+let quizLogoAutoHold=false;
+function setQuizLogoAutoHold(v){
+  quizLogoAutoHold=!!v;
+  if(!quizLogoAutoHold && !paused) setTimeout(refreshQuizLogoPlayPause,80);
+}
 function setQuizLogoPlayPauseIcon(state){
   const btn=document.getElementById('quizLogoPlayPauseBtn');
   const ico=document.getElementById('quizLogoPlayPauseIco');
@@ -4051,10 +4134,13 @@ function setQuizLogoPlayPauseIcon(state){
     btn.title='재생';
   }
 }
+function quizLogoShouldShowPause(){
+  if(paused) return false;
+  if(driveOn || quizLogoAutoHold || normalFullAuto || autoNextLock || thTimer) return true;
+  try{return !!(synth && (synth.speaking || synth.pending));}catch(e){return false;}
+}
 function refreshQuizLogoPlayPause(){
-  let active=false;
-  try{ active=!!(synth && (synth.speaking || synth.pending) && !paused); }catch(e){}
-  setQuizLogoPlayPauseIcon(active?'pause':'play');
+  setQuizLogoPlayPauseIcon(quizLogoShouldShowPause()?'pause':'play');
 }
 function toggleQuizLogoPlayPause(){
   if(driveOn){ togglePause(); setTimeout(refreshQuizLogoPlayPause,120); return; }
@@ -4065,8 +4151,7 @@ function toggleQuizLogoPlayPause(){
     setTimeout(refreshQuizLogoPlayPause,300);
     return;
   }
-  let active=false;
-  try{ active=!!(synth && (synth.speaking || synth.pending)); }catch(e){}
+  const active=quizLogoShouldShowPause();
   if(active){
     toggleQuizPause();
     setQuizLogoPlayPauseIcon('play');
@@ -4129,11 +4214,11 @@ function toggleQuizPause(){
 function mRead(t){
   if(driveOn) return;
   setQuizLogoPlayPauseIcon('pause');
-  if(!Qs.length){setSt('이 단계에 문제가 없습니다');return;}
+  if(!Qs.length){setQuizLogoAutoHold(false);setQuizLogoPlayPauseIcon('play');setSt('이 단계에 문제가 없습니다');return;}
   if(paused){paused=false; resetQuizPauseButton(); quizResumeTask=null; try{synth.cancel();}catch(e){}}
-  if(t==='all' && !ensureCurrentPlayableForListening()) return;
+  if(t==='all' && !ensureCurrentPlayableForListening()){setQuizLogoAutoHold(false);setQuizLogoPlayPauseIcon('play');return;}
   const q=Qs[cur], L=NL[ns]; clrB();
-  if(t!=='all') normalFullAuto=false;
+  if(t!=='all'){ normalFullAuto=false; setQuizLogoAutoHold(false); }
   if(t==='q'){
     document.getElementById('bQ').classList.add('on');
     setSt('🔊 문제 읽는 중...');
@@ -4149,6 +4234,7 @@ function mRead(t){
     document.getElementById('bA').classList.add('on'); setSt('🔊 해설 읽는 중...');
     spkAns(L,q,()=>{quizTtsClearTrack();setSt('');});
   } else if(t==='all'){
+    setQuizLogoAutoHold(true);
     normalFullAuto=quizFullAutoEnabled();
     setSt(normalFullAuto?'🔊 전체읽기 완전 자동 진행 중...':'🔊 전체 읽는 중...');
     quizSpeakProblem(q,()=>{
@@ -4159,6 +4245,7 @@ function mRead(t){
           startTH(()=>manualAutoReveal());
         } else {
           normalFullAuto=false;
+          setQuizLogoAutoHold(false);
           quizTtsClearTrack();
           setSt('');
         }
@@ -4488,6 +4575,7 @@ function jumpToQuestion(idx){
   tStop();
   stopTH();
   normalFullAuto=false;
+  setQuizLogoAutoHold(false);
   paused=false;
   resetQuizPauseButton();
   cur=idx;
@@ -4663,6 +4751,7 @@ function quizSpeakProblem(q,cb){
 }
 function stopQuizTts(){
   normalFullAuto=false;
+  setQuizLogoAutoHold(false);
   setQuizLogoPlayPauseIcon('play');
   tStop();
   quizTtsClearTrack();
@@ -4673,6 +4762,7 @@ function scheduleAutoNextAfterExplain(reason){
   if(driveOn) return;
   if(!document.getElementById('autoNx') || !document.getElementById('autoNx').checked){
     normalFullAuto=false;
+    setQuizLogoAutoHold(false);
     setSt('');
     return;
   }
@@ -4682,6 +4772,7 @@ function scheduleAutoNextAfterExplain(reason){
   if(isLast){
     setSt('마지막 문제입니다.');
     normalFullAuto=false;
+    setQuizLogoAutoHold(false);
     setTimeout(()=>{autoNextLock=false; showResult(); quizTtsClearTrack();},800);
     return;
   }
@@ -4700,10 +4791,12 @@ function scheduleAutoNextAfterExplain(reason){
         setTimeout(()=>mRead('all'),650);
       }else{
         normalFullAuto=false;
+        setQuizLogoAutoHold(false);
         setSt('암기완료 문제를 제외한 전체읽기가 완료되었습니다.');
         setTimeout(()=>{autoNextLock=false; quizTtsClearTrack();},300);
       }
     }else{
+      setQuizLogoAutoHold(false);
       nextQ();
     }
   },1200);
